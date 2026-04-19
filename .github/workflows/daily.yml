@@ -1,0 +1,78 @@
+name: Daily Options Flow Snapshot
+
+on:
+  schedule:
+    # 21:30 UTC = 17:30 EDT (DST) / 16:30 EST — runs after US market close year-round
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+      FLOW_SNAPSHOT_DIR: ${{ github.workspace }}/snapshots
+      FLOW_REPORT_DIR: ${{ github.workspace }}/reports
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run daily snapshot
+        run: python scripts/snapshot.py MSTR TSLA
+
+      - name: Generate trend dashboards (EN + ZH)
+        run: |
+          python scripts/trend.py MSTR TSLA --html --mode postclose --lang en
+          python scripts/trend.py MSTR TSLA --html --mode postclose --lang zh
+
+      - name: Build Pages index
+        run: python scripts/build_index.py
+
+      - name: Commit snapshots + reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add snapshots reports
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "daily: $(date -u +%Y-%m-%d) snapshot + dashboards"
+            git push
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports
+
+  deploy-pages:
+    needs: snapshot
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
