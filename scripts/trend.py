@@ -1343,11 +1343,11 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     oi_depth_html = ""
     if oi_latest and oi_latest.get('spot', 0) > 0:
         _spot = oi_latest['spot']
-        otm_call = sum(ch['call_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] > _spot)
-        itm_call = sum(ch['call_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot)
-        otm_put = sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot)
-        itm_put = sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] > _spot)
-        deep_otm_put = sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot * 0.85)
+        otm_call = int(sum(ch['call_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] > _spot))
+        itm_call = int(sum(ch['call_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot))
+        otm_put = int(sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot))
+        itm_put = int(sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] > _spot))
+        deep_otm_put = int(sum(ch['put_oi_delta'] for ch in oi_latest['changes'] if ch['strike'] < _spot * 0.85))
 
         total_call = max(otm_call + itm_call, 1)
         total_put = max(otm_put + itm_put, 1)
