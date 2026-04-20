@@ -6,11 +6,11 @@ from collections import defaultdict
 REPORT_DIR = os.environ.get('FLOW_REPORT_DIR') or 'reports'
 
 PATTERN = re.compile(r'trend_([A-Z]+)_(\d{4}-\d{2}-\d{2})(?:_(zh|en))?\.html$')
-BRIEFING_PATTERN = re.compile(r'briefing_(\d{4}-\d{2}-\d{2})\.html$')
+BRIEFING_PATTERN = re.compile(r'briefing_(\d{4}-\d{2}-\d{2})(?:_(zh|en))?\.html$')
 
 def main():
     by_date = defaultdict(dict)
-    briefings = {}
+    briefings = defaultdict(dict)
     for fn in os.listdir(REPORT_DIR):
         m = PATTERN.match(fn)
         if m:
@@ -19,11 +19,17 @@ def main():
             continue
         m = BRIEFING_PATTERN.match(fn)
         if m:
-            briefings[m.group(1)] = fn
+            date, lang = m.group(1), m.group(2) or 'en'
+            briefings[date][lang] = fn
 
     rows = []
     for date in sorted(briefings.keys(), reverse=True):
-        rows.append(f'<tr><td>{date}</td><td><strong>Weekly Briefing</strong></td><td><a href="{briefings[date]}">Read →</a></td></tr>')
+        langs = briefings[date]
+        links = []
+        for lang_key, label in (('zh', '中文'), ('en', 'EN')):
+            if lang_key in langs:
+                links.append(f'<a href="{langs[lang_key]}">{label}</a>')
+        rows.append(f'<tr><td>{date}</td><td><strong>Weekly Briefing</strong></td><td>{" · ".join(links)}</td></tr>')
     for date in sorted(by_date.keys(), reverse=True):
         tickers = by_date[date]
         for ticker in sorted(tickers.keys()):
