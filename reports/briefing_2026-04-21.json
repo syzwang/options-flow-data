@@ -1,0 +1,166 @@
+{
+  "date": "2026-04-21",
+  "week_ending": "2026-04-25",
+  "headline": "MSTR and TSLA both sit in long-gamma regimes with NVRP readings of 1.66 and 1.83 respectively, creating a rich environment for premium sellers who fade extreme call skew at GEX resistance walls over 17–31 DTE.",
+  "tickers": [
+    {
+      "symbol": "MSTR",
+      "spot": 170.81,
+      "setup": {
+        "gamma_regime": "long",
+        "gamma_note": "Net long gamma ($15.5B) from market makers dampens intraday moves and creates mean reversion toward the 170–175 GEX call wall cluster; expect smaller-than-expected realized moves relative to front IV.",
+        "skew_posture": "call-dominant",
+        "skew_percentile": 60,
+        "nvrp": 1.66,
+        "nvrp_signal": "seller edge",
+        "gex_upper": 175.0,
+        "gex_lower": 165.0,
+        "gex_magnet": 170.0
+      },
+      "scenarios": {
+        "bull": {
+          "prob": 25,
+          "path": "BTC sustains above 76k and reclaims 78k; MSTR compresses call skew and breaks through the 175 GEX wall toward 180–185 where the next major GEX cluster sits.",
+          "triggers": [
+            "BTC daily close above 78,000",
+            "MSTR closes above 176 on volume greater than 1.5x the 20-day average",
+            "Front P/C spread narrows to below -10 pts from -19 pts"
+          ]
+        },
+        "base": {
+          "prob": 55,
+          "path": "BTC ranges 74k–77k; MSTR oscillates between the 165 put wall and 175 call wall with high front IV (102%) decaying rapidly as realized moves stay inside the GEX-anchored range.",
+          "triggers": [
+            "MSTR holds 163–176 intraday for three or more consecutive sessions",
+            "BTC holds between 73k and 78k",
+            "NVRP stays above 1.50 confirming ongoing seller edge"
+          ]
+        },
+        "bear": {
+          "prob": 20,
+          "path": "BTC breaks below 74k; MSTR cracks the 165 put GEX wall and accelerates toward the 155–150 persistent put support cluster where put OI is heaviest.",
+          "triggers": [
+            "BTC daily close below 74,000",
+            "MSTR closes below 163 on above-average volume",
+            "Front ATM IV spikes above 115% signaling panic hedging"
+          ]
+        }
+      },
+      "trades": [
+        {
+          "structure": "Call Credit Spread",
+          "strike": "175/185",
+          "expiry": "2026-05-08",
+          "dte": 17,
+          "credit": "$3.80",
+          "rationale": "Fade call skew at the 175 GEX call wall — the highest net gamma node at $1.29B — where short-dated speculative call flow (87.4% of total calls) is likely to exhaust; NVRP 1.66 confirms front IV at 102% is significantly rich versus the 30-day RV of 61.5%.",
+          "exit": "Buy back at 50% credit capture ($1.90); stop if MSTR closes above 178 on two consecutive sessions or front ATM IV spikes above 120%."
+        },
+        {
+          "structure": "Put Credit Spread",
+          "strike": "155/145",
+          "expiry": "2026-05-22",
+          "dte": 31,
+          "credit": "$2.20",
+          "rationale": "Collect put premium anchored inside the long-gamma floor; the 145–155 zone contains three of the five largest GEX put walls (ranging from -$283M to -$344M each), providing structural support; 31 DTE positions theta decay to accelerate through May expiry without excessive early-gamma risk.",
+          "exit": "Buy back at 50% credit capture ($1.10); stop if MSTR spot closes below 158 on a confirmed BTC correlation break or if net GEX flips negative."
+        }
+      ],
+      "risks": [
+        "BTC correlation: a gap down in BTC can pull MSTR through the 165 put wall before market makers can re-hedge, triggering a gamma cascade that amplifies the move.",
+        "IV compression risk: NVRP ranged 1.40–1.76 this week; a mean reversion toward 1.0 (buyer edge) would erode the short-vega edge and may require early exits.",
+        "Speculative squeeze: 95k+ new call contracts were added in the Apr 24 expiry this week; if BTC accelerates above 78k, a short-squeeze could push MSTR through the 175 GEX wall rapidly.",
+        "Small skew percentile sample (n=5) makes the 60th-percentile reading unreliable; treat regime signals as directional guidance, not precise probability calibration."
+      ],
+      "exits": [
+        "Close all MSTR positions if net GEX (currently +$15.5B) turns negative intraday — signals a gamma regime flip and the onset of higher realized volatility.",
+        "Roll the 175/185 call spread up and out two weeks if MSTR approaches 173 with 10 or more DTE remaining.",
+        "Close the put credit spread immediately if BTC prints a daily close below 72,000."
+      ]
+    },
+    {
+      "symbol": "TSLA",
+      "spot": 392.5,
+      "setup": {
+        "gamma_regime": "long",
+        "gamma_note": "Exceptionally strong long-gamma positioning ($26.2B net GEX) creates a gravitational pin between the 390 put wall and 400 call wall; spot at 392.5 is essentially sandwiched with only 0.64% to the nearest put support and 1.91% to the dominant call resistance.",
+        "skew_posture": "call-dominant",
+        "skew_percentile": 70,
+        "nvrp": 1.83,
+        "nvrp_signal": "seller edge",
+        "gex_upper": 410.0,
+        "gex_lower": 380.0,
+        "gex_magnet": 400.0
+      },
+      "scenarios": {
+        "bull": {
+          "prob": 30,
+          "path": "TSLA holds the 390 put wall, absorbs the 400 call wall resistance, and squeezes call shorts toward the 410–420 GEX cluster; the 410 strike carries $4.81B in GEX and would be the next meaningful ceiling.",
+          "triggers": [
+            "TSLA daily close above 402 with put/call ratio below 1.2",
+            "Net call OI increases at 405–415 strikes on back-to-back sessions",
+            "NVRP compresses below 1.5 as realized volatility catches up to implied"
+          ]
+        },
+        "base": {
+          "prob": 50,
+          "path": "TSLA oscillates around the 395–400 GEX magnet zone; the $26.2B net GEX suppresses range expansion and keeps the stock pinned between 385 and 405 through mid-May expiry.",
+          "triggers": [
+            "TSLA stays within 385–405 for three or more consecutive days",
+            "NVRP remains above 1.6 confirming sustained premium-selling edge",
+            "Front P/C spread stays negative but contained between -2 and -5 pts"
+          ]
+        },
+        "bear": {
+          "prob": 20,
+          "path": "The 390 put wall fails on macro or company-specific news; TSLA accelerates through 380 (largest put GEX at -$3.5B) and tests the 360–370 support cluster where persistent put OI is concentrated.",
+          "triggers": [
+            "TSLA daily close below 389",
+            "Deep OTM puts added Apr 20 (30k contracts at 140, 20.5k at 240) convert from hedge to directional pressure on a macro selloff",
+            "Front ATM IV spikes above 90%"
+          ]
+        }
+      },
+      "trades": [
+        {
+          "structure": "Call Credit Spread",
+          "strike": "405/420",
+          "expiry": "2026-05-08",
+          "dte": 17,
+          "credit": "$2.80",
+          "rationale": "Fade call skew at the 405–410 GEX concentration zone ($4.48B at 405, $4.81B at 410); NVRP 1.83 is the highest reading of the 5-day observation window, confirming IV at 81.9% is significantly rich versus 30-day RV of 44.7%; 85% short-dated call flow is speculative and unlikely to sustain a push above this GEX ceiling.",
+          "exit": "Buy back at 50% credit capture ($1.40); stop if TSLA closes above 408 on volume greater than 1.5x the 20-day average."
+        },
+        {
+          "structure": "Put Credit Spread",
+          "strike": "375/360",
+          "expiry": "2026-05-15",
+          "dte": 24,
+          "credit": "$2.50",
+          "rationale": "Sell put premium anchored by the 370–380 put wall cluster; the 380 strike carries -$3.5B GEX (largest put wall) and 370 adds -$1.97B — combined structural support creates a strong floor; persistent 370-380 put volume (168k and 289k total contracts respectively across observation window) confirms institutional anchoring at these levels.",
+          "exit": "Buy back at 50% credit capture ($1.25); stop if TSLA closes below 382 on closing print or if net GEX falls below $15B."
+        },
+        {
+          "structure": "Iron Condor",
+          "strike": "375/385/405/415",
+          "expiry": "2026-05-22",
+          "dte": 31,
+          "credit": "$4.60",
+          "rationale": "Full GEX-range structure exploiting the $26.2B gravitational pin: sell the 405/415 call spread at the upper GEX resistance cluster and the 375/385 put spread at the lower GEX support cluster; NVRP 1.83 makes both call and put premium rich versus realized volatility on both wings simultaneously.",
+          "exit": "Buy back entire condor at 50% aggregate credit ($2.30); defend individual legs independently if spot approaches either short strike with 15 or more DTE remaining; close the full position if net GEX drops below $10B."
+        }
+      ],
+      "risks": [
+        "The 390 put wall (-$1.91B GEX) is only 0.64% below current spot; a single bad tick or gap open below 389 could trigger a rapid cascading move through the wall cluster before hedging can offset it.",
+        "Unusual institutional tail hedging: 30k contracts added at the 140 strike and 20.5k at 240 on April 20 suggest large holders are positioning for a severe downside scenario.",
+        "NVRP spike from 1.08 on Apr 16 to 1.83 on Apr 20 in four sessions may be related to an upcoming catalyst (earnings, macro); if it is event-driven IV, a crush post-event would remove premium-selling edge.",
+        "2w bucket P/C spread oscillated from -0.22 to +1.05 to -0.79 within a single session on April 20, indicating unstable short-term positioning — directional bias can reverse quickly."
+      ],
+      "exits": [
+        "Close all TSLA positions immediately if net GEX ($26.2B) drops below $10B — signals a rapid hedging unwind and the onset of a higher-volatility regime.",
+        "Roll the put credit spread down by one strike width if TSLA closes below 386 with more than 10 DTE remaining on the position.",
+        "Close the iron condor call side immediately if TSLA gaps open above 402; manage the put side independently using the 382 stop level."
+      ]
+    }
+  ]
+}
