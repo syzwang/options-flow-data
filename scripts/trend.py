@@ -88,10 +88,22 @@ def detect_zero_crossings(series):
     """
     Detect when P/C IV spread crosses below zero (call skew dominates).
     Returns list of crossing events with date, bucket, and context.
+    Multiple expiries on the same date within a bucket are averaged into one
+    point-per-date before comparing — otherwise cross-expiry jumps get mistaken
+    for time-based crossings.
     """
     crossings = []
     for bucket, points in series.items():
-        sorted_pts = sorted(points, key=lambda x: x['date'])
+        # Collapse to one (spread, spot) per date by averaging across expiries
+        by_date = {}
+        for p in points:
+            by_date.setdefault(p['date'], []).append(p)
+        daily = []
+        for date in sorted(by_date.keys()):
+            group = by_date[date]
+            avg_spread = sum(g['spread'] for g in group) / len(group)
+            daily.append({'date': date, 'spread': avg_spread, 'spot': group[0]['spot']})
+        sorted_pts = daily
         for i in range(1, len(sorted_pts)):
             prev = sorted_pts[i-1]['spread']
             curr = sorted_pts[i]['spread']
@@ -672,6 +684,12 @@ ZH_REPLACEMENTS = [
     ("Net GEX:", "净 GEX:"),
     ("Call walls (resistance above ", "Call 墙（阻力位，高于 "),
     ("Put walls (support below ", "Put 墙（支撑位，低于 "),
+    ("Strike · OTM", "行权价 · OTM"),
+    ("▲ CALL WALLS (resistance)", "▲ CALL 墙（阻力位）"),
+    ("▼ PUT WALLS (support)", "▼ PUT 墙（支撑位）"),
+    (">Spot<", ">现价<"),
+    ("No call walls within 25% OTM", "25% OTM 内无 Call 墙"),
+    ("No put walls within 25% OTM", "25% OTM 内无 Put 墙"),
     ("No call walls within 25% OTM", "25% OTM 内无 Call 墙"),
     ("No put walls within 25% OTM", "25% OTM 内无 Put 墙"),
     ("How GEX walls differ from volume walls (click)", "GEX 墙 vs 成交量墙（点击）"),
@@ -719,10 +737,11 @@ ZH_REPLACEMENTS = [
     ("<b style=\"color:#e6edf3;\">NVRP = ATM IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.",
      "<b style=\"color:#e6edf3;\">NVRP = ATM IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。"),
     ("<b>Strong premium-selling edge</b>", "<b>卖权溢价优势明显</b>"),
-    (" means IV (", " 意味着 IV ("),
-    (") is ", ") 比实际波动率 ("),
-    (") richer than realized (", ") 高出 "),  # careful, might clash, but order safe
-    # The above 3-line sequence may not fit all patterns; fall back separately:
+    ("x (IV ", "x（IV "),
+    ("%, +", "%，IV 高 "),
+    ("%). Clear edge for CC/CSP/wheel after covering friction costs.",
+     "%）。扣除摩擦成本后，CC/CSP/wheel 明显占优。"),
+    # Legacy key — still referenced by other insight chains
     ("Clear edge for CC/CSP/wheel after covering friction costs.",
      "扣除摩擦成本后，CC/CSP/wheel 明显占优。"),
     ("<b>Premium-selling edge present</b>", "<b>卖权有边际优势</b>"),
@@ -792,7 +811,7 @@ ZH_REPLACEMENTS = [
     ("<b>Healthy skew</b> — all ", "<b>偏度健康</b> — 全部 "),
     (" buckets in danger zone (avg ", " 个到期桶在危险区（均值 "),
     (" pts, low ", " pts，最低 "),
-    ("). Speculative FOMO across the full term structure. Historical pattern: local top within 1-3 weeks. Consider buying OTM puts as hedge while they\\'re relatively cheap.",
+    ("). Speculative FOMO across the full term structure. Historical pattern: local top within 1-3 weeks. Consider buying OTM puts as hedge while they're relatively cheap.",
      "）。整条期限结构都是投机 FOMO。历史规律：1-3 周内见阶段顶。考虑趁 OTM put 相对便宜时买入对冲。"),
     (" expirations negative (avg ", " 个到期为负（均值 "),
     (" pts). Bullish euphoria building; watch for further deterioration toward extreme levels.",
@@ -972,6 +991,9 @@ ZH_REPLACEMENTS = [
     (" pts. Bullish euphoria fading.", " pts。看涨狂热消退。"),
     (": P/C spread ", "：P/C 偏度 "),
     ("No zero-crossings detected in this period.", "本期间未检测到零轴穿越。"),
+    ("Current spread by bucket:", "各到期桶当前 spread："),
+    (">now ", ">现 "),
+    ("no crossings in window", "本窗口无穿越"),
     # ===== OI Delta fallbacks =====
     ("Net OI Change: Call ", "OI 净变动：Call "),
     (" | Put ", " | Put "),
@@ -1056,15 +1078,17 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     mode_banner_html = _mode_banner(mode)
 
     # Build chart data for P/C spread time series
-    # Group by bucket, use dates as x-axis
+    # Group by bucket, average same-date multi-expiry points, use dates as x-axis
     spread_datasets = []
-    colors = {'front': '#3fb950', '2w': '#f85149', '1m': '#d29922', '2m': '#58a6ff', 'far': '#8b949e'}
-    for bucket in ['front', '2w', '1m', '2m']:
+    colors = {'front': '#3fb950', '2w': '#f85149', '1m': '#d29922', '2m': '#58a6ff', 'far': '#a371f7'}
+    for bucket in ['front', '2w', '1m', '2m', 'far']:
         if bucket not in pc:
             continue
-        pts = sorted(pc[bucket], key=lambda x: x['date'])
-        dates = [p['date'] for p in pts]
-        values = [round(p['spread'], 2) for p in pts]
+        by_date = {}
+        for p in pc[bucket]:
+            by_date.setdefault(p['date'], []).append(p['spread'])
+        dates = sorted(by_date.keys())
+        values = [round(sum(by_date[d]) / len(by_date[d]), 2) for d in dates]
         spread_datasets.append({
             'label': bucket.upper(),
             'data': values,
@@ -1082,18 +1106,84 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # OI delta data (latest day)
     oi_latest = oi[-1] if oi else None
 
-    # Crossing alerts HTML
+    # Crossing alerts HTML — grouped by bucket, compact rows, current-state summary strip
     alert_html = ""
     if crossings:
+        BUCKET_ORDER = ['front', '2w', '1m', '2m', 'far']
+        by_bucket_cross = {}
         for c in crossings:
-            color = '#f85149' if c['type'] == 'bearish_signal' else '#3fb950'
-            icon = "&#9888;" if c['type'] == 'bearish_signal' else "&#10003;"
-            alert_html += f"""<div style="background:rgba({'248,81,73' if c['type']=='bearish_signal' else '63,185,80'},0.1);border:1px solid {color};border-radius:8px;padding:12px 16px;margin:8px 0;">
-<span style="color:{color};font-size:16px;">{icon}</span>
-<span style="color:{color};font-weight:500;">{c['bucket'].upper()}</span>
-<span style="color:#e6edf3;"> {c['date']}: P/C spread {c['spread_from']:+.1f} → {c['spread_to']:+.1f} pts</span>
-<div style="color:#8b949e;font-size:12px;margin-top:4px;">{c['message']}</div>
-</div>"""
+            by_bucket_cross.setdefault(c['bucket'], []).append(c)
+
+        # Latest spread per bucket for the summary strip — avg across expiries on the latest date
+        latest_state = {}
+        for bucket, points in pc.items():
+            if not points:
+                continue
+            latest_date = max(p['date'] for p in points)
+            same_day = [p['spread'] for p in points if p['date'] == latest_date]
+            latest_state[bucket] = sum(same_day) / len(same_day)
+
+        pills = []
+        for b in BUCKET_ORDER:
+            if b not in latest_state:
+                continue
+            val = latest_state[b]
+            col = '#f85149' if val < 0 else '#3fb950'
+            pills.append(
+                f'<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;'
+                f'border-radius:999px;background:{col}18;border:1px solid {col}55;font-size:12px;">'
+                f'<span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">{b.upper()}</span>'
+                f'<span style="color:{col};font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">{val:+.1f}</span>'
+                f'</span>'
+            )
+        summary_html = ""
+        if pills:
+            summary_html = (
+                '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;">'
+                '<span style="color:#8b949e;font-size:11px;margin-right:2px;">Current spread by bucket:</span>'
+                + ''.join(pills) + '</div>'
+            )
+
+        bucket_blocks = []
+        for b in BUCKET_ORDER:
+            if b not in latest_state:
+                continue
+            events = sorted(by_bucket_cross.get(b, []), key=lambda x: x['date'], reverse=True)
+            cur = latest_state.get(b)
+            cur_col = '#8b949e' if cur is None else ('#f85149' if cur < 0 else '#3fb950')
+            cur_pill = ''
+            if cur is not None:
+                cur_pill = (
+                    f'<span style="margin-left:auto;font-size:11px;color:{cur_col};'
+                    f'font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">'
+                    f'now {cur:+.1f}</span>'
+                )
+            rows = []
+            for c in events:
+                color = '#f85149' if c['type'] == 'bearish_signal' else '#3fb950'
+                icon = "&#9888;" if c['type'] == 'bearish_signal' else "&#10003;"
+                rows.append(
+                    f'<div style="display:flex;align-items:center;gap:8px;'
+                    f'padding:5px 9px;border-left:3px solid {color};background:{color}0d;border-radius:4px;margin:3px 0;font-size:12px;">'
+                    f'<span style="color:{color};flex:none;">{icon}</span>'
+                    f'<span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">{c["date"][5:]}</span>'
+                    f'<span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">'
+                    f'{c["spread_from"]:+.1f} &rarr; <b style="color:{color};">{c["spread_to"]:+.1f}</b>'
+                    f'</span></div>'
+                )
+            body = ''.join(rows) if rows else '<div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">no crossings in window</div>'
+            bucket_blocks.append(
+                '<div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;">'
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+                f'<span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">{b.upper()}</span>'
+                f'{cur_pill}</div>'
+                + body + '</div>'
+            )
+        grid_html = (
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">'
+            + ''.join(bucket_blocks) + '</div>'
+        )
+        alert_html = summary_html + grid_html
     else:
         alert_html = '<div style="color:#8b949e;padding:8px;">No zero-crossings detected in this period.</div>'
 
@@ -1529,8 +1619,8 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             'data': aligned,
             'borderColor': ds['borderColor'],
             'borderWidth': 2,
-            'pointRadius': 4,
-            'tension': 0.3,
+            'pointRadius': 3,
+            'tension': 0,
             'spanGaps': True,
         })
 
@@ -1556,7 +1646,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     nvrp_insight = ""
     if cur_nvrp > 0:
         if cur_nvrp >= 1.5:
-            nv_color, nv_text, nv_icon, nv_msg = '#3fb950', '#a8e6b8', '✓', f"<b>Strong premium-selling edge</b> — NVRP {cur_nvrp:.2f}x means IV ({cur_iv:.1f}%) is {(cur_nvrp-1)*100:.0f}% richer than realized ({cur_rv:.1f}%). Clear edge for CC/CSP/wheel after covering friction costs."
+            nv_color, nv_text, nv_icon, nv_msg = '#3fb950', '#a8e6b8', '✓', f"<b>Strong premium-selling edge</b> — NVRP {cur_nvrp:.2f}x (IV {cur_iv:.1f}% vs RV {cur_rv:.1f}%, +{(cur_nvrp-1)*100:.0f}%). Clear edge for CC/CSP/wheel after covering friction costs."
         elif cur_nvrp >= 1.3:
             nv_color, nv_text, nv_icon, nv_msg = '#7ee787', '#a8e6b8', '✓', f"<b>Premium-selling edge present</b> — NVRP {cur_nvrp:.2f}x above 1.3 threshold. IV ({cur_iv:.1f}%) exceeds RV ({cur_rv:.1f}%) enough to cover typical friction costs."
         elif cur_nvrp >= 1.0:
@@ -1659,27 +1749,47 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             if ag >= 1e6:
                 return f"${g/1e6:+.1f}M"
             return f"${g/1e3:+.0f}K"
-        # Build wall rows
-        call_rows = ""
-        max_call = max((abs(w['gex']) for w in gex_data['call_walls']), default=1) or 1
-        for w in gex_data['call_walls'][:5]:
-            bar_pct = abs(w['gex']) / max_call * 100
-            call_rows += f"""<tr>
-                <td style="color:#e6edf3;font-weight:500;">${w['strike']:.0f}</td>
-                <td style="color:#8b949e;">+{w['otm_pct']:.1f}%</td>
-                <td style="color:#3fb950;">{_fmt_gex(w['gex'])}</td>
-                <td><div style="background:#3fb95033;height:14px;width:{bar_pct:.0f}%;border-radius:2px;"></div></td>
-            </tr>"""
-        put_rows = ""
-        max_put = max((abs(w['gex']) for w in gex_data['put_walls']), default=1) or 1
-        for w in gex_data['put_walls'][:5]:
-            bar_pct = abs(w['gex']) / max_put * 100
-            put_rows += f"""<tr>
-                <td style="color:#e6edf3;font-weight:500;">${w['strike']:.0f}</td>
-                <td style="color:#8b949e;">−{w['otm_pct']:.1f}%</td>
-                <td style="color:#f85149;">{_fmt_gex(w['gex'])}</td>
-                <td><div style="background:#f8514933;height:14px;width:{bar_pct:.0f}%;border-radius:2px;"></div></td>
-            </tr>"""
+        # Price ladder: strikes sorted high→low, spot divider in middle
+        calls = list(gex_data['call_walls'])[:5]
+        puts = list(gex_data['put_walls'])[:5]
+        calls_by_strike = sorted(calls, key=lambda w: w['strike'], reverse=True)
+        puts_by_strike = sorted(puts, key=lambda w: w['strike'], reverse=True)
+        # Shared magnitude scale so call and put bar lengths are comparable
+        global_max = max(
+            (abs(w['gex']) for w in calls + puts),
+            default=1,
+        ) or 1
+
+        def _ladder_row(w, color):
+            bar_pct = abs(w['gex']) / global_max * 100
+            bar_bg = color + '33'
+            return (
+                '<div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;'
+                'padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;">'
+                f'<span style="color:#e6edf3;font-weight:500;">${w["strike"]:.0f}</span>'
+                f'<span style="color:#8b949e;font-size:11px;">{"+" if color == "#3fb950" else "−"}{w["otm_pct"]:.1f}%</span>'
+                f'<div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;">'
+                f'<div style="background:{bar_bg};border-left:2px solid {color};height:100%;width:{bar_pct:.1f}%;"></div>'
+                f'</div>'
+                f'<span style="color:{color};text-align:right;font-weight:500;">{_fmt_gex(w["gex"])}</span>'
+                '</div>'
+            )
+
+        call_ladder = ''.join(_ladder_row(w, '#3fb950') for w in calls_by_strike)
+        put_ladder = ''.join(_ladder_row(w, '#f85149') for w in puts_by_strike)
+        if not call_ladder:
+            call_ladder = '<div style="color:#8b949e;font-size:11px;padding:4px 0;">No call walls within 25% OTM</div>'
+        if not put_ladder:
+            put_ladder = '<div style="color:#8b949e;font-size:11px;padding:4px 0;">No put walls within 25% OTM</div>'
+
+        spot_divider = (
+            '<div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;'
+            'margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;'
+            'background:#e6edf308;">'
+            f'<span style="color:#e6edf3;font-weight:600;font-size:12px;">${spot:.2f}</span>'
+            '<span style="color:#8b949e;font-size:10px;">Spot</span>'
+            '<div></div><div></div></div>'
+        )
 
         gex_card_html = f"""
 <div class="card">
@@ -1691,24 +1801,15 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid {gc};background:{gc}11;border-radius:4px;font-size:12px;line-height:1.5;">
     <span style="margin-right:6px;">{gi}</span><span style="color:{gt};">{gmsg}</span>
   </div>
-  <div class="grid" style="margin-top:12px;">
-    <div>
-      <div style="font-size:11px;color:#3fb950;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
-        Call walls (resistance above ${spot:.2f})
-      </div>
-      <table style="font-size:12px;">
-        <thead><tr><th>Strike</th><th>OTM</th><th>GEX</th><th style="width:45%;">Magnitude</th></tr></thead>
-        <tbody>{call_rows if call_rows else '<tr><td colspan="4" style="color:#8b949e;">No call walls within 25% OTM</td></tr>'}</tbody>
-      </table>
+  <div style="margin-top:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
+      <span>Strike · OTM</span><span style="color:#3fb950;">▲ CALL WALLS (resistance)</span><span>GEX</span>
     </div>
-    <div>
-      <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
-        Put walls (support below ${spot:.2f})
-      </div>
-      <table style="font-size:12px;">
-        <thead><tr><th>Strike</th><th>OTM</th><th>GEX</th><th style="width:45%;">Magnitude</th></tr></thead>
-        <tbody>{put_rows if put_rows else '<tr><td colspan="4" style="color:#8b949e;">No put walls within 25% OTM</td></tr>'}</tbody>
-      </table>
+    {call_ladder}
+    {spot_divider}
+    {put_ladder}
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
+      <span>&nbsp;</span><span style="color:#f85149;">▼ PUT WALLS (support)</span><span>&nbsp;</span>
     </div>
   </div>
   <details style="font-size:11px;color:#8b949e;margin-top:10px;">
@@ -2080,22 +2181,26 @@ function initCharts() {{
         ctx.fillText('ZERO — call skew below this line', area.left + 6, yZero - 6);
         ctx.restore();
       }},
-      // Data labels on points
+      // Data labels: show only at the last non-null point of each series (end-anchored)
       afterDatasetsDraw(chart) {{
         const ctx = chart.ctx;
         ctx.save();
         chart.data.datasets.forEach((ds, i) => {{
           if (ds.label === 'Spot') return;
           const meta = chart.getDatasetMeta(i);
-          meta.data.forEach((pt, j) => {{
-            const val = ds.data[j];
-            if (val === null || val === 'null') return;
-            ctx.fillStyle = ds.borderColor;
-            ctx.font = '500 10px -apple-system,sans-serif';
-            ctx.textAlign = 'center';
-            const yOff = val < 0 ? 12 : -8;
-            ctx.fillText((val > 0 ? '+' : '') + parseFloat(val).toFixed(1), pt.x, pt.y + yOff);
-          }});
+          let lastIdx = -1;
+          for (let k = ds.data.length - 1; k >= 0; k--) {{
+            const v = ds.data[k];
+            if (v !== null && v !== 'null' && v !== undefined) {{ lastIdx = k; break; }}
+          }}
+          if (lastIdx < 0) return;
+          const pt = meta.data[lastIdx];
+          const val = ds.data[lastIdx];
+          ctx.fillStyle = ds.borderColor;
+          ctx.font = '600 11px -apple-system,sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(' ' + (val > 0 ? '+' : '') + parseFloat(val).toFixed(1), pt.x + 4, pt.y);
         }});
         ctx.restore();
       }}
@@ -2109,20 +2214,74 @@ function initCharts() {{
     data: {{
       labels: ivDates,
       datasets: [
-        {{ label: 'ATM IV', data: {json.dumps(iv_values)}, borderColor: '#3fb950', borderWidth: 2, pointRadius: 3, yAxisID: 'y' }},
-        {{ label: 'RV30', data: {json.dumps(rv_values)}, borderColor: '#58a6ff', borderWidth: 2, pointRadius: 3, yAxisID: 'y' }},
-        {{ label: 'NVRP', data: {json.dumps(nvrp_values)}, borderColor: '#d29922', borderWidth: 2, pointRadius: 3, borderDash: [4,4], yAxisID: 'y1' }}
+        {{ label: 'ATM IV', data: {json.dumps(iv_values)}, borderColor: '#3fb950', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' }},
+        {{ label: 'RV30', data: {json.dumps(rv_values)}, borderColor: '#58a6ff', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' }},
+        {{ label: 'NVRP', data: {json.dumps(nvrp_values)}, borderColor: '#d29922', borderWidth: 2, pointRadius: 3, tension: 0, borderDash: [4,4], yAxisID: 'y1' }}
       ]
     }},
     options: {{
       responsive: true, maintainAspectRatio: false,
+      interaction: {{ mode: 'index', intersect: false }},
       plugins: {{ legend: {{ position: 'top', labels: {{ color: '#8b949e', font: {{ size: 11 }} }} }} }},
       scales: {{
         x: {{ ticks: {{ color: '#8b949e', font: {{ size: 10 }} }}, grid: {{ display: false }} }},
         y: {{ position: 'left', ticks: {{ color: '#8b949e' }}, grid: {{ color: '#21262d' }}, title: {{ display: true, text: 'IV / RV (%)', color: '#8b949e' }} }},
         y1: {{ position: 'right', ticks: {{ color: '#d29922' }}, grid: {{ display: false }}, title: {{ display: true, text: 'NVRP', color: '#d29922' }} }}
       }}
-    }}
+    }},
+    plugins: [{{
+      // NVRP threshold reference lines (1.3 edge, 1.0 break-even)
+      beforeDatasetsDraw(chart) {{
+        const y1 = chart.scales.y1;
+        if (!y1) return;
+        const ctx = chart.ctx;
+        const area = chart.chartArea;
+        ctx.save();
+        [[1.3, '#d29922', 'edge 1.3'], [1.0, '#8b949e', 'breakeven 1.0']].forEach(([v, col, lbl]) => {{
+          const y = y1.getPixelForValue(v);
+          if (y < area.top || y > area.bottom) return;
+          ctx.strokeStyle = col;
+          ctx.globalAlpha = 0.35;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(area.left, y);
+          ctx.lineTo(area.right, y);
+          ctx.stroke();
+          ctx.globalAlpha = 0.7;
+          ctx.setLineDash([]);
+          ctx.fillStyle = col;
+          ctx.font = '500 10px -apple-system,sans-serif';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(lbl, area.right - 4, y - 8);
+        }});
+        ctx.restore();
+      }},
+      // End-anchored labels
+      afterDatasetsDraw(chart) {{
+        const ctx = chart.ctx;
+        ctx.save();
+        chart.data.datasets.forEach((ds, i) => {{
+          const meta = chart.getDatasetMeta(i);
+          let lastIdx = -1;
+          for (let k = ds.data.length - 1; k >= 0; k--) {{
+            const v = ds.data[k];
+            if (v !== null && v !== undefined) {{ lastIdx = k; break; }}
+          }}
+          if (lastIdx < 0) return;
+          const pt = meta.data[lastIdx];
+          const val = ds.data[lastIdx];
+          ctx.fillStyle = ds.borderColor;
+          ctx.font = '600 11px -apple-system,sans-serif';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          const fmt = ds.label === 'NVRP' ? val.toFixed(2) : val.toFixed(1) + '%';
+          ctx.fillText(' ' + fmt, pt.x + 4, pt.y);
+        }});
+        ctx.restore();
+      }}
+    }}]
   }});
 }}
 if (window.Chart) initCharts();
