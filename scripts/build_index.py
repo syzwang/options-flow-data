@@ -22,23 +22,24 @@ def main():
             date, lang = m.group(1), m.group(2) or 'en'
             briefings[date][lang] = fn
 
-    rows = []
-    for date in sorted(briefings.keys(), reverse=True):
-        langs = briefings[date]
+    entries = []
+    for date, langs in briefings.items():
         links = []
         for lang_key, label in (('zh', '中文'), ('en', 'EN')):
             if lang_key in langs:
                 links.append(f'<a href="{langs[lang_key]}">{label}</a>')
-        rows.append(f'<tr><td>{date}</td><td><strong>Weekly Briefing</strong></td><td>{" · ".join(links)}</td></tr>')
-    for date in sorted(by_date.keys(), reverse=True):
-        tickers = by_date[date]
-        for ticker in sorted(tickers.keys()):
-            langs = tickers[ticker]
+        entries.append((date, 0, '', f'<tr><td>{date}</td><td><strong>Weekly Briefing</strong></td><td>{" · ".join(links)}</td></tr>'))
+    for date, tickers in by_date.items():
+        for ticker, langs in tickers.items():
             links = []
             for lang_key, label in (('zh', '中文'), ('en', 'EN')):
                 if lang_key in langs:
                     links.append(f'<a href="{langs[lang_key]}">{label}</a>')
-            rows.append(f'<tr><td>{date}</td><td>{ticker}</td><td>{" · ".join(links)}</td></tr>')
+            entries.append((date, 1, ticker, f'<tr><td>{date}</td><td>{ticker}</td><td>{" · ".join(links)}</td></tr>'))
+
+    entries.sort(key=lambda e: (e[1], e[2]))
+    entries.sort(key=lambda e: e[0], reverse=True)
+    rows = [e[3] for e in entries]
 
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Options Flow Dashboards</title>

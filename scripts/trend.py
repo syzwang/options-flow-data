@@ -677,6 +677,12 @@ ZH_REPLACEMENTS = [
     ("No persistent strikes above spot", "现价上方无持续放量行权价"),
     ("No persistent strikes below spot", "现价下方无持续放量行权价"),
     (">Spot $", ">现价 $"),
+    ("PUT Avg Vol · Active", "PUT 日均 · 活跃"),
+    ("CALL Avg Vol · Active", "CALL 日均 · 活跃"),
+    ("Strike · OTM", "行权价 · OTM"),
+    ("No strikes above spot", "现价上方无数据"),
+    ("No strikes below spot", "现价下方无数据"),
+    ("Spot</span>", "现价</span>"),
     ("<th style=\"text-align:left;\">Date</th>", "<th style=\"text-align:left;\">日期</th>"),
     ("<th>Next Spot</th>", "<th>次日价</th>"),
     ("<th>EM Range</th>", "<th>EM 区间</th>"),
@@ -1391,71 +1397,88 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         <div style="position:absolute;left:{spot_pos:.1f}%;top:16px;transform:translateX(-50%);color:#d29922;font-weight:500;white-space:nowrap;">▲ Spot ${spot_val:.2f}</div>
       </div>
     </div>"""
-    # Wall ladder: sort by strike desc, split at spot, bar scaled by avg_vol
-    wall_grid_cols = '60px 48px 1fr 116px'
+    # --- Unified strike axis for walls + OI delta sync ---
+    persist_by_strike = {}
+    for p in all_persist:
+        persist_by_strike.setdefault(p['strike'], {})[p['type']] = p
+    oi_by_strike = {}
+    if oi_latest:
+        for ch in oi_latest.get('changes', []):
+            oi_by_strike[ch['strike']] = ch
+
+    candidate_strikes = set(persist_by_strike) | set(oi_by_strike)
+    if spot_val > 0:
+        candidate_strikes = {s for s in candidate_strikes if abs(s - spot_val) / spot_val <= 0.25}
+    if len(candidate_strikes) > 25 and spot_val > 0:
+        candidate_strikes = set(sorted(candidate_strikes, key=lambda s: abs(s - spot_val))[:25])
+    unified_strikes = sorted(candidate_strikes, reverse=True)
+
+    # Wall table: use same <table> structure as OI Delta so row heights match exactly
     max_avg_vol = max(
         (p['total_volume'] / max(p['active_days'], 1) for p in all_persist),
         default=1,
     ) or 1
 
-    def _wall_row(item):
-        strike = item['strike']
+    def _wall_side_cell(item, side):
+        if not item:
+            dash = "<span style='color:#30363d;'>—</span>"
+            if side == 'left':
+                return f"<div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'>{dash}</div>"
+            return f"<div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'>{dash}</div>"
         color = '#3fb950' if item['type'] == 'CALL' else '#f85149'
         pct = item['active_days'] / item['total_days'] if item['total_days'] > 0 else 0
         avg_vol = int(item['total_volume'] / item['active_days']) if item['active_days'] > 0 else 0
+        opacity = 0.35 + 0.65 * pct
+        bar_w = max(4, int(avg_vol / max_avg_vol * 80))
+        bar = f"<div style='height:10px;width:{bar_w}px;background:{color};opacity:{opacity:.2f};border-radius:2px;'></div>"
+        metric = f"<span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>{avg_vol:,}/d <span style='color:#8b949e;'>· {item['active_days']}/{item['total_days']}</span></span>"
+        if side == 'left':
+            return f"<div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'>{metric}{bar}</div>"
+        return f"<div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'>{bar}{metric}</div>"
+
+    wall_rows_html = ""
+    wall_spot_divider_tr = (
+        f"<tr><td colspan='3' style='border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;"
+        f"background:#e6edf308;text-align:center;padding:4px 0;color:#e6edf3;font-weight:600;font-size:11px;'>"
+        f"Spot ${spot_val:.2f}</td></tr>"
+    )
+    prev_above_wall = None
+    for strike in unified_strikes:
+        info = persist_by_strike.get(strike, {})
+        above = strike > spot_val
+        if prev_above_wall is True and not above:
+            wall_rows_html += wall_spot_divider_tr
+        prev_above_wall = above
         otm_pct = abs(strike - spot_val) / spot_val * 100 if spot_val > 0 else 0
-        sign = '+' if strike > spot_val else '−'
-        bar_pct = avg_vol / max_avg_vol * 100
-        opacity = 0.35 + 0.65 * pct  # persistence modulates bar saturation
-        return (
-            f'<div style="display:grid;grid-template-columns:{wall_grid_cols};align-items:center;gap:10px;'
-            'padding:4px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;">'
-            f'<span style="color:{color};font-weight:500;">${strike:.0f}</span>'
-            f'<span style="color:#8b949e;font-size:11px;">{sign}{otm_pct:.1f}%</span>'
-            f'<div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;">'
-            f'<div style="background:{color};opacity:{opacity:.2f};height:100%;width:{bar_pct:.1f}%;"></div>'
-            f'</div>'
-            f'<span style="color:#e6edf3;text-align:right;font-size:11px;">{avg_vol:,}/d <span style="color:#8b949e;">· {item["active_days"]}/{item["total_days"]}</span></span>'
-            '</div>'
+        sign = '+' if above else '−' if strike < spot_val else '·'
+        otm_color = '#3fb950' if above else '#f85149' if strike < spot_val else '#8b949e'
+        strike_cell = (
+            f"<span style='color:#e6edf3;font-weight:500;'>${strike:.0f}</span> "
+            f"<span style='color:{otm_color};font-size:10px;opacity:0.8;'>{sign}{otm_pct:.1f}%</span>"
+        )
+        wall_rows_html += (
+            f"<tr>"
+            f"<td style='width:45%;'>{_wall_side_cell(info.get('PUT'), 'left')}</td>"
+            f"<td style='text-align:center;width:10%;white-space:nowrap;'>{strike_cell}</td>"
+            f"<td style='width:45%;'>{_wall_side_cell(info.get('CALL'), 'right')}</td>"
+            f"</tr>"
         )
 
-    above_rows = ''.join(_wall_row(p) for p in all_persist if p['strike'] > spot_val)
-    below_rows = ''.join(_wall_row(p) for p in all_persist if p['strike'] <= spot_val)
-    if not above_rows:
-        above_rows = '<div style="color:#8b949e;font-size:11px;padding:4px 0;">No persistent strikes above spot</div>'
-    if not below_rows:
-        below_rows = '<div style="color:#8b949e;font-size:11px;padding:4px 0;">No persistent strikes below spot</div>'
-
-    wall_spot_divider = (
-        f'<div style="display:grid;grid-template-columns:{wall_grid_cols};align-items:center;gap:10px;'
-        'margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;'
-        'background:#e6edf308;">'
-        f'<span style="color:#e6edf3;font-weight:600;font-size:12px;">${spot_val:.2f}</span>'
-        '<span style="color:#8b949e;font-size:10px;">Spot</span>'
-        '<div></div><div></div></div>'
-    )
-
-    wall_ladder_html = f"""
-<div style="margin-top:8px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
-    <span>Strike · OTM</span><span style="color:#3fb950;">▲ ABOVE SPOT</span><span>Avg Vol · Active</span>
-  </div>
-  {above_rows}
-  {wall_spot_divider}
-  {below_rows}
-  <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
-    <span>&nbsp;</span><span style="color:#f85149;">▼ BELOW SPOT</span><span>&nbsp;</span>
-  </div>
-</div>"""
-
-    # OI delta table — diverging bars: put left, strike center, call right
+    # OI delta table — same unified strike axis, diverging bars (put left, strike center, call right)
     oi_rows = ""
     if oi_latest:
         spot = oi_latest.get('spot', 0)
-        changes_sorted = sorted(oi_latest['changes'][:25], key=lambda x: x['strike'], reverse=True)
-        max_abs = max((max(abs(ch['call_oi_delta']), abs(ch['put_oi_delta'])) for ch in changes_sorted), default=1) or 1
+        max_abs = max(
+            (max(abs(ch['call_oi_delta']), abs(ch['put_oi_delta'])) for ch in oi_by_strike.values()),
+            default=1,
+        ) or 1
 
-        def _oi_cell(delta, side):
+        def _oi_cell(delta, side, missing=False):
+            if missing:
+                dash = "<span style='color:#30363d;'>—</span>"
+                if side == 'left':
+                    return f"<div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'>{dash}</div>"
+                return f"<div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'>{dash}</div>"
             color = '#3fb950' if delta > 0 else '#f85149' if delta < 0 else '#8b949e'
             if delta == 0:
                 num = "<span style='color:#8b949e;'>0</span>"
@@ -1475,20 +1498,32 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             f"background:#e6edf308;text-align:center;padding:4px 0;color:#e6edf3;font-weight:600;font-size:11px;'>"
             f"Spot ${spot:.2f}</td></tr>"
         )
-        for ch in changes_sorted:
-            c_delta = int(ch['call_oi_delta'])
-            p_delta = int(ch['put_oi_delta'])
-            strike_val = ch['strike']
+        for strike_val in unified_strikes:
+            ch = oi_by_strike.get(strike_val)
             above = strike_val > spot
             if prev_above is True and not above:
                 oi_rows += spot_divider_tr
             prev_above = above
-            strike_label = f"<span style='color:#e6edf3;font-weight:500;'>${strike_val:.0f}</span>"
+            if ch:
+                c_delta = int(ch['call_oi_delta'])
+                p_delta = int(ch['put_oi_delta'])
+                put_cell = _oi_cell(p_delta, 'left')
+                call_cell = _oi_cell(c_delta, 'right')
+            else:
+                put_cell = _oi_cell(0, 'left', missing=True)
+                call_cell = _oi_cell(0, 'right', missing=True)
+            otm_pct = abs(strike_val - spot) / spot * 100 if spot > 0 else 0
+            sign = '+' if above else '−' if strike_val < spot else '·'
+            otm_color = '#3fb950' if above else '#f85149' if strike_val < spot else '#8b949e'
+            strike_label = (
+                f"<span style='color:#e6edf3;font-weight:500;'>${strike_val:.0f}</span> "
+                f"<span style='color:{otm_color};font-size:10px;opacity:0.8;'>{sign}{otm_pct:.1f}%</span>"
+            )
             oi_rows += (
                 f"<tr>"
-                f"<td style='width:45%;'>{_oi_cell(p_delta, 'left')}</td>"
-                f"<td style='text-align:center;width:10%;'>{strike_label}</td>"
-                f"<td style='width:45%;'>{_oi_cell(c_delta, 'right')}</td>"
+                f"<td style='width:45%;'>{put_cell}</td>"
+                f"<td style='text-align:center;width:10%;white-space:nowrap;'>{strike_label}</td>"
+                f"<td style='width:45%;'>{call_cell}</td>"
                 f"</tr>"
             )
 
@@ -1647,7 +1682,6 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             f"<span style='color:#8b949e;'>${spot:.2f}</span>"
             f" <span style='color:#8b949e;'>→</span> "
             f"<span style='color:{dir_color};font-weight:500;'>${actual:.2f}</span>"
-            f"<div style='font-size:10px;color:{dir_color};'>{direction} {e['actual_move_pct']:.1f}%</div>"
             f"</div>"
         )
 
@@ -1661,21 +1695,31 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         spot_pct = _pct(spot)
         actual_pct = _pct(actual)
         ratio_color = color if e['move_vs_em'] > 1.0 else '#8b949e'
+        signed_pct = (move_signed / spot * 100) if spot > 0 else 0
+        move_pct_str = f"{signed_pct:+.1f}%"
+        # Label anchored to nearest edge: left half → left side, right half → right side
+        if actual_pct < 50:
+            label_pos_style = "left:5px;"
+        else:
+            label_pos_style = "right:5px;"
         bar_html = (
+            "<div>"
+            # Label row above bar, pinned to nearest edge
+            f"<div style='position:relative;height:12px;'>"
+            f"<div style='position:absolute;{label_pos_style}"
+            f"font-size:10px;color:{color};font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>{move_pct_str}</div>"
+            "</div>"
+            # Bar itself
             "<div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'>"
-            # EM green-tinted zone with boundary ticks
             f"<div style='position:absolute;left:{em_lo_pct:.1f}%;width:{em_hi_pct-em_lo_pct:.1f}%;"
             f"top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div>"
-            # Spot line (dashed gray)
             f"<div style='position:absolute;left:{spot_pct:.1f}%;top:1px;bottom:1px;width:1px;"
             f"background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div>"
-            # Actual marker (solid colored pill)
             f"<div style='position:absolute;left:{actual_pct:.1f}%;top:3px;width:4px;height:14px;"
             f"background:{color};border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div>"
-            # Left label: EM envelope width
             f"<div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±{e['em_pct']:.1f}%</div>"
-            # Right label: ratio
             f"<div style='position:absolute;right:5px;top:3px;font-size:10px;color:{ratio_color};font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>{e['move_vs_em']:.2f}x</div>"
+            "</div>"
             "</div>"
         )
 
@@ -2109,7 +2153,7 @@ th:first-child, td:first-child {{ text-align:left; }}
     </div>
     <div class="tbl-wrap">
     <table>
-      <tr><th style="text-align:right;">Put OI Δ</th><th style="text-align:center;">Strike</th><th style="text-align:left;">Call OI Δ</th></tr>
+      <tr><th style="text-align:right;">Put OI Δ</th><th style="text-align:center;">Strike · OTM</th><th style="text-align:left;">Call OI Δ</th></tr>
       {oi_rows if oi_rows else '<tr><td colspan="3" style="color:#8b949e;text-align:center;">Need 2+ snapshots</td></tr>'}
     </table>
     </div>
@@ -2138,7 +2182,12 @@ th:first-child, td:first-child {{ text-align:left; }}
       </div>
     </details>
     </div>
-    {wall_ladder_html if all_persist else '<div style="color:#8b949e;font-size:12px;text-align:center;padding:12px;">Need 2+ snapshots</div>'}
+    <div class="tbl-wrap">
+    <table>
+      <tr><th style="text-align:right;color:#f85149;">PUT Avg Vol · Active</th><th style="text-align:center;">Strike · OTM</th><th style="text-align:left;color:#3fb950;">CALL Avg Vol · Active</th></tr>
+      {wall_rows_html if all_persist and wall_rows_html else '<tr><td colspan="3" style="color:#8b949e;text-align:center;">Need 2+ snapshots</td></tr>'}
+    </table>
+    </div>
   </div>
 </div>
 
