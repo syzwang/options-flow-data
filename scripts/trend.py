@@ -16,7 +16,7 @@ Loads daily snapshots and computes:
 
 Saves: ~/options_portfolio/flow_snapshots/trend-TICKER.json
 """
-import os, sys, json, glob, argparse, warnings, subprocess
+import os, sys, json, glob, argparse, warnings, subprocess, re
 from datetime import datetime, timedelta
 
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "yfinance", "numpy", "pandas"])
@@ -570,10 +570,17 @@ def em_accuracy(snapshots):
 
 
 def iv_trend(snapshots):
-    """Track ATM IV and RV30 across days."""
+    """Track ATM IV and RV30 across days.
+
+    Front IV: first expiry with DTE >= 5 — avoids 0/1-DTE collapse at expiration
+    (e.g., Friday-close 0DTE has near-zero IV which is pathological, not signal).
+    Falls back to first available term if no DTE>=5 entry exists.
+    """
     points = []
     for snap in snapshots:
-        front_iv = snap['term'][0]['atm_iv'] if snap.get('term') else 0
+        terms = snap.get('term', [])
+        front_term = next((t for t in terms if t.get('dte', 0) >= 5), terms[0] if terms else None)
+        front_iv = front_term['atm_iv'] if front_term else 0
         points.append({
             'date': snap['date'],
             'spot': snap['spot'],
@@ -642,9 +649,53 @@ ZH_REPLACEMENTS = [
     (">Flow Trend Analysis</h1>", ">期权流向分析</h1>"),
     (">Dealer Gamma Exposure (GEX) Walls</h2>", ">做市商 Gamma 墙（GEX）</h2>"),
     (">BTC Context (MSTR = BTC-levered proxy)</h2>", ">BTC 背景（MSTR = BTC 杠杆代理）</h2>"),
+    (">mNAV (MSTR Premium to BTC NAV)</h2>", ">mNAV（MSTR 相对 BTC 净值溢价）</h2>"),
+    ("Premium MSTR trades at vs the underlying BTC stash. <b style=\"color:#e6edf3;\">Simple</b> = MarketCap / BTC reserve. <b style=\"color:#e6edf3;\">EV-based</b> = (MC + debt + pref − cash) / BTC reserve (matches strategy.com). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x.",
+     "MSTR 相对其 BTC 储备的溢价。<b style=\"color:#e6edf3;\">简易</b> = 市值 / BTC 储备价值。<b style=\"color:#e6edf3;\">企业价值口径</b> = (市值 + 债务 + 优先股 − 现金) / BTC 储备价值（与 strategy.com 口径一致）。便宜 &lt; 1.2x · 正常 1.2–1.8x · 偏贵 &gt; 1.8x。"),
+    ("· source: strategy.com", "· 数据来源：strategy.com"),
+    (">Simple mNAV</div>", ">简易 mNAV</div>"),
+    (">EV-based mNAV</div>", ">企业价值口径 mNAV</div>"),
+    (">Verdict</div>", ">判定</div>"),
+    (">BTC Held</div>", ">BTC 持仓</div>"),
+    (">BTC Reserve</div>", ">BTC 储备价值</div>"),
+    (">Market Cap</div>", ">市值</div>"),
+    (">Cheap</div>", ">便宜</div>"),
+    (">Normal</div>", ">正常</div>"),
+    (">Expensive</div>", ">偏贵</div>"),
+    ("Holdings as of ", "持仓数据日期 "),
     (">Zero-Crossing Alerts (P/C Spread)</h2>", ">零轴穿越预警（P/C 偏度）</h2>"),
     (">Delta-25 Put/Call IV Spread (by expiration bucket)</h2>", ">Delta-25 Put/Call IV 偏度（按到期分桶）</h2>"),
     (">ATM IV vs RV30 Trend</h2>", ">ATM IV vs RV30 趋势</h2>"),
+    (">IV Term Structure (ATM IV by DTE)</h2>", ">IV 期限结构（ATM IV 按 DTE）</h2>"),
+    ("Slope across the IV curve.", "IV 曲线斜率。"),
+    ("(rising IV with DTE) = normal/complacent.", "（IV 随 DTE 上升）= 正常/松懈。"),
+    ("(falling) = market pricing immediate event risk. Use Front−Far &gt;5 pts as stress threshold.",
+     "（下降）= 市场在定价短期事件风险。Front−Far &gt;5 pts 视为压力阈值。"),
+    ("<b>Backwardation</b>", "<b>倒挂（Backwardation）</b>"),
+    ("<b>Mild backwardation</b>", "<b>轻度倒挂</b>"),
+    ("<b>Steep contango</b>", "<b>陡峭正向（Contango）</b>"),
+    ("<b>Normal contango</b>", "<b>正常正向</b>"),
+    ("<b>Flat term structure</b>", "<b>平坦期限结构</b>"),
+    ("Front (≤7d)", "前周 (≤7天)"),
+    ("2W (8-14d)", "2周 (8-14天)"),
+    ("1M (15-35d)", "1月 (15-35天)"),
+    ("2M (36-70d)", "2月 (36-70天)"),
+    ("Far (>70d)", "远期 (>70天)"),
+    ("— Front IV (", "— 前周 IV ("),
+    ("%) above Far (", "%) 高于远期 ("),
+    ("%) well below Far (", "%) 远低于远期 ("),
+    ("%) by ", "%)，差值 "),
+    (" pts. Market pricing near-term event/risk; far-dated options relatively 'cheap'.",
+     " pts。市场定价短期事件/风险；远期合约相对便宜。"),
+    ("— Front IV slightly above Far (", "— 前周 IV 略高于远期 ("),
+    (" pts). Some near-term anxiety; not yet stress regime.", " pts）。短期有些紧张，但未达压力区。"),
+    (" pts. Market complacent now, pricing uncertainty over time. Front puts may be cheap insurance.",
+     " pts。市场目前松懈，长期才定价不确定性。前周 puts 可能是便宜的保险。"),
+    ("— Front below Far (", "— 前周低于远期 ("),
+    (" pts). Healthy term structure; nothing imminent priced in.",
+     " pts）。期限结构健康；无短期事件被定价。"),
+    ("— IV roughly uniform across DTE (", "— IV 在各 DTE 大致均匀 ("),
+    (" pts). Neither stress nor complacency.", " pts）。既无压力也无松懈。"),
     ("Position Changes (OI Delta)", "持仓变动（OI Delta）"),
     (">Persistent Volume Strikes — Call Wall / Put Wall Detection</h2>", ">持续放量行权价 — Call/Put Wall 识别</h2>"),
     (">Expected Move Accuracy (backtest)</h2>", ">Expected Move 准确性（回测）</h2>"),
@@ -1079,6 +1130,16 @@ def _mode_banner(mode):
 
 def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     """Generate an interactive trend dashboard."""
+    # Nav: derive date from output filename, build cross-links
+    fname = os.path.basename(output_path)
+    m = re.search(r'(\d{4}-\d{2}-\d{2})', fname)
+    report_date = m.group(1) if m else datetime.now().strftime('%Y-%m-%d')
+    lang_suffix = '_zh' if lang == 'zh' else ''
+    if lang == 'zh':
+        nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = '概览', '偏度', '期限', '墙'
+    else:
+        nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = 'KPIs', 'Skew', 'Term', 'Walls'
+
     pc = trend_data['pc_spread_series']
     crossings = trend_data['zero_crossings']
     iv = trend_data['iv_trend']
@@ -1090,6 +1151,16 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     call_dte = trend_data.get('call_dte_ratio')
     gex_data = trend_data.get('gex_walls')
     btc_data = trend_data.get('btc_context')
+
+    # Load MSTR BTC holdings (only used for mNAV card; missing file is non-fatal)
+    holdings = None
+    if ticker == 'MSTR':
+        holdings_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'mstr_holdings.json')
+        try:
+            with open(holdings_path) as _hf:
+                holdings = json.load(_hf)
+        except (FileNotFoundError, json.JSONDecodeError):
+            holdings = None
 
     if mode == 'auto':
         mode = _detect_mode()
@@ -1790,6 +1861,68 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     <span style="margin-right:6px;">{nv_icon}</span><span style="color:{nv_text};">{nv_msg}</span>{pct_str}
   </div>"""
 
+    # --- IV Term Structure: latest ATM IV per bucket ---
+    term_html = ""
+    term_struct = {}
+    if pc:
+        ts_dates = {p['date'] for bucket_data in pc.values() for p in bucket_data}
+        if ts_dates:
+            latest_term_date = max(ts_dates)
+            for bucket in ['front', '2w', '1m', '2m', 'far']:
+                if bucket not in pc:
+                    continue
+                # Exclude 0/1-DTE (pathological IV at expiration); keep DTE>=2
+                ivs = [p['atm_iv'] for p in pc[bucket]
+                       if p['date'] == latest_term_date and p.get('atm_iv', 0) > 0
+                       and p.get('dte', 0) >= 2]
+                if ivs:
+                    term_struct[bucket] = sum(ivs) / len(ivs)
+
+    if len(term_struct) >= 2:
+        bucket_labels = {'front': 'Front (≤7d)', '2w': '2W (8-14d)', '1m': '1M (15-35d)', '2m': '2M (36-70d)', 'far': 'Far (>70d)'}
+        max_iv = max(term_struct.values())
+        front_iv_ts = term_struct.get('front', 0)
+        far_iv_ts = (term_struct.get('2m') or term_struct.get('far')
+                     or term_struct.get('1m') or term_struct.get('2w') or front_iv_ts)
+        slope = front_iv_ts - far_iv_ts  # >0 backwardation, <0 contango
+
+        if slope > 5:
+            ts_color, ts_icon, ts_msg = '#f85149', '🔥', f"<b>Backwardation</b> — Front IV ({front_iv_ts:.1f}%) above Far ({far_iv_ts:.1f}%) by {slope:+.1f} pts. Market pricing near-term event/risk; far-dated options relatively 'cheap'."
+        elif slope > 1:
+            ts_color, ts_icon, ts_msg = '#d29922', '⚠️', f"<b>Mild backwardation</b> — Front IV slightly above Far ({slope:+.1f} pts). Some near-term anxiety; not yet stress regime."
+        elif slope < -5:
+            ts_color, ts_icon, ts_msg = '#3fb950', '✓', f"<b>Steep contango</b> — Front IV ({front_iv_ts:.1f}%) well below Far ({far_iv_ts:.1f}%) by {slope:+.1f} pts. Market complacent now, pricing uncertainty over time. Front puts may be cheap insurance."
+        elif slope < -1:
+            ts_color, ts_icon, ts_msg = '#7ee787', '✓', f"<b>Normal contango</b> — Front below Far ({slope:+.1f} pts). Healthy term structure; nothing imminent priced in."
+        else:
+            ts_color, ts_icon, ts_msg = '#8b949e', '·', f"<b>Flat term structure</b> — IV roughly uniform across DTE ({slope:+.1f} pts). Neither stress nor complacency."
+
+        bar_rows = ""
+        for bucket in ['front', '2w', '1m', '2m', 'far']:
+            if bucket not in term_struct:
+                continue
+            iv_val = term_struct[bucket]
+            bar_w = int(iv_val / max_iv * 100) if max_iv > 0 else 0
+            bar_rows += (
+                f"<div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'>"
+                f"<div style='color:#e6edf3;font-weight:500;'>{bucket_labels[bucket]}</div>"
+                f"<div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>{iv_val:.1f}%</div>"
+                f"<div><div style='height:14px;width:{bar_w}%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div>"
+                f"</div>"
+            )
+
+        term_html = f"""
+<div class="card" id="term">
+  <h2>IV Term Structure (ATM IV by DTE)</h2>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;line-height:1.6;">
+    Slope across the IV curve. <b style="color:#3fb950;">Contango</b> (rising IV with DTE) = normal/complacent. <b style="color:#f85149;">Backwardation</b> (falling) = market pricing immediate event risk. Use Front−Far &gt;5 pts as stress threshold.
+  </div>
+  <div style="margin:8px 0;padding:10px 12px;border-left:3px solid {ts_color};background:{ts_color}11;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">{ts_icon}</span><span style="color:{ts_color};">{ts_msg}</span>
+  </div>
+  <div style="margin-top:10px;">{bar_rows}</div>
+</div>"""
+
     # Auto-generated current-state insight
     spread_insight = ""
     if latest_spread_vals:
@@ -1923,7 +2056,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         )
 
         gex_card_html = f"""
-<div class="card">
+<div class="card" id="gex">
   <h2>Dealer Gamma Exposure (GEX) Walls</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
     Strikes ranked by <b style="color:#e6edf3;">Σ (gamma × OI × 100)</b> across all expirations — measures where <b style="color:#e6edf3;">dealer hedging flow</b> concentrates. More accurate than volume-weighted walls for identifying actual resistance/support.
@@ -1985,7 +2118,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   </div>"""
 
         btc_card_html = f"""
-<div class="card">
+<div class="card" id="btc">
   <h2>BTC Context (MSTR = BTC-levered proxy)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
     MSTR's ~{beta_str} beta to BTC means you must evaluate MSTR flow <b style="color:#e6edf3;">relative to BTC</b>. Bullish MSTR options on a flat-BTC day = premium (historically fades). BTC ripping but MSTR calm = discount (historically catches up).
@@ -2019,31 +2152,127 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   {div_html}
 </div>"""
 
+    # --- mNAV card (MSTR only) ---
+    mnav_card_html = ""
+    if ticker == 'MSTR' and holdings and btc_data:
+        spot = current.get('spot') or 0
+        btc_price = btc_data.get('btc_price') or 0
+        shares = holdings.get('basic_shares_outstanding') or 0
+        btc_held = holdings.get('btc_holdings') or 0
+        debt = holdings.get('debt') or 0
+        pref = holdings.get('pref') or 0
+        cash = holdings.get('cash') or 0
+        as_of = holdings.get('as_of_date', '')
+        mc = spot * shares
+        btc_reserve = btc_held * btc_price
+        if btc_reserve > 0:
+            simple_mnav = mc / btc_reserve
+            ev = mc + debt + pref - cash
+            ev_mnav = ev / btc_reserve
+
+            def _verdict(x):
+                if x < 1.2:
+                    return ('cheap', '#3fb950', 'Cheap')
+                if x <= 1.8:
+                    return ('normal', '#d29922', 'Normal')
+                return ('expensive', '#f85149', 'Expensive')
+            tag, color, label = _verdict(simple_mnav)
+            mnav_card_html = f"""
+<div class="card" id="mnav">
+  <h2>mNAV (MSTR Premium to BTC NAV)</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    Premium MSTR trades at vs the underlying BTC stash. <b style="color:#e6edf3;">Simple</b> = MarketCap / BTC reserve. <b style="color:#e6edf3;">EV-based</b> = (MC + debt + pref − cash) / BTC reserve (matches strategy.com). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x.
+  </div>
+  <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+    <div class="kpi">
+      <div class="kpi-label">Simple mNAV</div>
+      <div class="kpi-value" style="color:{color};">{simple_mnav:.2f}x</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">EV-based mNAV</div>
+      <div class="kpi-value">{ev_mnav:.2f}x</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Verdict</div>
+      <div class="kpi-value" style="color:{color};">{label}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC Held</div>
+      <div class="kpi-value">{btc_held:,}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC Reserve</div>
+      <div class="kpi-value">${btc_reserve/1e9:.1f}B</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Market Cap</div>
+      <div class="kpi-value">${mc/1e9:.1f}B</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of {as_of} · source: strategy.com</div>
+</div>"""
+
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>{ticker} Flow Trend</title>
 <style>
-body {{ background:#0f1117; color:#e6edf3; font-family:-apple-system,sans-serif; margin:0; padding:20px; }}
+body {{ background:#000; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,sans-serif; font-feature-settings:"tnum" 1,"cv11" 1; margin:0; padding:20px; }}
 .header {{ display:flex; align-items:center; gap:16px; margin-bottom:20px; }}
-.header h1 {{ margin:0; font-size:24px; font-weight:500; }}
+.header h1 {{ margin:0; font-size:24px; font-weight:500; letter-spacing:-0.01em; }}
 .badge {{ padding:4px 12px; border-radius:12px; font-size:13px; font-weight:500; }}
-.card {{ background:#161b22; border:1px solid #30363d; border-radius:12px; padding:20px; margin-bottom:16px; }}
-.card h2 {{ margin:0 0 12px; font-size:16px; font-weight:500; color:#8b949e; }}
-.grid {{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }}
+.card {{ background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:20px; margin-bottom:16px; box-shadow:0 1px 0 rgba(255,255,255,0.04) inset; }}
+.card h2 {{ margin:0 0 12px; font-size:16px; font-weight:500; color:#8b949e; letter-spacing:-0.005em; }}
+.grid {{ display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; gap:16px; }}
+.grid > .card {{ display:grid; grid-row:span 2; grid-template-rows:subgrid; gap:0; }}
 .kpi-row {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:16px; }}
-.kpi {{ background:#161b22; border:1px solid #30363d; border-radius:8px; padding:12px 16px; text-align:center; }}
+.kpi {{ background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 16px; text-align:center; }}
 .kpi-label {{ font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }}
-.kpi-value {{ font-size:22px; font-weight:500; margin-top:4px; }}
-table {{ width:100%; border-collapse:collapse; font-size:13px; }}
+.kpi-value {{ font-size:22px; font-weight:500; margin-top:4px; font-variant-numeric:tabular-nums; }}
+table {{ width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }}
 th {{ color:#8b949e; font-weight:500; text-align:right; padding:6px 10px; border-bottom:1px solid #30363d; }}
-td {{ padding:6px 10px; text-align:right; border-bottom:1px solid #21262d; }}
+td {{ padding:6px 10px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.04); }}
+tbody tr:nth-child(even) td {{ background:rgba(255,255,255,0.015); }}
 th:first-child, td:first-child {{ text-align:left; }}
 .chart-wrap {{ position:relative; height:280px; }}
 .chart-wrap-tall {{ position:relative; height:420px; }}
 .card-head {{ min-height:270px; }}
 .tbl-wrap {{ max-height:400px; overflow-y:auto; }}
+.sync-tbl td {{ height:30px; box-sizing:border-box; }}
+.sync-tbl tr td[colspan="3"] {{ height:auto; }}
 .zero-line {{ color:#f85149; font-size:11px; }}
+.topnav {{ position:sticky; top:0; z-index:100; background:rgba(0,0,0,0.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); display:flex; gap:14px; padding:10px 20px; margin:-20px -20px 16px; border-bottom:1px solid rgba(255,255,255,0.06); font-size:13px; align-items:center; }}
+.topnav a {{ color:#8b949e; text-decoration:none; padding:4px 10px; border-radius:6px; transition:background 0.12s,color 0.12s; }}
+.topnav a:hover {{ color:#e6edf3; background:rgba(255,255,255,0.06); }}
+.topnav a.active {{ color:#e6edf3; background:rgba(88,166,255,0.18); }}
+.nav-center {{ display:flex; gap:2px; flex:1; flex-wrap:wrap; justify-content:center; }}
+.nav-left, .nav-right {{ display:flex; gap:4px; align-items:center; }}
+.nav-divider {{ color:#30363d; }}
+.card {{ scroll-margin-top:64px; }}
+.kpi-row {{ scroll-margin-top:64px; }}
 </style>
 </head><body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="trend_MSTR_{report_date}{lang_suffix}.html" class="{'active' if ticker == 'MSTR' else ''}">MSTR</a>
+    <a href="trend_TSLA_{report_date}{lang_suffix}.html" class="{'active' if ticker == 'TSLA' else ''}">TSLA</a>
+  </div>
+  <div class="nav-center">
+    <a href="#kpis">{nav_lbl_kpi}</a>
+    <a href="#btc">BTC</a>
+    {('<a href="#mnav">mNAV</a>' if ticker == 'MSTR' else '')}
+    <a href="#spread">{nav_lbl_skew}</a>
+    <a href="#iv">IV</a>
+    <a href="#term">{nav_lbl_term}</a>
+    <a href="#gex">GEX</a>
+    <a href="#oi">OI</a>
+    <a href="#walls">{nav_lbl_walls}</a>
+    <a href="#em">EM</a>
+  </div>
+  <div class="nav-right">
+    <a href="trend_{ticker}_{report_date}.html" class="{'active' if lang == 'en' else ''}">EN</a>
+    <a href="trend_{ticker}_{report_date}_zh.html" class="{'active' if lang == 'zh' else ''}">中文</a>
+  </div>
+</nav>
 
 <div class="header">
   <h1>{ticker} Flow Trend Analysis</h1>
@@ -2052,7 +2281,7 @@ th:first-child, td:first-child {{ text-align:left; }}
 </div>
 
 <!-- KPI Row -->
-<div class="kpi-row">
+<div class="kpi-row" id="kpis">
   <div class="kpi">
     <div class="kpi-label">Spot</div>
     <div class="kpi-value">${current.get('spot', 0):.2f}</div>
@@ -2083,6 +2312,8 @@ th:first-child, td:first-child {{ text-align:left; }}
 
 {btc_card_html}
 
+{mnav_card_html}
+
 <!-- Zero-Crossing Alerts -->
 <div class="card">
   <h2>Zero-Crossing Alerts (P/C Spread)</h2>
@@ -2093,7 +2324,7 @@ th:first-child, td:first-child {{ text-align:left; }}
 </div>
 
 <!-- P/C Spread Time Series (full width) -->
-<div class="card">
+<div class="card" id="spread">
   <h2>Delta-25 Put/Call IV Spread (by expiration bucket)</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
     <b style="color:#e6edf3;">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (speculative FOMO).
@@ -2111,7 +2342,7 @@ th:first-child, td:first-child {{ text-align:left; }}
 </div>
 
 <!-- IV + NVRP Trend -->
-<div class="card">
+<div class="card" id="iv">
   <h2>ATM IV vs RV30 Trend</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
     <b style="color:#e6edf3;">NVRP = ATM IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.
@@ -2120,11 +2351,13 @@ th:first-child, td:first-child {{ text-align:left; }}
   <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
 </div>
 
+{term_html}
+
 {gex_card_html}
 
 <div class="grid">
   <!-- OI Delta -->
-  <div class="card">
+  <div class="card" id="oi">
     <div class="card-head">
     <h2>Position Changes (OI Delta){' — ' + oi_latest['prev_date'] + ' → ' + oi_latest['date'] if oi_latest else ''}</h2>
     <div style="font-size:12px;color:#e6edf3;margin-bottom:6px;">
@@ -2152,7 +2385,7 @@ th:first-child, td:first-child {{ text-align:left; }}
     </details>
     </div>
     <div class="tbl-wrap">
-    <table>
+    <table class="sync-tbl">
       <tr><th style="text-align:right;">Put OI Δ</th><th style="text-align:center;">Strike · OTM</th><th style="text-align:left;">Call OI Δ</th></tr>
       {oi_rows if oi_rows else '<tr><td colspan="3" style="color:#8b949e;text-align:center;">Need 2+ snapshots</td></tr>'}
     </table>
@@ -2160,7 +2393,7 @@ th:first-child, td:first-child {{ text-align:left; }}
   </div>
 
   <!-- Volume Persistence -->
-  <div class="card">
+  <div class="card" id="walls">
     <div class="card-head">
     <h2>Persistent Volume Strikes — Call Wall / Put Wall Detection</h2>
     <div style="font-size:12px;color:#e6edf3;line-height:1.6;margin-bottom:6px;">
@@ -2183,7 +2416,7 @@ th:first-child, td:first-child {{ text-align:left; }}
     </details>
     </div>
     <div class="tbl-wrap">
-    <table>
+    <table class="sync-tbl">
       <tr><th style="text-align:right;color:#f85149;">PUT Avg Vol · Active</th><th style="text-align:center;">Strike · OTM</th><th style="text-align:left;color:#3fb950;">CALL Avg Vol · Active</th></tr>
       {wall_rows_html if all_persist and wall_rows_html else '<tr><td colspan="3" style="color:#8b949e;text-align:center;">Need 2+ snapshots</td></tr>'}
     </table>
@@ -2192,7 +2425,7 @@ th:first-child, td:first-child {{ text-align:left; }}
 </div>
 
 <!-- EM Accuracy -->
-<div class="card">
+<div class="card" id="em">
   <h2>Expected Move Accuracy (backtest)</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">
     Did the front-month Expected Move correctly contain the next day's price? EM scaled by √(calendar days) for weekend gaps. <b>Actual/EM</b> ratio: 1.0 = perfect, &lt;1 = EM over-predicts, &gt;1 = under-predicts.
@@ -2250,6 +2483,7 @@ function initCharts() {{
     options: {{
       responsive: true, maintainAspectRatio: false,
       interaction: {{ mode: 'index', intersect: false }},
+      layout: {{ padding: {{ right: 44 }} }},
       plugins: {{
         legend: {{ display: false }},
         tooltip: {{
@@ -2273,7 +2507,7 @@ function initCharts() {{
         y: {{
           position: 'left',
           ticks: {{ color: '#8b949e', font: {{ size: 11 }}, callback: v => (v > 0 ? '+' : '') + v }},
-          grid: {{ color: '#21262d' }},
+          grid: {{ color: 'rgba(255,255,255,0.05)' }},
           title: {{ display: true, text: 'P/C IV Spread (pts)', color: '#8b949e', font: {{ size: 12 }} }}
         }},
         ySpot: {{
@@ -2312,10 +2546,11 @@ function initCharts() {{
         ctx.fillText('ZERO — call skew below this line', area.left + 6, yZero - 6);
         ctx.restore();
       }},
-      // Data labels: show only at the last non-null point of each series (end-anchored)
+      // Data labels: end-anchored, with anti-overlap (sort by y, push labels apart)
       afterDatasetsDraw(chart) {{
         const ctx = chart.ctx;
-        ctx.save();
+        const area = chart.chartArea;
+        const labels = [];
         chart.data.datasets.forEach((ds, i) => {{
           if (ds.label === 'Spot') return;
           const meta = chart.getDatasetMeta(i);
@@ -2327,12 +2562,24 @@ function initCharts() {{
           if (lastIdx < 0) return;
           const pt = meta.data[lastIdx];
           const val = ds.data[lastIdx];
-          ctx.fillStyle = ds.borderColor;
-          ctx.font = '600 11px -apple-system,sans-serif';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(' ' + (val > 0 ? '+' : '') + parseFloat(val).toFixed(1), pt.x + 4, pt.y);
+          labels.push({{ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: (val > 0 ? '+' : '') + parseFloat(val).toFixed(1) }});
         }});
+        // Anti-collision: sort by y, enforce min spacing
+        labels.sort((a, b) => a.y - b.y);
+        const minGap = 14;
+        for (let i = 1; i < labels.length; i++) {{
+          if (labels[i].y - labels[i-1].y < minGap) labels[i].y = labels[i-1].y + minGap;
+        }}
+        // Clamp to chart area
+        for (const l of labels) l.y = Math.max(area.top + 6, Math.min(area.bottom - 6, l.y));
+        ctx.save();
+        ctx.font = '600 11px -apple-system,sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        for (const l of labels) {{
+          ctx.fillStyle = l.color;
+          ctx.fillText(l.text, l.x, l.y);
+        }}
         ctx.restore();
       }}
     }}]
@@ -2353,10 +2600,11 @@ function initCharts() {{
     options: {{
       responsive: true, maintainAspectRatio: false,
       interaction: {{ mode: 'index', intersect: false }},
+      layout: {{ padding: {{ right: 44 }} }},
       plugins: {{ legend: {{ position: 'top', labels: {{ color: '#8b949e', font: {{ size: 11 }} }} }} }},
       scales: {{
         x: {{ ticks: {{ color: '#8b949e', font: {{ size: 10 }} }}, grid: {{ display: false }} }},
-        y: {{ position: 'left', ticks: {{ color: '#8b949e' }}, grid: {{ color: '#21262d' }}, title: {{ display: true, text: 'IV / RV (%)', color: '#8b949e' }} }},
+        y: {{ position: 'left', ticks: {{ color: '#8b949e' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }}, title: {{ display: true, text: 'IV / RV (%)', color: '#8b949e' }} }},
         y1: {{ position: 'right', ticks: {{ color: '#d29922' }}, grid: {{ display: false }}, title: {{ display: true, text: 'NVRP', color: '#d29922' }} }}
       }}
     }},
@@ -2389,10 +2637,11 @@ function initCharts() {{
         }});
         ctx.restore();
       }},
-      // End-anchored labels
+      // End-anchored labels with anti-overlap
       afterDatasetsDraw(chart) {{
         const ctx = chart.ctx;
-        ctx.save();
+        const area = chart.chartArea;
+        const labels = [];
         chart.data.datasets.forEach((ds, i) => {{
           const meta = chart.getDatasetMeta(i);
           let lastIdx = -1;
@@ -2403,13 +2652,23 @@ function initCharts() {{
           if (lastIdx < 0) return;
           const pt = meta.data[lastIdx];
           const val = ds.data[lastIdx];
-          ctx.fillStyle = ds.borderColor;
-          ctx.font = '600 11px -apple-system,sans-serif';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
           const fmt = ds.label === 'NVRP' ? val.toFixed(2) : val.toFixed(1) + '%';
-          ctx.fillText(' ' + fmt, pt.x + 4, pt.y);
+          labels.push({{ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: fmt }});
         }});
+        labels.sort((a, b) => a.y - b.y);
+        const minGap = 14;
+        for (let i = 1; i < labels.length; i++) {{
+          if (labels[i].y - labels[i-1].y < minGap) labels[i].y = labels[i-1].y + minGap;
+        }}
+        for (const l of labels) l.y = Math.max(area.top + 6, Math.min(area.bottom - 6, l.y));
+        ctx.save();
+        ctx.font = '600 11px -apple-system,sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        for (const l of labels) {{
+          ctx.fillStyle = l.color;
+          ctx.fillText(l.text, l.x, l.y);
+        }}
         ctx.restore();
       }}
     }}]
@@ -2447,7 +2706,9 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
 
     # Current state summary
     latest = snapshots[-1]
-    front_term = latest['term'][0] if latest.get('term') else {}
+    latest_terms = latest.get('term', [])
+    front_term = next((t for t in latest_terms if t.get('dte', 0) >= 5),
+                      latest_terms[0] if latest_terms else {})
     current = {
         'spot': latest['spot'],
         'rv30': latest.get('rv30', 0),
