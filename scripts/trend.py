@@ -245,6 +245,97 @@ def dte_call_build_ratio(snapshots):
     }
 
 
+def oi_delta_distribution(snapshots):
+    """Per-strike, per-expiry OI delta from yesterday's → today's snapshot.
+    Returns: { expiry: {strikes, call_delta, put_delta, spot, dte, prev_date, date} }
+    """
+    if len(snapshots) < 2:
+        return {}
+    prev, curr = snapshots[-2], snapshots[-1]
+    prev_chains = prev.get('chains', {})
+    curr_chains = curr.get('chains', {})
+    out = {}
+    for expiry in sorted(set(prev_chains.keys()) & set(curr_chains.keys())):
+        pc = {r.get('strike'): int(r.get('openInterest') or 0) for r in prev_chains[expiry].get('calls', []) if r.get('strike') is not None}
+        pp = {r.get('strike'): int(r.get('openInterest') or 0) for r in prev_chains[expiry].get('puts', [])  if r.get('strike') is not None}
+        cc = {r.get('strike'): int(r.get('openInterest') or 0) for r in curr_chains[expiry].get('calls', []) if r.get('strike') is not None}
+        cp = {r.get('strike'): int(r.get('openInterest') or 0) for r in curr_chains[expiry].get('puts', [])  if r.get('strike') is not None}
+        strikes = sorted(set(pc) | set(pp) | set(cc) | set(cp))
+        cd = [cc.get(k, 0) - pc.get(k, 0) for k in strikes]
+        pd_ = [cp.get(k, 0) - pp.get(k, 0) for k in strikes]
+        if not any(cd) and not any(pd_):
+            continue
+        try:
+            dte = max(0, (datetime.strptime(expiry, '%Y-%m-%d').date() - datetime.strptime(curr['date'], '%Y-%m-%d').date()).days)
+        except Exception:
+            dte = None
+        out[expiry] = {
+            'strikes': strikes,
+            'call_delta': cd,
+            'put_delta': pd_,
+            'spot': curr.get('spot', 0),
+            'dte': dte,
+            'prev_date': prev['date'],
+            'date': curr['date'],
+        }
+    return out
+
+
+def oi_distribution(snapshot):
+    """Per-expiry OI histogram + max pain from the latest snapshot.
+
+    Max pain = strike S that minimizes total option-holder ITM value at expiry:
+        sum( call_OI(K) * max(S - K, 0) ) + sum( put_OI(K) * max(K - S, 0) )
+    """
+    chains = snapshot.get('chains', {})
+    spot = snapshot.get('spot', 0)
+    out = {}
+    for expiry in sorted(chains.keys()):
+        leg = chains[expiry]
+        calls = leg.get('calls', [])
+        puts = leg.get('puts', [])
+        by_strike = {}
+        for c in calls:
+            k = c.get('strike')
+            if k is None:
+                continue
+            by_strike.setdefault(k, [0, 0])[0] = int(c.get('openInterest') or 0)
+        for p in puts:
+            k = p.get('strike')
+            if k is None:
+                continue
+            by_strike.setdefault(k, [0, 0])[1] = int(p.get('openInterest') or 0)
+        if not by_strike:
+            continue
+        strikes = sorted(by_strike.keys())
+        # Max pain
+        best_strike, best_pain = strikes[0], float('inf')
+        for S in strikes:
+            pain = 0.0
+            for K, (coi, poi) in by_strike.items():
+                if S > K:
+                    pain += (S - K) * coi
+                elif K > S:
+                    pain += (K - S) * poi
+            if pain < best_pain:
+                best_pain = pain
+                best_strike = S
+        # DTE
+        try:
+            dte = max(0, (datetime.strptime(expiry, '%Y-%m-%d').date() - datetime.strptime(snapshot['date'], '%Y-%m-%d').date()).days)
+        except Exception:
+            dte = None
+        out[expiry] = {
+            'strikes': strikes,
+            'call_oi': [by_strike[k][0] for k in strikes],
+            'put_oi': [by_strike[k][1] for k in strikes],
+            'max_pain': best_strike,
+            'spot': spot,
+            'dte': dte,
+        }
+    return out
+
+
 def gex_walls(snapshot, top_n=5):
     """
     Dealer Gamma Exposure walls. Uses pre-computed 'gex' per row (signed:
@@ -649,15 +740,37 @@ ZH_REPLACEMENTS = [
     (">Flow Trend Analysis</h1>", ">期权流向分析</h1>"),
     (">Dealer Gamma Exposure (GEX) Walls</h2>", ">做市商 Gamma 墙（GEX）</h2>"),
     (">BTC Context (MSTR = BTC-levered proxy)</h2>", ">BTC 背景（MSTR = BTC 杠杆代理）</h2>"),
+    (">Open Interest Distribution (per expiry)</h2>", ">持仓分布（按到期日）</h2>"),
+    (">OI Delta by Strike (yesterday → today, per expiry)</h2>", ">行权价 OI 变化（昨日→今日，按到期日）</h2>"),
+    ("Net OI change at each strike between",
+     "各行权价持仓净变化，区间："),
+    ("Green up</b> = call OI built (new opens, bullish positioning).",
+     "绿色向上</b>= call 持仓新建（看涨开仓）。"),
+    ("Green down</b> = call OI unwound (closes / expirations). Same logic for <b style=\"color:#f85149;\">put</b> bars.",
+     "绿色向下</b>= call 持仓解除（平仓/到期）。<b style=\"color:#f85149;\">put</b> 红色条同理。"),
+    ("Roll detection:</b> simultaneous unwind at low strikes + build at higher strikes = positions rolled up.",
+     "Roll 检测：</b> 低行权价同时减仓 + 高行权价建仓 = 仓位向上展期。"),
+    ("Per-strike call/put OI for one expiry.",
+     "单一到期日的逐行权价 call/put 持仓。"),
+    ("Green</b> = calls, <b style=\"color:#f85149;\">red</b> = puts.",
+     "绿色</b>=call，<b style=\"color:#f85149;\">红色</b>=put。"),
+    ("Max Pain</b> (yellow) = strike where most options expire worthless to holders — historical dealer-pin target.",
+     "最大痛点</b>（黄）= 多数期权到期作废的行权价，历史上做市商常 pin 此价位。"),
+    ("Spot</b> (cyan) = current price.",
+     "现价</b>（青）= 当前股价。"),
+    ("Empty zone above spot</b> = no resistance from option dealers; price can drift toward the next call cluster.",
+     "现价上方真空带</b>= 期权做市商在此区间无明显抵抗，股价容易漂移至下一组 call 堆积处。"),
+    (">Expiry:</label>", ">到期日：</label>"),
     (">mNAV (MSTR Premium to BTC NAV)</h2>", ">mNAV（MSTR 相对 BTC 净值溢价）</h2>"),
-    ("Premium MSTR trades at vs the underlying BTC stash. <b style=\"color:#e6edf3;\">Simple</b> = MarketCap / BTC reserve. <b style=\"color:#e6edf3;\">EV-based</b> = (MC + debt + pref − cash) / BTC reserve (matches strategy.com). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x.",
-     "MSTR 相对其 BTC 储备的溢价。<b style=\"color:#e6edf3;\">简易</b> = 市值 / BTC 储备价值。<b style=\"color:#e6edf3;\">企业价值口径</b> = (市值 + 债务 + 优先股 − 现金) / BTC 储备价值（与 strategy.com 口径一致）。便宜 &lt; 1.2x · 正常 1.2–1.8x · 偏贵 &gt; 1.8x。"),
+    ("EV-based premium MSTR trades at vs its BTC stash: <b style=\"color:#e6edf3;\">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.",
+     "基于企业价值的 MSTR 相对 BTC 储备溢价：<b style=\"color:#e6edf3;\">(市值 + 债务 + 优先股 − 现金) / BTC 储备价值</b>（与 strategy.com 公布的 mNAV 口径一致）。便宜 &lt; 1.2x · 正常 1.2–1.8x · 偏贵 &gt; 1.8x。历史区间约 1.0–3.5x；接近 1.0 的低点常对应吸筹区，&gt;2.5 的高点常对应派发区。"),
+    ("(from yfinance close)", "（yfinance 收盘价）"),
     ("· source: strategy.com", "· 数据来源：strategy.com"),
-    (">Simple mNAV</div>", ">简易 mNAV</div>"),
-    (">EV-based mNAV</div>", ">企业价值口径 mNAV</div>"),
+    (">mNAV</div>", ">mNAV</div>"),
     (">Verdict</div>", ">判定</div>"),
     (">BTC Held</div>", ">BTC 持仓</div>"),
     (">BTC Reserve</div>", ">BTC 储备价值</div>"),
+    (">Enterprise Value</div>", ">企业价值</div>"),
     (">Market Cap</div>", ">市值</div>"),
     (">Cheap</div>", ">便宜</div>"),
     (">Normal</div>", ">正常</div>"),
@@ -1150,6 +1263,8 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     skew_pct = trend_data.get('skew_percentile')
     call_dte = trend_data.get('call_dte_ratio')
     gex_data = trend_data.get('gex_walls')
+    oi_dist = trend_data.get('oi_distribution', {}) or {}
+    oi_delta_dist = trend_data.get('oi_delta_distribution', {}) or {}
     btc_data = trend_data.get('btc_context')
 
     # Load MSTR BTC holdings (only used for mNAV card; missing file is non-fatal)
@@ -2086,6 +2201,72 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   </details>
 </div>"""
 
+    # --- OI Distribution histogram (per-expiry, with max pain) ---
+    oi_dist_html = ""
+    oi_dist_json = "{}"
+    oi_dist_default = ""
+    if oi_dist:
+        expiries_sorted = sorted(oi_dist.keys())
+        # Default to the first expiry with DTE >= 3 (skip 0DTE / weekend stale)
+        oi_dist_default = next((e for e in expiries_sorted if (oi_dist[e].get('dte') or 0) >= 3), expiries_sorted[0])
+        opts = []
+        for e in expiries_sorted:
+            d = oi_dist[e]
+            dte_str = f" ({d['dte']}d)" if d.get('dte') is not None else ""
+            sel = " selected" if e == oi_dist_default else ""
+            opts.append(f'<option value="{e}"{sel}>{e}{dte_str}</option>')
+        oi_dist_json = json.dumps(oi_dist)
+        oi_dist_html = f"""
+<div class="card" id="oidist">
+  <h2>Open Interest Distribution (per expiry)</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    Per-strike call/put OI for one expiry. <b style="color:#3fd058;">Green</b> = calls, <b style="color:#f85149;">red</b> = puts. <b style="color:#e6edf3;">Max Pain</b> (yellow) = strike where most options expire worthless to holders — historical dealer-pin target. <b style="color:#e6edf3;">Spot</b> (cyan) = current price. <b>Empty zone above spot</b> = no resistance from option dealers; price can drift toward the next call cluster.
+  </div>
+  <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:12px;color:#8b949e;">Expiry:</label>
+    <select id="oiDistExpiry" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;">
+      {''.join(opts)}
+    </select>
+    <span id="oiDistMeta" style="font-size:11px;color:#8b949e;"></span>
+  </div>
+  <div class="chart-wrap-tall">
+    <canvas id="oiDistChart"></canvas>
+  </div>
+</div>"""
+
+    # --- OI Delta Distribution histogram (yesterday → today, per expiry) ---
+    oi_delta_html = ""
+    oi_delta_json = "{}"
+    if oi_delta_dist:
+        deltas_sorted = sorted(oi_delta_dist.keys())
+        # Default: first expiry with DTE >= 3
+        default_dexp = next((e for e in deltas_sorted if (oi_delta_dist[e].get('dte') or 0) >= 3), deltas_sorted[0])
+        dopts = []
+        for e in deltas_sorted:
+            d = oi_delta_dist[e]
+            dte_str = f" ({d['dte']}d)" if d.get('dte') is not None else ""
+            sel = " selected" if e == default_dexp else ""
+            dopts.append(f'<option value="{e}"{sel}>{e}{dte_str}</option>')
+        oi_delta_json = json.dumps(oi_delta_dist)
+        sample = oi_delta_dist[default_dexp]
+        oi_delta_html = f"""
+<div class="card" id="oidelta">
+  <h2>OI Delta by Strike (yesterday → today, per expiry)</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    Net OI change at each strike between {sample['prev_date']} and {sample['date']}. <b style="color:#3fb950;">Green up</b> = call OI built (new opens, bullish positioning). <b style="color:#3fb950;">Green down</b> = call OI unwound (closes / expirations). Same logic for <b style="color:#f85149;">put</b> bars. <b>Roll detection:</b> simultaneous unwind at low strikes + build at higher strikes = positions rolled up.
+  </div>
+  <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:12px;color:#8b949e;">Expiry:</label>
+    <select id="oiDeltaExpiry" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;">
+      {''.join(dopts)}
+    </select>
+    <span id="oiDeltaMeta" style="font-size:11px;color:#8b949e;"></span>
+  </div>
+  <div class="chart-wrap-tall">
+    <canvas id="oiDeltaChart"></canvas>
+  </div>
+</div>"""
+
     # --- BTC Context card (MSTR only) ---
     btc_card_html = ""
     if btc_data:
@@ -2166,31 +2347,26 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         mc = spot * shares
         btc_reserve = btc_held * btc_price
         if btc_reserve > 0:
-            simple_mnav = mc / btc_reserve
             ev = mc + debt + pref - cash
-            ev_mnav = ev / btc_reserve
+            mnav = ev / btc_reserve
 
             def _verdict(x):
                 if x < 1.2:
-                    return ('cheap', '#3fb950', 'Cheap')
+                    return ('#3fb950', 'Cheap')
                 if x <= 1.8:
-                    return ('normal', '#d29922', 'Normal')
-                return ('expensive', '#f85149', 'Expensive')
-            tag, color, label = _verdict(simple_mnav)
+                    return ('#d29922', 'Normal')
+                return ('#f85149', 'Expensive')
+            color, label = _verdict(mnav)
             mnav_card_html = f"""
 <div class="card" id="mnav">
   <h2>mNAV (MSTR Premium to BTC NAV)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    Premium MSTR trades at vs the underlying BTC stash. <b style="color:#e6edf3;">Simple</b> = MarketCap / BTC reserve. <b style="color:#e6edf3;">EV-based</b> = (MC + debt + pref − cash) / BTC reserve (matches strategy.com). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x.
+    EV-based premium MSTR trades at vs its BTC stash: <b style="color:#e6edf3;">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.
   </div>
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
-      <div class="kpi-label">Simple mNAV</div>
-      <div class="kpi-value" style="color:{color};">{simple_mnav:.2f}x</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">EV-based mNAV</div>
-      <div class="kpi-value">{ev_mnav:.2f}x</div>
+      <div class="kpi-label">mNAV</div>
+      <div class="kpi-value" style="color:{color};">{mnav:.2f}x</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Verdict</div>
@@ -2205,11 +2381,15 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
       <div class="kpi-value">${btc_reserve/1e9:.1f}B</div>
     </div>
     <div class="kpi">
+      <div class="kpi-label">Enterprise Value</div>
+      <div class="kpi-value">${ev/1e9:.1f}B</div>
+    </div>
+    <div class="kpi">
       <div class="kpi-label">Market Cap</div>
       <div class="kpi-value">${mc/1e9:.1f}B</div>
     </div>
   </div>
-  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of {as_of} · source: strategy.com</div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of {as_of} · BTC ${btc_price:,.0f} (from yfinance close) · source: strategy.com</div>
 </div>"""
 
     html = f"""<!DOCTYPE html>
@@ -2264,6 +2444,8 @@ th:first-child, td:first-child {{ text-align:left; }}
     <a href="#iv">IV</a>
     <a href="#term">{nav_lbl_term}</a>
     <a href="#gex">GEX</a>
+    <a href="#oidist">OI Dist</a>
+    <a href="#oidelta">OI Δ</a>
     <a href="#oi">OI</a>
     <a href="#walls">{nav_lbl_walls}</a>
     <a href="#em">EM</a>
@@ -2354,6 +2536,10 @@ th:first-child, td:first-child {{ text-align:left; }}
 {term_html}
 
 {gex_card_html}
+
+{oi_dist_html}
+
+{oi_delta_html}
 
 <div class="grid">
   <!-- OI Delta -->
@@ -2673,6 +2859,208 @@ function initCharts() {{
       }}
     }}]
   }});
+
+  // --- OI Distribution histogram ---
+  const oiAll = {oi_dist_json};
+  const oiSel = document.getElementById('oiDistExpiry');
+  const oiCanvas = document.getElementById('oiDistChart');
+  if (oiSel && oiCanvas && Object.keys(oiAll).length) {{
+    let oiChart;
+    function pixelAtStrike(scale, val, strikes) {{
+      let lo = -1, hi = -1;
+      for (let i = 0; i < strikes.length; i++) {{
+        if (strikes[i] <= val) lo = i;
+        if (strikes[i] >= val && hi < 0) {{ hi = i; }}
+      }}
+      if (lo < 0) return scale.getPixelForValue(strikes[0].toString());
+      if (hi < 0 || hi === lo) return scale.getPixelForValue(strikes[lo].toString());
+      const px_lo = scale.getPixelForValue(strikes[lo].toString());
+      const px_hi = scale.getPixelForValue(strikes[hi].toString());
+      const t = (val - strikes[lo]) / (strikes[hi] - strikes[lo]);
+      return px_lo + t * (px_hi - px_lo);
+    }}
+    function renderOi() {{
+      const exp = oiSel.value;
+      const d = oiAll[exp];
+      if (!d) return;
+      const labels = d.strikes.map(s => s.toString());
+      const meta = document.getElementById('oiDistMeta');
+      const totalCall = d.call_oi.reduce((a, b) => a + b, 0);
+      const totalPut = d.put_oi.reduce((a, b) => a + b, 0);
+      const pcr = totalCall ? (totalPut / totalCall) : 0;
+      meta.textContent = `Max Pain $${{d.max_pain.toFixed(2)}} · Spot $${{d.spot.toFixed(2)}} · Calls ${{totalCall.toLocaleString()}} · Puts ${{totalPut.toLocaleString()}} · PCR ${{pcr.toFixed(2)}}`;
+      if (oiChart) {{ oiChart.destroy(); }}
+      oiChart = new Chart(oiCanvas, {{
+        type: 'bar',
+        data: {{
+          labels: labels,
+          datasets: [
+            {{ label: 'Calls', data: d.call_oi, backgroundColor: '#3fb950cc', borderColor: '#3fb950', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 }},
+            {{ label: 'Puts',  data: d.put_oi,  backgroundColor: '#f85149cc', borderColor: '#f85149', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 }},
+          ],
+        }},
+        options: {{
+          responsive: true, maintainAspectRatio: false,
+          interaction: {{ mode: 'index', intersect: false }},
+          layout: {{ padding: {{ top: 24 }} }},
+          plugins: {{
+            legend: {{ display: true, labels: {{ color: '#e6edf3', font: {{ size: 11 }}, boxWidth: 12 }} }},
+            tooltip: {{
+              backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+              titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+              callbacks: {{
+                title: items => '$' + items[0].label,
+                label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString(),
+              }},
+            }},
+          }},
+          scales: {{
+            x: {{
+              stacked: false,
+              ticks: {{ color: '#8b949e', font: {{ size: 10 }}, maxRotation: 0, autoSkip: true, maxTicksLimit: 18, callback: function(v) {{ return '$' + this.getLabelForValue(v); }} }},
+              grid: {{ display: false }},
+            }},
+            y: {{
+              ticks: {{ color: '#8b949e', font: {{ size: 11 }}, callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v }},
+              grid: {{ color: 'rgba(255,255,255,0.04)' }},
+              title: {{ display: true, text: 'Open Interest', color: '#8b949e', font: {{ size: 11 }} }},
+            }},
+          }},
+        }},
+        plugins: [{{
+          id: 'oi-markers',
+          afterDatasetsDraw(chart) {{
+            const ctx = chart.ctx;
+            const xs = chart.scales.x;
+            const area = chart.chartArea;
+            ctx.save();
+            const markers = [
+              {{ value: d.spot,     color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }},
+              {{ value: d.max_pain, color: '#facc15', label: 'Max Pain $' + d.max_pain.toFixed(2) }},
+            ];
+            for (const m of markers) {{
+              const px = pixelAtStrike(xs, m.value, d.strikes);
+              if (px < area.left || px > area.right) continue;
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 1.5;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(px, area.top);
+              ctx.lineTo(px, area.bottom);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.fillStyle = m.color;
+              ctx.font = '600 10px -apple-system,sans-serif';
+              ctx.textBaseline = 'top';
+              const w = ctx.measureText(m.label).width;
+              const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
+              ctx.fillText(m.label, tx, area.top - 18);
+            }}
+            ctx.restore();
+          }},
+        }}],
+      }});
+    }}
+    oiSel.addEventListener('change', renderOi);
+    renderOi();
+  }}
+
+  // --- OI Delta histogram (yesterday → today) ---
+  const oiDeltaAll = {oi_delta_json};
+  const odSel = document.getElementById('oiDeltaExpiry');
+  const odCanvas = document.getElementById('oiDeltaChart');
+  if (odSel && odCanvas && Object.keys(oiDeltaAll).length) {{
+    let odChart;
+    function odPixelAtStrike(scale, val, strikes) {{
+      let lo = -1, hi = -1;
+      for (let i = 0; i < strikes.length; i++) {{
+        if (strikes[i] <= val) lo = i;
+        if (strikes[i] >= val && hi < 0) {{ hi = i; }}
+      }}
+      if (lo < 0) return scale.getPixelForValue(strikes[0].toString());
+      if (hi < 0 || hi === lo) return scale.getPixelForValue(strikes[lo].toString());
+      const px_lo = scale.getPixelForValue(strikes[lo].toString());
+      const px_hi = scale.getPixelForValue(strikes[hi].toString());
+      const t = (val - strikes[lo]) / (strikes[hi] - strikes[lo]);
+      return px_lo + t * (px_hi - px_lo);
+    }}
+    function renderOd() {{
+      const exp = odSel.value;
+      const d = oiDeltaAll[exp];
+      if (!d) return;
+      const labels = d.strikes.map(s => s.toString());
+      const meta = document.getElementById('oiDeltaMeta');
+      const sumCall = d.call_delta.reduce((a, b) => a + b, 0);
+      const sumPut = d.put_delta.reduce((a, b) => a + b, 0);
+      meta.textContent = `${{d.prev_date}} → ${{d.date}} · Net Call Δ ${{sumCall >= 0 ? '+' : ''}}${{sumCall.toLocaleString()}} · Net Put Δ ${{sumPut >= 0 ? '+' : ''}}${{sumPut.toLocaleString()}} · Spot $${{d.spot.toFixed(2)}}`;
+      if (odChart) {{ odChart.destroy(); }}
+      odChart = new Chart(odCanvas, {{
+        type: 'bar',
+        data: {{
+          labels: labels,
+          datasets: [
+            {{ label: 'Call Δ', data: d.call_delta, backgroundColor: ctx => (ctx.raw >= 0 ? '#3fb950cc' : '#3fb95055'), borderColor: '#3fb950', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 }},
+            {{ label: 'Put Δ',  data: d.put_delta,  backgroundColor: ctx => (ctx.raw >= 0 ? '#f85149cc' : '#f8514955'), borderColor: '#f85149', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 }},
+          ],
+        }},
+        options: {{
+          responsive: true, maintainAspectRatio: false,
+          interaction: {{ mode: 'index', intersect: false }},
+          plugins: {{
+            legend: {{ display: true, labels: {{ color: '#e6edf3', font: {{ size: 11 }}, boxWidth: 12 }} }},
+            tooltip: {{
+              backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+              titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+              callbacks: {{
+                title: items => '$' + items[0].label,
+                label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toLocaleString(),
+              }},
+            }},
+          }},
+          scales: {{
+            x: {{
+              ticks: {{ color: '#8b949e', font: {{ size: 10 }}, maxRotation: 0, autoSkip: true, maxTicksLimit: 18, callback: function(v) {{ return '$' + this.getLabelForValue(v); }} }},
+              grid: {{ display: false }},
+            }},
+            y: {{
+              ticks: {{ color: '#8b949e', font: {{ size: 11 }}, callback: v => (v >= 0 ? '+' : '') + (Math.abs(v) >= 1000 ? (v/1000).toFixed(0) + 'k' : v) }},
+              grid: {{ color: ctx => ctx.tick.value === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.04)' }},
+              title: {{ display: true, text: 'OI Δ (built ↑ / unwound ↓)', color: '#8b949e', font: {{ size: 11 }} }},
+            }},
+          }},
+        }},
+        plugins: [{{
+          id: 'od-spot',
+          afterDatasetsDraw(chart) {{
+            const ctx = chart.ctx;
+            const xs = chart.scales.x;
+            const area = chart.chartArea;
+            const px = odPixelAtStrike(xs, d.spot, d.strikes);
+            if (px < area.left || px > area.right) return;
+            ctx.save();
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(px, area.top);
+            ctx.lineTo(px, area.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = '600 10px -apple-system,sans-serif';
+            ctx.textBaseline = 'top';
+            const lbl = 'Spot $' + d.spot.toFixed(2);
+            const w = ctx.measureText(lbl).width;
+            const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
+            ctx.fillText(lbl, tx, area.top + 4);
+            ctx.restore();
+          }},
+        }}],
+      }});
+    }}
+    odSel.addEventListener('change', renderOd);
+    renderOd();
+  }}
 }}
 if (window.Chart) initCharts();
 </script>
@@ -2702,6 +3090,8 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
     skew_pct = skew_percentile_analysis(pc_series, 'front')
     call_dte = dte_call_build_ratio(snapshots)
     gex_data = gex_walls(snapshots[-1]) if snapshots else None
+    oi_dist = oi_distribution(snapshots[-1]) if snapshots else {}
+    oi_delta_dist = oi_delta_distribution(snapshots)
     btc_data = btc_context(ticker, snapshots)
 
     # Current state summary
@@ -2741,6 +3131,8 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         'skew_percentile': skew_pct,
         'call_dte_ratio': call_dte,
         'gex_walls': gex_data,
+        'oi_distribution': oi_dist,
+        'oi_delta_distribution': oi_delta_dist,
         'btc_context': btc_data,
     }
 
