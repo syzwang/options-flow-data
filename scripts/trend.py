@@ -245,6 +245,36 @@ def dte_call_build_ratio(snapshots):
     }
 
 
+def skew_index_history():
+    """CBOE SKEW Index 2y daily history from yfinance.
+    Macro-wide tail-hedge demand for S&P 500 — used as regime context, not stock-specific.
+    """
+    try:
+        h = yf.Ticker('^SKEW').history(period='2y', interval='1d')
+        if h.empty:
+            return None
+        closes = h['Close'].dropna()
+        if len(closes) < 100:
+            return None
+        dates = [d.strftime('%Y-%m-%d') for d in closes.index]
+        values = [round(float(v), 2) for v in closes.values]
+        current = values[-1]
+        sorted_vals = sorted(values)
+        rank = sum(1 for v in sorted_vals if v <= current) / len(sorted_vals) * 100
+        return {
+            'dates': dates,
+            'values': values,
+            'current': current,
+            'min': min(values),
+            'max': max(values),
+            'mean': round(sum(values) / len(values), 2),
+            'pct_rank': round(rank, 1),
+            'window_days': len(values),
+        }
+    except Exception:
+        return None
+
+
 def oi_delta_distribution(snapshots):
     """Per-strike, per-expiry OI delta from yesterday's → today's snapshot.
     Returns: { expiry: {strikes, call_delta, put_delta, spot, dte, prev_date, date} }
@@ -778,6 +808,27 @@ ZH_REPLACEMENTS = [
     ("Holdings as of ", "持仓数据日期 "),
     (">Zero-Crossing Alerts (P/C Spread)</h2>", ">零轴穿越预警（P/C 偏度）</h2>"),
     (">Delta-25 Put/Call IV Spread (by expiration bucket)</h2>", ">Delta-25 Put/Call IV 偏度（按到期分桶）</h2>"),
+    (">Macro Skew Context (CBOE ^SKEW, 2y)</h2>", ">宏观偏度背景（CBOE ^SKEW，2 年）</h2>"),
+    ("S&amp;P 500-wide tail-hedge demand.", "标普 500 市场层面的尾部对冲需求。"),
+    ("NOT stock-specific to", "并非针对个股"),
+    ("— read as macro regime context. SKEW measures cost of OTM puts vs ATM SPX options.",
+     "—作为宏观情绪背景使用。SKEW 衡量 OTM put 相对 ATM SPX 期权的相对价格。"),
+    ("&lt;120 Complacent", "&lt;120 松懈"),
+    ("120–140 Normal", "120–140 正常"),
+    ("140–160 Hedged", "140–160 对冲加重"),
+    ("&gt;160 Stressed", "&gt;160 压力"),
+    ("Statistically: high SKEW often coincides with institutions hedging into rallies; very low SKEW marks complacent tops.",
+     "统计上：高 SKEW 常对应机构在上涨中加对冲；极低 SKEW 往往出现在松懈的顶部。"),
+    ("Stock-specific 2y P/C spread requires accumulating ~500 daily snapshots — currently building forward.",
+     "个股 2 年 P/C 偏度需要累计约 500 个日度快照，目前正在向前积累。"),
+    (">Current SKEW</div>", ">当前 SKEW</div>"),
+    (">2y Percentile</div>", ">2 年分位</div>"),
+    (">2y Mean</div>", ">2 年均值</div>"),
+    (">2y Range</div>", ">2 年区间</div>"),
+    (">Days of History</div>", ">历史天数</div>"),
+    (">Complacent</div>", ">松懈</div>"),
+    (">Hedged</div>", ">对冲加重</div>"),
+    (">Stressed</div>", ">压力</div>"),
     (">ATM IV vs RV30 Trend</h2>", ">ATM IV vs RV30 趋势</h2>"),
     (">IV Term Structure (ATM IV by DTE)</h2>", ">IV 期限结构（ATM IV 按 DTE）</h2>"),
     ("Slope across the IV curve.", "IV 曲线斜率。"),
@@ -1265,6 +1316,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     gex_data = trend_data.get('gex_walls')
     oi_dist = trend_data.get('oi_distribution', {}) or {}
     oi_delta_dist = trend_data.get('oi_delta_distribution', {}) or {}
+    skew_idx = trend_data.get('skew_index')
     btc_data = trend_data.get('btc_context')
 
     # Load MSTR BTC holdings (only used for mNAV card; missing file is non-fatal)
@@ -2234,6 +2286,59 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   </div>
 </div>"""
 
+    # --- Macro Skew Context card (CBOE ^SKEW 2y) ---
+    skew_card_html = ""
+    skew_idx_json = "null"
+    if skew_idx:
+        sv = skew_idx['current']
+        if sv < 120:
+            skew_color, skew_label = '#3fb950', 'Complacent'
+        elif sv < 140:
+            skew_color, skew_label = '#d29922', 'Normal'
+        elif sv < 160:
+            skew_color, skew_label = '#f0883e', 'Hedged'
+        else:
+            skew_color, skew_label = '#f85149', 'Stressed'
+        skew_idx_json = json.dumps({
+            'dates': skew_idx['dates'],
+            'values': skew_idx['values'],
+        })
+        skew_card_html = f"""
+<div class="card" id="skew">
+  <h2>Macro Skew Context (CBOE ^SKEW, 2y)</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    S&amp;P 500-wide tail-hedge demand. <b style="color:#e6edf3;">NOT stock-specific to {ticker}</b> — read as macro regime context. SKEW measures cost of OTM puts vs ATM SPX options. <b style="color:#3fb950;">&lt;120 Complacent</b> · <b style="color:#d29922;">120–140 Normal</b> · <b style="color:#f0883e;">140–160 Hedged</b> · <b style="color:#f85149;">&gt;160 Stressed</b>. Statistically: high SKEW often coincides with institutions hedging into rallies; very low SKEW marks complacent tops.
+    <br><span style="color:#6e7681;">Stock-specific 2y P/C spread requires accumulating ~500 daily snapshots — currently building forward.</span>
+  </div>
+  <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+    <div class="kpi">
+      <div class="kpi-label">Current SKEW</div>
+      <div class="kpi-value" style="color:{skew_color};">{sv:.1f}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Verdict</div>
+      <div class="kpi-value" style="color:{skew_color};">{skew_label}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2y Percentile</div>
+      <div class="kpi-value">{skew_idx['pct_rank']:.0f}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2y Mean</div>
+      <div class="kpi-value">{skew_idx['mean']:.1f}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2y Range</div>
+      <div class="kpi-value" style="font-size:14px;">{skew_idx['min']:.1f} – {skew_idx['max']:.1f}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Days of History</div>
+      <div class="kpi-value">{skew_idx['window_days']}</div>
+    </div>
+  </div>
+  <div class="chart-wrap"><canvas id="skewChart"></canvas></div>
+</div>"""
+
     # --- OI Delta Distribution histogram (yesterday → today, per expiry) ---
     oi_delta_html = ""
     oi_delta_json = "{}"
@@ -2441,6 +2546,7 @@ th:first-child, td:first-child {{ text-align:left; }}
     <a href="#btc">BTC</a>
     {('<a href="#mnav">mNAV</a>' if ticker == 'MSTR' else '')}
     <a href="#spread">{nav_lbl_skew}</a>
+    <a href="#skew">SKEW</a>
     <a href="#iv">IV</a>
     <a href="#term">{nav_lbl_term}</a>
     <a href="#gex">GEX</a>
@@ -2522,6 +2628,8 @@ th:first-child, td:first-child {{ text-align:left; }}
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;" id="spreadLegend"></div>
   <div class="chart-wrap-tall"><canvas id="spreadChart"></canvas></div>
 </div>
+
+{skew_card_html}
 
 <!-- IV + NVRP Trend -->
 <div class="card" id="iv">
@@ -3061,6 +3169,93 @@ function initCharts() {{
     odSel.addEventListener('change', renderOd);
     renderOd();
   }}
+
+  // --- Macro SKEW (^SKEW 2y) line chart ---
+  const skewData = {skew_idx_json};
+  const skewCanvas = document.getElementById('skewChart');
+  if (skewData && skewCanvas) {{
+    const skewCurrent = skewData.values[skewData.values.length - 1];
+    let skewLineColor = '#3fb950';
+    if (skewCurrent >= 160) skewLineColor = '#f85149';
+    else if (skewCurrent >= 140) skewLineColor = '#f0883e';
+    else if (skewCurrent >= 120) skewLineColor = '#d29922';
+    new Chart(skewCanvas, {{
+      type: 'line',
+      data: {{
+        labels: skewData.dates,
+        datasets: [{{
+          label: '^SKEW',
+          data: skewData.values,
+          borderColor: skewLineColor,
+          backgroundColor: skewLineColor + '20',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: true,
+          tension: 0.15,
+        }}],
+      }},
+      options: {{
+        responsive: true, maintainAspectRatio: false,
+        interaction: {{ mode: 'index', intersect: false }},
+        plugins: {{
+          legend: {{ display: false }},
+          tooltip: {{
+            backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+            titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+            callbacks: {{ label: ctx => '^SKEW: ' + ctx.parsed.y.toFixed(2) }},
+          }},
+        }},
+        scales: {{
+          x: {{ ticks: {{ color: '#8b949e', font: {{ size: 10 }}, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }}, grid: {{ display: false }} }},
+          y: {{
+            ticks: {{ color: '#8b949e', font: {{ size: 11 }} }},
+            grid: {{ color: 'rgba(255,255,255,0.05)' }},
+          }},
+        }},
+      }},
+      plugins: [{{
+        id: 'skew-bands',
+        beforeDatasetsDraw(chart) {{
+          const ys = chart.scales.y;
+          const area = chart.chartArea;
+          const ctx = chart.ctx;
+          const bands = [
+            {{ from: ys.min, to: 120, color: 'rgba(63,185,80,0.06)' }},
+            {{ from: 120, to: 140, color: 'rgba(210,153,34,0.06)' }},
+            {{ from: 140, to: 160, color: 'rgba(240,136,62,0.08)' }},
+            {{ from: 160, to: ys.max, color: 'rgba(248,81,73,0.10)' }},
+          ];
+          ctx.save();
+          for (const b of bands) {{
+            const y1 = ys.getPixelForValue(Math.max(b.from, ys.min));
+            const y2 = ys.getPixelForValue(Math.min(b.to, ys.max));
+            const top = Math.min(y1, y2), bot = Math.max(y1, y2);
+            if (bot < area.top || top > area.bottom) continue;
+            ctx.fillStyle = b.color;
+            ctx.fillRect(area.left, Math.max(top, area.top), area.right - area.left, Math.min(bot, area.bottom) - Math.max(top, area.top));
+          }}
+          // Threshold lines at 120, 140, 160
+          ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          for (const t of [120, 140, 160]) {{
+            if (t < ys.min || t > ys.max) continue;
+            const y = ys.getPixelForValue(t);
+            ctx.beginPath();
+            ctx.moveTo(area.left, y);
+            ctx.lineTo(area.right, y);
+            ctx.stroke();
+            ctx.fillStyle = '#6e7681';
+            ctx.font = '500 10px -apple-system,sans-serif';
+            ctx.fillText(t.toString(), area.left + 4, y - 3);
+          }}
+          ctx.setLineDash([]);
+          ctx.restore();
+        }},
+      }}],
+    }});
+  }}
 }}
 if (window.Chart) initCharts();
 </script>
@@ -3092,6 +3287,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
     gex_data = gex_walls(snapshots[-1]) if snapshots else None
     oi_dist = oi_distribution(snapshots[-1]) if snapshots else {}
     oi_delta_dist = oi_delta_distribution(snapshots)
+    skew_idx = skew_index_history()
     btc_data = btc_context(ticker, snapshots)
 
     # Current state summary
@@ -3133,6 +3329,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         'gex_walls': gex_data,
         'oi_distribution': oi_dist,
         'oi_delta_distribution': oi_delta_dist,
+        'skew_index': skew_idx,
         'btc_context': btc_data,
     }
 
