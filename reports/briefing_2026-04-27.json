@@ -1,0 +1,147 @@
+{
+  "date": "2026-04-27",
+  "week_ending": "2026-05-01",
+  "headline": "MSTR pinned by long-gamma structure near 171 as call skew persists across the curve; TSLA sandwiched between the 375 put wall and 380 call wall with IV at a 25th-percentile low, tilting the edge decisively to premium buyers.",
+  "tickers": [
+    {
+      "symbol": "MSTR",
+      "spot": 171.02,
+      "setup": {
+        "gamma_regime": "long",
+        "gamma_note": "Net GEX +6.2B; market makers are net long gamma, mechanically selling into rallies and buying dips, creating a gravitational pin in the 165–185 corridor",
+        "skew_posture": "call-dominant",
+        "skew_percentile": 70,
+        "nvrp": 1.11,
+        "nvrp_signal": "seller edge",
+        "gex_upper": 185.0,
+        "gex_lower": 165.0,
+        "gex_magnet": 172.0
+      },
+      "scenarios": {
+        "bull": {
+          "prob": 25,
+          "path": "BTC recovers above $80K, lifting MSTR through the 180 call wall and into the 185–195 GEX call cluster; IV expands on the directional break as short-call hedging accelerates the move.",
+          "triggers": [
+            "BTC closes above $80,000 on daily basis",
+            "MSTR daily close above 180 on volume greater than 1.5× 20-day average"
+          ]
+        },
+        "base": {
+          "prob": 55,
+          "path": "Spot oscillates in the 165–185 range pinned by long-gamma structure; call skew gradually compresses as the week progresses; front IV drifts lower from 76% toward 70% with time decay; BTC stabilizes near current levels.",
+          "triggers": [
+            "BTC range-bound between $75K and $80K",
+            "MSTR holds above 165 GEX put floor without a confirmed close below"
+          ]
+        },
+        "bear": {
+          "prob": 20,
+          "path": "BTC weakness pushes MSTR below the 165 GEX put wall, triggering negative dealer delta-hedging flows that amplify the selloff; tests the 155–160 zone where the next major put support sits.",
+          "triggers": [
+            "BTC closes below $74,000",
+            "MSTR closes below 165 on above-average volume"
+          ]
+        }
+      },
+      "trades": [
+        {
+          "structure": "Call Credit Spread",
+          "strike": "185/200",
+          "expiry": "2026-05-22",
+          "dte": 25,
+          "credit": "$4.50",
+          "rationale": "Fade persistent call skew (70th percentile) directly at the 185 GEX call wall (second-largest call gamma cluster at +1.07B); NVRP 1.11 confirms seller edge with IV outpacing realized vol; long-gamma regime suppresses sustained breakouts through this level; the anomalous -11.2 pt call skew in the May 29 bucket signals speculative call accumulation that is structurally prone to unwind.",
+          "exit": "Take profit at 50% of max gain; stop if MSTR closes above 187 on two consecutive sessions, or if NVRP falls below 0.95"
+        },
+        {
+          "structure": "Put Credit Spread",
+          "strike": "160/150",
+          "expiry": "2026-05-15",
+          "dte": 18,
+          "credit": "$2.25",
+          "rationale": "The 165 GEX put wall carries -677M in dealer short gamma, providing mechanical support via long-gamma hedging flows; selling the 160/150 spread collects elevated put premium while staying 3.5% below the GEX floor; BTC beta 1.4 context consistent with base-case sideways action.",
+          "exit": "Take profit at 50% of max gain; stop if MSTR closes below 163 or if BTC breaks $74,000 on a daily close"
+        }
+      ],
+      "risks": [
+        "BTC correlation at beta 1.4 means a sharp BTC selloff directly cascades to MSTR regardless of the options structure",
+        "May 29 bucket anomalous call skew of -11.2 pts could reflect informed buying ahead of an undisclosed catalyst",
+        "Long-gamma pinning breaks down rapidly once spot exits the 165–185 range; both spreads need active monitoring at the GEX boundaries"
+      ],
+      "exits": [
+        "Close all short premium positions immediately if NVRP drops below 0.95 (buyer edge returned, seller edge lost)",
+        "Roll short strikes outward by 10 points if spot threatens a GEX-wall breach confirmed by two consecutive closes outside the 165–185 range"
+      ]
+    },
+    {
+      "symbol": "TSLA",
+      "spot": 376.3,
+      "setup": {
+        "gamma_regime": "neutral",
+        "gamma_note": "Net GEX +12.4B but classified neutral; spot sits in a thin no-man's-land between the 375 put wall (0.3% OTM) and 380 call wall (0.98% OTM), creating coiled tension where any directional catalyst will be amplified by dealer hedging",
+        "skew_posture": "call-dominant",
+        "skew_percentile": 83,
+        "nvrp": 0.87,
+        "nvrp_signal": "buyer edge",
+        "gex_upper": 400.0,
+        "gex_lower": 370.0,
+        "gex_magnet": 378.0
+      },
+      "scenarios": {
+        "bull": {
+          "prob": 30,
+          "path": "TSLA pushes through the 380 GEX call wall; negative-gamma dealer short-covering amplifies the break; rally targets 390–400 where the two largest call GEX walls at +4.79B and +8.07B cap the move.",
+          "triggers": [
+            "TSLA daily close above 380 with options volume spike above 130% of 20-day average",
+            "Broader equity rally with SPX gaining 1%+ on a single session"
+          ]
+        },
+        "base": {
+          "prob": 45,
+          "path": "Spot remains trapped in the 370–385 corridor bounded by major GEX walls on both sides; realized vol compresses toward front IV of 39%; low IV environment persists with no macro catalyst.",
+          "triggers": [
+            "No significant macro event this week",
+            "TSLA holds 370 and fails to clear 385 for three or more consecutive sessions"
+          ]
+        },
+        "bear": {
+          "prob": 25,
+          "path": "Spot breaks below the 370 GEX put wall; negative dealer delta flows amplify the move lower; tests the 350–360 GEX put cluster where the next major support at -3.65B sits.",
+          "triggers": [
+            "TSLA closes below 370 on volume above 130% of 20-day average",
+            "Macro risk-off event pushing broader tech and high-beta names lower"
+          ]
+        }
+      },
+      "trades": [
+        {
+          "structure": "Long Strangle",
+          "strike": "370/385",
+          "expiry": "2026-05-15",
+          "dte": 18,
+          "credit": "-$13.50",
+          "rationale": "NVRP 0.87 signals IV (38.96%) is priced below realized vol (RV30 44.70%), a rare buyer-edge condition; spot is literally pinned at the 375/380 GEX intersection — the tightest wall configuration in the data — making a directional break imminent; IV at the 25th percentile 2-year low makes this strangle historically cheap; 370 put and 385 call bracket the two most likely break points where dealer hedging accelerates the move.",
+          "exit": "Close each leg independently at 2× its individual cost; cut the losing leg at 50% loss if spot moves strongly through one GEX wall and holds for two sessions"
+        },
+        {
+          "structure": "Call Debit Spread",
+          "strike": "380/400",
+          "expiry": "2026-05-22",
+          "dte": 25,
+          "credit": "-$7.00",
+          "rationale": "86.6% of open call interest is concentrated in short-dated contracts (speculative regime), signaling demand for upside exposure; a break above the 380 GEX call wall (only 0.98% OTM) targets the 400 level where +8.07B call GEX creates the dominant ceiling; NVRP 0.87 makes this debit spread cheap relative to realized vol; 25 DTE captures delayed follow-through from a bullish break.",
+          "exit": "Close at 75% of max profit ($15 spread width minus debit) or when TSLA touches 400; stop at full debit loss if TSLA closes below 373 on two consecutive days"
+        }
+      ],
+      "risks": [
+        "Long strangle is exposed to continued low-IV mean reversion if spot stays pinned — theta decay erodes value even when the buyer edge setup is structurally correct",
+        "The 375 put wall (0.3% OTM) and 380 call wall (0.98% OTM) are so close that spot could oscillate between them for multiple sessions, bleeding both strangle legs",
+        "Broader macro overhang (tariffs, Fed policy, EV demand headlines) can amplify a downside break well beyond the GEX framework's implied range"
+      ],
+      "exits": [
+        "Strangle: manage each leg independently — take profit at 2× individual leg cost; exit the losing leg if TSLA decisively breaks one GEX wall and consolidates for two sessions",
+        "Call spread: close for 75% of max gain; stop at full debit loss if TSLA fails to reclaim 376 within five sessions of entering"
+      ]
+    }
+  ]
+}

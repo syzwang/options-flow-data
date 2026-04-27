@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Weekly Options Briefing 2026-04-27</title>
+<style>
+* { box-sizing: border-box; }
+body { background:#0f1117; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,sans-serif; max-width:900px; margin:40px auto; padding:0 20px; line-height:1.5; }
+h1 { font-size:26px; font-weight:500; margin:0 0 4px; }
+h2 { font-size:22px; font-weight:500; margin:40px 0 8px; padding-bottom:8px; border-bottom:1px solid #30363d; color:#58a6ff; }
+h3 { font-size:14px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; color:#8b949e; margin:24px 0 10px; }
+.subtitle { color:#8b949e; font-size:13px; margin-bottom:8px; }
+.headline { color:#e6edf3; font-size:15px; margin:12px 0 28px; padding:12px 16px; background:#161b22; border-left:3px solid #58a6ff; border-radius:0 4px 4px 0; }
+.spot { color:#8b949e; font-size:16px; font-weight:400; margin-left:8px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.kpi { background:#161b22; border:1px solid #21262d; border-radius:6px; padding:12px 14px; }
+.k-label { font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.k-val { font-size:16px; font-weight:500; margin:4px 0; }
+.k-note { font-size:11px; color:#8b949e; }
+.scenarios { display:grid; gap:10px; }
+.scn { background:#161b22; padding:12px 16px; border-radius:4px; }
+.scn-head { display:flex; justify-content:space-between; margin-bottom:6px; }
+.scn-name { font-weight:600; font-size:13px; letter-spacing:0.5px; }
+.scn-prob { font-size:13px; color:#8b949e; }
+.scn-path { font-size:14px; margin-bottom:8px; }
+.scn-triggers { margin:0; padding-left:18px; font-size:13px; color:#8b949e; }
+.scn-triggers li { margin:2px 0; }
+table.trades { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+table.trades th { text-align:left; padding:8px 10px; color:#8b949e; font-weight:500; border-bottom:1px solid #30363d; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+table.trades td { padding:10px; border-bottom:1px solid #21262d; vertical-align:top; }
+table.trades .rationale, table.trades .exit { color:#c9d1d9; font-size:12px; max-width:220px; }
+table.trades .muted { color:#8b949e; font-size:11px; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+ul.risks, ul.exits { margin:0; padding-left:18px; font-size:13px; }
+ul.risks li, ul.exits li { margin:4px 0; }
+.footer { margin-top:60px; padding-top:16px; border-top:1px solid #30363d; font-size:11px; color:#8b949e; }
+.footer a { color:#58a6ff; text-decoration:none; }
+.empty { color:#8b949e; font-style:italic; font-size:13px; }
+@media (max-width:600px) { .kpis { grid-template-columns:repeat(2,1fr); } .two-col { grid-template-columns:1fr; } }
+</style>
+</head><body>
+<h1>Weekly Options Briefing</h1>
+<div class="subtitle">2026-04-27 — week ending 2026-05-01 · MSTR · TSLA</div>
+<div class="headline">MSTR pinned by long-gamma structure near 171 as call skew persists across the curve; TSLA sandwiched between the 375 put wall and 380 call wall with IV at a 25th-percentile low, tilting the edge decisively to premium buyers.</div>
+
+    <section class="ticker">
+      <h2>MSTR <span class="spot">$171.02</span></h2>
+      <h3>Setup</h3>
+      
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma</div><div class="k-val">Long</div><div class="k-note">Net GEX +6.2B; market makers are net long gamma, mechanically selling into rallies and buying dips, creating a gravitational pin in the 165–185 corridor</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val">Call-dominant</div><div class="k-note">70th pctl</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val">1.11</div><div class="k-note">seller edge</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$165.0 – $185.0</div><div class="k-note">magnet $172.0</div></div>
+    </div>
+    
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">25%</span></div>
+            <div class="scn-path">BTC recovers above $80K, lifting MSTR through the 180 call wall and into the 185–195 GEX call cluster; IV expands on the directional break as short-call hedging accelerates the move.</div>
+            <ul class="scn-triggers"><li>BTC closes above $80,000 on daily basis</li><li>MSTR daily close above 180 on volume greater than 1.5× 20-day average</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">55%</span></div>
+            <div class="scn-path">Spot oscillates in the 165–185 range pinned by long-gamma structure; call skew gradually compresses as the week progresses; front IV drifts lower from 76% toward 70% with time decay; BTC stabilizes near current levels.</div>
+            <ul class="scn-triggers"><li>BTC range-bound between $75K and $80K</li><li>MSTR holds above 165 GEX put floor without a confirmed close below</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">BTC weakness pushes MSTR below the 165 GEX put wall, triggering negative dealer delta-hedging flows that amplify the selloff; tests the 155–160 zone where the next major put support sits.</div>
+            <ul class="scn-triggers"><li>BTC closes below $74,000</li><li>MSTR closes below 165 on above-average volume</li></ul>
+          </div>
+        </div>
+      <h3>Trade Ideas</h3>
+      
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strike</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Call Credit Spread</strong></td>
+            <td>$185/200</td>
+            <td>2026-05-22<br><span class="muted">25d</span></td>
+            <td>$4.50</td>
+            <td class="rationale">Fade persistent call skew (70th percentile) directly at the 185 GEX call wall (second-largest call gamma cluster at +1.07B); NVRP 1.11 confirms seller edge with IV outpacing realized vol; long-gamma regime suppresses sustained breakouts through this level; the anomalous -11.2 pt call skew in the May 29 bucket signals speculative call accumulation that is structurally prone to unwind.</td>
+            <td class="exit">Take profit at 50% of max gain; stop if MSTR closes above 187 on two consecutive sessions, or if NVRP falls below 0.95</td>
+          </tr>
+        
+          <tr>
+            <td><strong>Put Credit Spread</strong></td>
+            <td>$160/150</td>
+            <td>2026-05-15<br><span class="muted">18d</span></td>
+            <td>$2.25</td>
+            <td class="rationale">The 165 GEX put wall carries -677M in dealer short gamma, providing mechanical support via long-gamma hedging flows; selling the 160/150 spread collects elevated put premium while staying 3.5% below the GEX floor; BTC beta 1.4 context consistent with base-case sideways action.</td>
+            <td class="exit">Take profit at 50% of max gain; stop if MSTR closes below 163 or if BTC breaks $74,000 on a daily close</td>
+          </tr>
+        </tbody>
+    </table>
+    
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li>BTC correlation at beta 1.4 means a sharp BTC selloff directly cascades to MSTR regardless of the options structure</li><li>May 29 bucket anomalous call skew of -11.2 pts could reflect informed buying ahead of an undisclosed catalyst</li><li>Long-gamma pinning breaks down rapidly once spot exits the 165–185 range; both spreads need active monitoring at the GEX boundaries</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Close all short premium positions immediately if NVRP drops below 0.95 (buyer edge returned, seller edge lost)</li><li>Roll short strikes outward by 10 points if spot threatens a GEX-wall breach confirmed by two consecutive closes outside the 165–185 range</li></ul></div>
+      </div>
+    </section>
+    
+    <section class="ticker">
+      <h2>TSLA <span class="spot">$376.3</span></h2>
+      <h3>Setup</h3>
+      
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma</div><div class="k-val">neutral</div><div class="k-note">Net GEX +12.4B but classified neutral; spot sits in a thin no-man&#x27;s-land between the 375 put wall (0.3% OTM) and 380 call wall (0.98% OTM), creating coiled tension where any directional catalyst will be amplified by dealer hedging</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val">Call-dominant</div><div class="k-note">83th pctl</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val">0.87</div><div class="k-note">buyer edge</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$370.0 – $400.0</div><div class="k-note">magnet $378.0</div></div>
+    </div>
+    
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">30%</span></div>
+            <div class="scn-path">TSLA pushes through the 380 GEX call wall; negative-gamma dealer short-covering amplifies the break; rally targets 390–400 where the two largest call GEX walls at +4.79B and +8.07B cap the move.</div>
+            <ul class="scn-triggers"><li>TSLA daily close above 380 with options volume spike above 130% of 20-day average</li><li>Broader equity rally with SPX gaining 1%+ on a single session</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">45%</span></div>
+            <div class="scn-path">Spot remains trapped in the 370–385 corridor bounded by major GEX walls on both sides; realized vol compresses toward front IV of 39%; low IV environment persists with no macro catalyst.</div>
+            <ul class="scn-triggers"><li>No significant macro event this week</li><li>TSLA holds 370 and fails to clear 385 for three or more consecutive sessions</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">25%</span></div>
+            <div class="scn-path">Spot breaks below the 370 GEX put wall; negative dealer delta flows amplify the move lower; tests the 350–360 GEX put cluster where the next major support at -3.65B sits.</div>
+            <ul class="scn-triggers"><li>TSLA closes below 370 on volume above 130% of 20-day average</li><li>Macro risk-off event pushing broader tech and high-beta names lower</li></ul>
+          </div>
+        </div>
+      <h3>Trade Ideas</h3>
+      
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strike</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Long Strangle</strong></td>
+            <td>$370/385</td>
+            <td>2026-05-15<br><span class="muted">18d</span></td>
+            <td>-$13.50</td>
+            <td class="rationale">NVRP 0.87 signals IV (38.96%) is priced below realized vol (RV30 44.70%), a rare buyer-edge condition; spot is literally pinned at the 375/380 GEX intersection — the tightest wall configuration in the data — making a directional break imminent; IV at the 25th percentile 2-year low makes this strangle historically cheap; 370 put and 385 call bracket the two most likely break points where dealer hedging accelerates the move.</td>
+            <td class="exit">Close each leg independently at 2× its individual cost; cut the losing leg at 50% loss if spot moves strongly through one GEX wall and holds for two sessions</td>
+          </tr>
+        
+          <tr>
+            <td><strong>Call Debit Spread</strong></td>
+            <td>$380/400</td>
+            <td>2026-05-22<br><span class="muted">25d</span></td>
+            <td>-$7.00</td>
+            <td class="rationale">86.6% of open call interest is concentrated in short-dated contracts (speculative regime), signaling demand for upside exposure; a break above the 380 GEX call wall (only 0.98% OTM) targets the 400 level where +8.07B call GEX creates the dominant ceiling; NVRP 0.87 makes this debit spread cheap relative to realized vol; 25 DTE captures delayed follow-through from a bullish break.</td>
+            <td class="exit">Close at 75% of max profit ($15 spread width minus debit) or when TSLA touches 400; stop at full debit loss if TSLA closes below 373 on two consecutive days</td>
+          </tr>
+        </tbody>
+    </table>
+    
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li>Long strangle is exposed to continued low-IV mean reversion if spot stays pinned — theta decay erodes value even when the buyer edge setup is structurally correct</li><li>The 375 put wall (0.3% OTM) and 380 call wall (0.98% OTM) are so close that spot could oscillate between them for multiple sessions, bleeding both strangle legs</li><li>Broader macro overhang (tariffs, Fed policy, EV demand headlines) can amplify a downside break well beyond the GEX framework&#x27;s implied range</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Strangle: manage each leg independently — take profit at 2× individual leg cost; exit the losing leg if TSLA decisively breaks one GEX wall and consolidates for two sessions</li><li>Call spread: close for 75% of max gain; stop at full debit loss if TSLA fails to reclaim 376 within five sessions of entering</li></ul></div>
+      </div>
+    </section>
+    
+<div class="footer">
+Auto-generated from <code>snapshots/trend-*.json</code> ·
+<a href="index.html">All dashboards →</a>
+</div>
+</body></html>
