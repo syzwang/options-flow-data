@@ -1,6 +1,6 @@
 {
   "ticker": "MSTR",
-  "date": "2026-04-29",
+  "date": "2026-04-30",
   "num_snapshots": 10,
   "date_range": [
     "2026-04-18",
@@ -14,6 +14,17 @@
     "front_pc_spread": 4.130128060315741,
     "nvrp": 1.18,
     "skew_level": "MUTED"
+  },
+  "prev_state": {
+    "date": "2026-04-28",
+    "spot": 165.71,
+    "rv30": 67.56932367173984,
+    "iv_pct_2yr": 38.6411889596603,
+    "front_atm_iv": 81.42134317713706,
+    "front_pc_spread": -0.7862015199901817,
+    "nvrp": 1.21,
+    "top_call_wall": 177.5,
+    "top_put_wall": 165.0
   },
   "pc_spread_series": {
     "front": [
@@ -12427,16 +12438,17 @@
     "window_days": 492
   },
   "btc_context": {
-    "btc_price": 75858.0,
-    "btc_24h": -0.65,
-    "btc_7d": -3.0,
+    "btc_price": 76347.0,
+    "btc_24h": 0.75,
+    "btc_7d": -2.46,
+    "btc_rv_7d": 21.6,
     "mstr_24h": -4.54,
-    "correlation": 0.57,
-    "beta": 1.46,
+    "correlation": 0.58,
+    "beta": 1.47,
     "divergence": {
-      "expected": -0.94,
+      "expected": 1.11,
       "actual": -4.54,
-      "residual": -3.6,
+      "residual": -5.65,
       "direction": "discount"
     },
     "sample_n": 10

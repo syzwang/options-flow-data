@@ -1,6 +1,6 @@
 {
   "ticker": "TSLA",
-  "date": "2026-04-29",
+  "date": "2026-04-30",
   "num_snapshots": 10,
   "date_range": [
     "2026-04-18",
@@ -14,6 +14,17 @@
     "front_pc_spread": -0.8254679649055796,
     "nvrp": 0.97,
     "skew_level": "CALL_SKEW"
+  },
+  "prev_state": {
+    "date": "2026-04-28",
+    "spot": 376.02,
+    "rv30": 44.569215732320195,
+    "iv_pct_2yr": 25.265392781316347,
+    "front_atm_iv": 44.16125066163856,
+    "front_pc_spread": -0.6562500300370977,
+    "nvrp": 0.99,
+    "top_call_wall": 380.0,
+    "top_put_wall": 370.0
   },
   "pc_spread_series": {
     "front": [

@@ -444,6 +444,20 @@ def btc_context(ticker, snapshots):
         btc_now = float(btc_close.iloc[-1])
         btc_24h = (btc_now / float(btc_close.iloc[-2]) - 1) * 100 if len(btc_close) >= 2 else 0
         btc_7d = (btc_now / float(btc_close.iloc[-8]) - 1) * 100 if len(btc_close) >= 8 else 0
+        # Annualized 7-day realized vol from log returns (V3 rule input)
+        btc_rv_7d = None
+        if len(btc_close) >= 8:
+            import math
+            rets = []
+            for i in range(len(btc_close) - 7, len(btc_close)):
+                p_prev = float(btc_close.iloc[i - 1])
+                p_curr = float(btc_close.iloc[i])
+                if p_prev > 0:
+                    rets.append(math.log(p_curr / p_prev))
+            if len(rets) >= 5:
+                mean_r = sum(rets) / len(rets)
+                var_r = sum((r - mean_r) ** 2 for r in rets) / max(1, len(rets) - 1)
+                btc_rv_7d = (var_r ** 0.5) * (365 ** 0.5) * 100
         # Rolling 30d correlation with MSTR daily returns
         correlation = None
         beta = None
@@ -516,6 +530,7 @@ def btc_context(ticker, snapshots):
             'btc_price': round(btc_now, 0),
             'btc_24h': round(btc_24h, 2),
             'btc_7d': round(btc_7d, 2),
+            'btc_rv_7d': round(btc_rv_7d, 1) if btc_rv_7d is not None else None,
             'mstr_24h': round(mstr_24h, 2),
             'correlation': round(correlation, 2) if correlation is not None else None,
             'beta': round(beta, 2) if beta is not None else None,
@@ -1301,8 +1316,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     lang_suffix = '_zh' if lang == 'zh' else ''
     if lang == 'zh':
         nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = '概览', '偏度', '期限', '墙'
+        nav_lbl_verdict = '裁定'
+        nav_lbl_highlights = '要点'
     else:
         nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = 'KPIs', 'Skew', 'Term', 'Walls'
+        nav_lbl_verdict = 'Verdict'
+        nav_lbl_highlights = 'Today'
 
     pc = trend_data['pc_spread_series']
     crossings = trend_data['zero_crossings']
@@ -1311,6 +1330,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     persist = trend_data['volume_persistence']
     em = trend_data['em_accuracy']
     current = trend_data['current_state']
+    prev_state = trend_data.get('prev_state')
     skew_pct = trend_data.get('skew_percentile')
     call_dte = trend_data.get('call_dte_ratio')
     gex_data = trend_data.get('gex_walls')
@@ -1328,6 +1348,16 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
                 holdings = json.load(_hf)
         except (FileNotFoundError, json.JSONDecodeError):
             holdings = None
+
+    # Load open options positions (used for rulebook verdict card + chart overlays)
+    open_positions = []
+    positions_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'positions.json')
+    try:
+        with open(positions_path) as _pf:
+            _all_pos = json.load(_pf).get('positions', [])
+            open_positions = [p for p in _all_pos if p.get('ticker') == ticker and p.get('status', '').startswith('open')]
+    except (FileNotFoundError, json.JSONDecodeError):
+        open_positions = []
 
     if mode == 'auto':
         mode = _detect_mode()
@@ -2340,6 +2370,18 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
 </div>"""
 
     # --- OI Delta Distribution histogram (yesterday → today, per expiry) ---
+    # Build positions JSON for chart overlay (only short legs with strike on this ticker)
+    positions_overlay = []
+    for p in open_positions:
+        if p.get('strike') is not None:
+            label = p.get('label')
+            if not label:
+                struct_short = {'covered_call': 'CC', 'cash_secured_put': 'CSP', 'naked_put': 'NP', 'naked_call': 'NC'}.get(p.get('structure', ''), p.get('structure', '').upper())
+                side = p.get('side', '').upper()
+                label = f"{side} {struct_short} ${p['strike']}"
+            positions_overlay.append({'strike': p['strike'], 'label': label})
+    positions_json = json.dumps(positions_overlay)
+
     oi_delta_html = ""
     oi_delta_json = "{}"
     if oi_delta_dist:
@@ -2497,6 +2539,397 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
   <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of {as_of} · BTC ${btc_price:,.0f} (from yfinance close) · source: strategy.com</div>
 </div>"""
 
+    # --- Daily Highlights card (5-second summary, day-over-day deltas) ---
+    is_zh_hl = (lang == 'zh')
+    spot_cur = current.get('spot') or 0
+    iv_cur = current.get('front_atm_iv') or 0
+    rv_cur = current.get('rv30') or 0
+    nvrp_cur = current.get('nvrp') or 0
+    pc_cur = current.get('front_pc_spread') or 0
+    iv_pct_cur = current.get('iv_pct_2yr') or 0
+
+    # Day-over-day deltas (None when first snapshot)
+    spot_chg_pct = None
+    iv_chg = None
+    nvrp_chg = None
+    pc_chg = None
+    iv_pct_chg = None
+    pc_flipped = None  # 'to_safe' / 'to_danger' / None
+    if prev_state and prev_state.get('spot'):
+        spot_chg_pct = (spot_cur / prev_state['spot'] - 1) * 100
+        iv_chg = iv_cur - (prev_state.get('front_atm_iv') or 0)
+        nvrp_chg = nvrp_cur - (prev_state.get('nvrp') or 0)
+        pc_chg = pc_cur - (prev_state.get('front_pc_spread') or 0)
+        iv_pct_chg = iv_pct_cur - (prev_state.get('iv_pct_2yr') or 0)
+        pc_prev = prev_state.get('front_pc_spread') or 0
+        if pc_prev < 0 and pc_cur >= 0:
+            pc_flipped = 'to_safe'
+        elif pc_prev >= 0 and pc_cur < 0:
+            pc_flipped = 'to_danger'
+
+    # Top GEX walls today vs yesterday
+    cur_call_wall = (gex_data or {}).get('call_walls', [{}])[0].get('strike') if (gex_data and gex_data.get('call_walls')) else None
+    cur_put_wall = (gex_data or {}).get('put_walls', [{}])[0].get('strike') if (gex_data and gex_data.get('put_walls')) else None
+    prev_call_wall = (prev_state or {}).get('top_call_wall')
+    prev_put_wall = (prev_state or {}).get('top_put_wall')
+
+    # Notable OI movers (biggest |call_delta| and |put_delta| in latest day's oi delta)
+    oi_latest_for_hl = oi[-1] if oi else None
+    top_call_oi_mover = None
+    top_put_oi_mover = None
+    if oi_latest_for_hl:
+        # oi_latest is a dict with strikes-keyed call/put delta entries
+        # Structure depends on oi_delta() implementation — let's be defensive
+        rows = oi_latest_for_hl.get('strikes', []) if isinstance(oi_latest_for_hl, dict) else []
+        if not rows and isinstance(oi_latest_for_hl, dict):
+            # alternative shape: {strike: {call_delta, put_delta}}
+            for k, v in oi_latest_for_hl.items():
+                if isinstance(v, dict) and ('call_oi_delta' in v or 'put_oi_delta' in v):
+                    rows.append({'strike': k, **v})
+
+    # Fallback: pull from oi_delta_dist (today's date) — biggest abs change
+    if oi_delta_dist:
+        # oi_delta_dist is keyed by expiry, each with strikes/call_delta/put_delta arrays
+        best_call = (0, None)
+        best_put = (0, None)
+        for exp, d in oi_delta_dist.items():
+            strikes = d.get('strikes', [])
+            cdeltas = d.get('call_delta', [])
+            pdeltas = d.get('put_delta', [])
+            for i, s in enumerate(strikes):
+                if i < len(cdeltas) and abs(cdeltas[i]) > abs(best_call[0]):
+                    best_call = (cdeltas[i], s)
+                if i < len(pdeltas) and abs(pdeltas[i]) > abs(best_put[0]):
+                    best_put = (pdeltas[i], s)
+        if best_call[1] is not None and abs(best_call[0]) >= 1000:
+            top_call_oi_mover = {'strike': best_call[1], 'delta': best_call[0]}
+        if best_put[1] is not None and abs(best_put[0]) >= 1000:
+            top_put_oi_mover = {'strike': best_put[1], 'delta': best_put[0]}
+
+    # Format helpers
+    def _delta_arrow(v, fmt='{:+.1f}', good_when_high=None, neutral_thresh=0.1, suffix=''):
+        if v is None:
+            return ''
+        if abs(v) < neutral_thresh:
+            return f'<span style="color:#8b949e;font-size:11px;">(持平)</span>' if is_zh_hl else f'<span style="color:#8b949e;font-size:11px;">(flat)</span>'
+        color = '#8b949e'
+        if good_when_high is not None:
+            if (v > 0 and good_when_high) or (v < 0 and not good_when_high):
+                color = '#3fb950'
+            else:
+                color = '#f85149'
+        elif v > 0:
+            color = '#3fb950'
+        else:
+            color = '#f85149'
+        return f'<span style="color:{color};font-size:11px;">({fmt.format(v)}{suffix})</span>'
+
+    btc_price_hl = (btc_data or {}).get('btc_price')
+    btc_24h_hl = (btc_data or {}).get('btc_24h')
+
+    # Build rows
+    if is_zh_hl:
+        L_hl = {
+            'title': '今日要点',
+            'lead': '昨日 → 今日的关键变化（5 秒概览）。详细图表见下方各卡。',
+            'price_label': '价格',
+            'iv_label': 'IV / RV',
+            'skew_label': '偏度',
+            'gex_label': 'GEX 墙',
+            'oi_label': 'OI 异动',
+            'verdict_label': '裁定',
+            'flat': '持平',
+            'unchanged': '稳',
+            'flipped_safe': '⚠ 翻正（call 偏度回归正常）',
+            'flipped_danger': '⚠ 翻负（call 比 put 贵 — 顶部信号）',
+            'no_prev': '（首次快照，无对比）',
+            'call_built': '新建 Call 仓',
+            'call_unwound': 'Call 平仓',
+            'put_built': '新建 Put 仓',
+            'put_unwound': 'Put 平仓',
+            'no_oi_mover': '无显著异动',
+        }
+    else:
+        L_hl = {
+            'title': "Today's Highlights",
+            'lead': 'Key changes since yesterday (5-second summary). See cards below for full charts.',
+            'price_label': 'Price',
+            'iv_label': 'IV / RV',
+            'skew_label': 'Skew',
+            'gex_label': 'GEX walls',
+            'oi_label': 'OI movers',
+            'verdict_label': 'Verdict',
+            'flat': 'flat',
+            'unchanged': 'unchanged',
+            'flipped_safe': '⚠ flipped to positive (call-skew recovering)',
+            'flipped_danger': '⚠ flipped negative (calls > puts — top signal)',
+            'no_prev': '(first snapshot, no comparison)',
+            'call_built': 'Calls built',
+            'call_unwound': 'Calls unwound',
+            'put_built': 'Puts built',
+            'put_unwound': 'Puts unwound',
+            'no_oi_mover': 'no significant movers',
+        }
+
+    # Price row
+    price_html = f'Spot ${spot_cur:,.2f}'
+    if spot_chg_pct is not None:
+        sign = '+' if spot_chg_pct >= 0 else ''
+        color = '#3fb950' if spot_chg_pct >= 0 else '#f85149'
+        price_html += f' <span style="color:{color};font-size:11px;">({sign}{spot_chg_pct:.2f}%)</span>'
+    if btc_price_hl:
+        price_html += f' &nbsp;·&nbsp; BTC ${btc_price_hl/1000:.1f}K'
+        if btc_24h_hl is not None:
+            sign = '+' if btc_24h_hl >= 0 else ''
+            color = '#3fb950' if btc_24h_hl >= 0 else '#f85149'
+            price_html += f' <span style="color:{color};font-size:11px;">({sign}{btc_24h_hl:.2f}%)</span>'
+
+    # IV/RV row
+    iv_html = f'ATM IV {iv_cur:.1f}% {_delta_arrow(iv_chg, "{:+.1f}", suffix="pp")} &nbsp;·&nbsp; RV30 {rv_cur:.1f}% &nbsp;·&nbsp; NVRP {nvrp_cur:.2f}x {_delta_arrow(nvrp_chg, "{:+.2f}")} &nbsp;·&nbsp; IV %ile {iv_pct_cur:.0f} {_delta_arrow(iv_pct_chg, "{:+.0f}")}'
+
+    # Skew row
+    pc_color = '#3fb950' if pc_cur >= 0 else '#f85149'
+    skew_html = f'25Δ front <span style="color:{pc_color};font-weight:600;">{pc_cur:+.1f} pts</span> {_delta_arrow(pc_chg, "{:+.1f}", suffix="pp")}'
+    if pc_flipped == 'to_safe':
+        skew_html += f' <span style="color:#d29922;font-size:11px;font-weight:600;">{L_hl["flipped_safe"]}</span>'
+    elif pc_flipped == 'to_danger':
+        skew_html += f' <span style="color:#f85149;font-size:11px;font-weight:600;">{L_hl["flipped_danger"]}</span>'
+
+    # GEX walls row
+    def _wall_str(cur, prev, color):
+        if cur is None:
+            return f'<span style="color:#6e7681;">—</span>'
+        s = f'<span style="color:{color};font-weight:600;">${cur:.0f}</span>'
+        if prev is not None and prev != cur:
+            move = cur - prev
+            sign = '+' if move > 0 else ''
+            s += f' <span style="color:#8b949e;font-size:11px;">(was ${prev:.0f}, {sign}{move:.0f})</span>'
+        elif prev is not None and prev == cur:
+            s += f' <span style="color:#8b949e;font-size:11px;">({L_hl["unchanged"]})</span>'
+        return s
+    gex_html = f'Call {_wall_str(cur_call_wall, prev_call_wall, "#3fb950")} &nbsp;·&nbsp; Put {_wall_str(cur_put_wall, prev_put_wall, "#f85149")}'
+
+    # OI movers row
+    oi_parts = []
+    if top_call_oi_mover:
+        d = top_call_oi_mover['delta']
+        verb = L_hl['call_built'] if d > 0 else L_hl['call_unwound']
+        color = '#3fb950' if d > 0 else '#f85149'
+        oi_parts.append(f'<span style="color:{color};">{verb}</span> @ ${top_call_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
+    if top_put_oi_mover:
+        d = top_put_oi_mover['delta']
+        verb = L_hl['put_built'] if d > 0 else L_hl['put_unwound']
+        color = '#f85149' if d > 0 else '#3fb950'
+        oi_parts.append(f'<span style="color:{color};">{verb}</span> @ ${top_put_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
+    oi_html = ' &nbsp;·&nbsp; '.join(oi_parts) if oi_parts else f'<span style="color:#6e7681;">{L_hl["no_oi_mover"]}</span>'
+
+    # Verdict row — placeholder; will be filled after verdict block computes
+    # We'll insert a {VERDICT_PILL} placeholder and replace after verdict_label is known
+    highlights_rows = [
+        ('💰', L_hl['price_label'], price_html),
+        ('📊', L_hl['iv_label'], iv_html),
+        ('⚖️', L_hl['skew_label'], skew_html),
+        ('🧱', L_hl['gex_label'], gex_html),
+        ('📈', L_hl['oi_label'], oi_html),
+    ]
+    rows_html = []
+    for icon, label, body in highlights_rows:
+        rows_html.append(f'''<div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
+      <div style="text-align:center;font-size:14px;">{icon}</div>
+      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{label}</div>
+      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">{body}</div>
+    </div>''')
+
+    if not prev_state:
+        no_prev_note = f'<div style="font-size:11px;color:#6e7681;font-style:italic;margin-top:8px;">{L_hl["no_prev"]}</div>'
+    else:
+        no_prev_note = f'<div style="font-size:10px;color:#6e7681;margin-top:8px;">vs {prev_state.get("date","")}</div>'
+
+    # Highlights card built — verdict pill placeholder will be replaced below
+    highlights_card_html = f"""
+<div class="card" id="highlights">
+  <h2 style="display:flex;align-items:center;gap:10px;">
+    <span>{L_hl['title']}</span>
+    {{VERDICT_PILL_PLACEHOLDER}}
+  </h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">{L_hl['lead']}</div>
+  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:4px 14px;">
+    {''.join(rows_html)}
+  </div>
+  {no_prev_note}
+</div>"""
+
+    # --- Rulebook Verdict card (top-of-page decision layer) ---
+    iv_pct_2yr = current.get('iv_pct_2yr') or 0
+    spot_now = current.get('spot') or 0
+
+    # Recompute mNAV (mNAV card may not have run if holdings missing)
+    mnav_val = None
+    if ticker == 'MSTR' and holdings and btc_data:
+        _shares = holdings.get('basic_shares_outstanding') or 0
+        _btc_held = holdings.get('btc_holdings') or 0
+        _btc_price = btc_data.get('btc_price') or 0
+        _btc_reserve = _btc_held * _btc_price
+        if _btc_reserve > 0:
+            _mc = spot_now * _shares
+            _ev = _mc + (holdings.get('debt') or 0) + (holdings.get('pref') or 0) - (holdings.get('cash') or 0)
+            mnav_val = _ev / _btc_reserve
+
+    btc_rv_7d = (btc_data or {}).get('btc_rv_7d') if btc_data else None
+
+    # GEX call wall (for E6 TSLA — top call wall above spot)
+    top_call_wall = None
+    if gex_data and gex_data.get('call_walls'):
+        top_call_wall = gex_data['call_walls'][0]['strike']
+
+    # Language-aware rule labels
+    is_zh = (lang == 'zh')
+    L = {
+        'e1_label': 'IV 底线（卖权门槛）' if is_zh else 'Premium-sell IV floor',
+        'e1_iv_pct': 'IV 分位' if is_zh else 'IV %ile',
+        'e1_pass': 'IV ≥ 50 → 卖权可开' if is_zh else 'IV ≥ 50 → selling premium ok',
+        'e1_block': 'IV 太低 — 改用长期权 / 借方价差' if is_zh else 'Vol cheap — favor long premium / debit spreads',
+        'e5_label': 'MSTR 短 Call 守护' if is_zh else 'MSTR short-call guardrail',
+        'e5_pass': '两道闸门均通过' if is_zh else 'Both gates open',
+        'e5_na': 'mNAV 数据缺失' if is_zh else 'mNAV unavailable',
+        'e5_na_detail': '无法评估 — holdings 文件缺失' if is_zh else 'Cannot evaluate — holdings missing',
+        'e5_block': '不开新短 Call（CC / 裸卖 / 熊市 call 价差）' if is_zh else 'No new short calls (CC, naked, bear-call)',
+        'e6_label': 'TSLA 短 Call 纪律' if is_zh else 'TSLA short-call discipline',
+        'e6_block': '低于 Call 墙 — 短 Call 被钉风险' if is_zh else 'Below the call wall — short calls trapped if pinned',
+        'e6_pass': '高于 Call 墙；优先价差非裸卖' if is_zh else 'Above the wall; prefer spreads over naked',
+        'e6_na': 'GEX 墙数据缺失' if is_zh else 'GEX wall unavailable',
+        'e6_na_detail': '无法评估' if is_zh else 'Cannot evaluate',
+        'v3_label': 'BTC 波动率冻结' if is_zh else 'BTC volatility freeze',
+        'v3_pass': '低于冻结阈值' if is_zh else 'Below freeze threshold',
+        'v3_block': '暂停 MSTR/IBIT 卖权' if is_zh else 'Pause MSTR/IBIT premium sells',
+        'v3_na': 'RV7 数据缺失' if is_zh else 'RV7 unavailable',
+        'v3_na_detail': '无法评估' if is_zh else 'Cannot evaluate',
+        'spot': '现价' if is_zh else 'Spot',
+        'call_wall': 'Call 墙',
+        'mnav_unit': 'x',
+    }
+
+    # Rule rows: each is (code, label, status_text, status, detail)
+    # status: 'pass' | 'block' | 'na'
+    rules = []
+
+    # E1 — premium-sell IV floor (≥50)
+    if iv_pct_2yr >= 50:
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f}', 'pass', L['e1_pass']))
+    else:
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 50', 'block', L['e1_block']))
+
+    if ticker == 'MSTR':
+        # E5 — MSTR short-call (IV pct ≥50 AND mNAV ≥1.4)
+        if iv_pct_2yr >= 50 and mnav_val is not None and mnav_val >= 1.4:
+            rules.append(('E5', L['e5_label'], f'IV {iv_pct_2yr:.0f} · mNAV {mnav_val:.2f}x', 'pass', L['e5_pass']))
+        elif mnav_val is None:
+            rules.append(('E5', L['e5_label'], L['e5_na'], 'na', L['e5_na_detail']))
+        else:
+            reasons = []
+            if iv_pct_2yr < 50: reasons.append(f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 50')
+            if mnav_val < 1.4: reasons.append(f'mNAV {mnav_val:.2f}x < 1.4')
+            rules.append(('E5', L['e5_label'], ' · '.join(reasons), 'block', L['e5_block']))
+
+        # V3 — BTC vol freeze (RV7 > 80% blocks)
+        if btc_rv_7d is None:
+            rules.append(('V3', L['v3_label'], L['v3_na'], 'na', L['v3_na_detail']))
+        elif btc_rv_7d > 80:
+            rules.append(('V3', L['v3_label'], f'BTC RV7 {btc_rv_7d:.0f}% > 80%', 'block', L['v3_block']))
+        else:
+            rules.append(('V3', L['v3_label'], f'BTC RV7 {btc_rv_7d:.0f}%', 'pass', L['v3_pass']))
+
+    elif ticker == 'TSLA':
+        # E6 — TSLA short-call discipline (above call wall, prefer spreads)
+        if top_call_wall is not None and spot_now > 0:
+            if spot_now < top_call_wall:
+                rules.append(('E6', L['e6_label'], f'{L["spot"]} ${spot_now:.0f} < {L["call_wall"]} ${top_call_wall:.0f}', 'block', L['e6_block']))
+            else:
+                rules.append(('E6', L['e6_label'], f'{L["spot"]} ${spot_now:.0f} > {L["call_wall"]} ${top_call_wall:.0f}', 'pass', L['e6_pass']))
+        else:
+            rules.append(('E6', L['e6_label'], L['e6_na'], 'na', L['e6_na_detail']))
+
+    # Aggregate verdict
+    blocked = [r for r in rules if r[3] == 'block']
+    if blocked:
+        verdict_color = '#f85149'
+        verdict_label = '今日不开仓' if is_zh else 'STAND ASIDE'
+        verdict_detail = (f'{len(blocked)} 条规则阻塞新短期权' if is_zh
+                          else f'{len(blocked)} rule(s) blocking new short premium')
+        verdict_action = ('改用借方价差 / 长期权 / 等 IV 回升' if is_zh
+                          else 'Use defined-risk / long premium / wait for IV to recover')
+    else:
+        verdict_color = '#3fb950'
+        verdict_label = '闸门通过' if is_zh else 'GATES OPEN'
+        verdict_detail = '所有适用规则通过' if is_zh else 'All applicable rules pass'
+        verdict_action = '进入仓位 sizing (S1–S6) 与开仓' if is_zh else 'Proceed to sizing (S1–S6) and entry'
+
+    # Build rule rows HTML
+    icons = {'pass': '✓', 'block': '✗', 'na': '·'}
+    icon_colors = {'pass': '#3fb950', 'block': '#f85149', 'na': '#8b949e'}
+    row_html = []
+    for code, label, status_text, status, detail in rules:
+        ic = icons[status]
+        ic_color = icon_colors[status]
+        row_html.append(f'''<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:18px;font-weight:600;color:{ic_color};width:20px;text-align:center;">{ic}</div>
+      <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">{code}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:#e6edf3;">{label}</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">{status_text} · {detail}</div>
+      </div>
+    </div>''')
+    rules_table_html = '\n    '.join(row_html)
+
+    # Open positions block
+    pos_html = ''
+    if open_positions:
+        pos_lines = []
+        for p in open_positions:
+            structure = p.get('structure', '').replace('_', ' ').title()
+            side = p.get('side', '').upper()
+            strike = p.get('strike')
+            opened = p.get('opened', '')
+            label = p.get('label', f'{side} {structure} ${strike}')
+            pos_lines.append(f'''<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12px;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#a371f7;"></span>
+        <span style="color:#e6edf3;font-weight:500;">{label}</span>
+        <span style="color:#8b949e;">opened {opened} · journal/{p.get('journal','')}</span>
+      </div>''')
+        pos_block_label = '当前持仓（图表中以紫色虚线标注）' if is_zh else 'Open positions on this ticker (marked on charts as purple dashed lines)'
+        pos_html = f'''<div style="margin-top:14px;padding:12px 14px;background:#0d1117;border:1px solid rgba(163,113,247,0.25);border-radius:10px;">
+      <div style="font-size:11px;color:#a371f7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{pos_block_label}</div>
+      {''.join(pos_lines)}
+    </div>'''
+
+    # Card title + lead text
+    if is_zh:
+        verdict_title = '规则裁定'
+        verdict_lead = '基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断 — 任何一条阻塞 = 不开新短期权。'
+    else:
+        verdict_title = 'Rulebook Verdict'
+        verdict_lead = "Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent — any blocked rule = no new short premium."
+
+    # Inject verdict pill into highlights card
+    verdict_pill_html = f'<a href="#verdict" style="text-decoration:none;background:{verdict_color}22;color:{verdict_color};border:1px solid {verdict_color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">{verdict_label}</a>'
+    highlights_card_html = highlights_card_html.replace('{VERDICT_PILL_PLACEHOLDER}', verdict_pill_html)
+
+    rulebook_card_html = f"""
+<div class="card" id="verdict" style="border:1px solid {verdict_color}40;">
+  <h2 style="display:flex;align-items:center;gap:10px;">
+    <span>{verdict_title}</span>
+    <span style="background:{verdict_color}22;color:{verdict_color};border:1px solid {verdict_color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">{verdict_label}</span>
+  </h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">{verdict_lead}</div>
+  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+    {rules_table_html}
+  </div>
+  <div style="margin-top:12px;padding:10px 14px;background:{verdict_color}10;border-left:3px solid {verdict_color};border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:{verdict_color};font-weight:600;">{verdict_detail}.</span> {verdict_action}.
+  </div>
+  {pos_html}
+</div>"""
+
     html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>{ticker} Flow Trend</title>
 <style>
@@ -2542,7 +2975,9 @@ th:first-child, td:first-child {{ text-align:left; }}
     <a href="trend_TSLA_{report_date}{lang_suffix}.html" class="{'active' if ticker == 'TSLA' else ''}">TSLA</a>
   </div>
   <div class="nav-center">
+    <a href="#highlights">{nav_lbl_highlights}</a>
     <a href="#kpis">{nav_lbl_kpi}</a>
+    <a href="#verdict">{nav_lbl_verdict}</a>
     <a href="#btc">BTC</a>
     {('<a href="#mnav">mNAV</a>' if ticker == 'MSTR' else '')}
     <a href="#spread">{nav_lbl_skew}</a>
@@ -2597,6 +3032,10 @@ th:first-child, td:first-child {{ text-align:left; }}
 </div>
 
 {mode_banner_html}
+
+{highlights_card_html}
+
+{rulebook_card_html}
 
 {btc_card_html}
 
@@ -2738,6 +3177,8 @@ th:first-child, td:first-child {{ text-align:left; }}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onload="initCharts()"></script>
 <script>
+// Open positions overlay (read by oi-markers and od-spot plugins)
+window.__openPositions = {positions_json};
 function initCharts() {{
   // P/C Spread Chart (enhanced)
   const spreadDates = {json.dumps(all_dates)};
@@ -3046,6 +3487,10 @@ function initCharts() {{
               {{ value: d.spot,     color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }},
               {{ value: d.max_pain, color: '#facc15', label: 'Max Pain $' + d.max_pain.toFixed(2) }},
             ];
+            // Append open-position strikes (purple, dashed)
+            for (const p of (window.__openPositions || [])) {{
+              markers.push({{ value: p.strike, color: '#a371f7', label: p.label }});
+            }}
             for (const m of markers) {{
               const px = pixelAtStrike(xs, m.value, d.strikes);
               if (px < area.left || px > area.right) continue;
@@ -3143,24 +3588,29 @@ function initCharts() {{
             const ctx = chart.ctx;
             const xs = chart.scales.x;
             const area = chart.chartArea;
-            const px = odPixelAtStrike(xs, d.spot, d.strikes);
-            if (px < area.left || px > area.right) return;
             ctx.save();
-            ctx.strokeStyle = '#22d3ee';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 4]);
-            ctx.beginPath();
-            ctx.moveTo(px, area.top);
-            ctx.lineTo(px, area.bottom);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle = '#22d3ee';
-            ctx.font = '600 10px -apple-system,sans-serif';
-            ctx.textBaseline = 'top';
-            const lbl = 'Spot $' + d.spot.toFixed(2);
-            const w = ctx.measureText(lbl).width;
-            const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
-            ctx.fillText(lbl, tx, area.top + 4);
+            const markers = [{{ value: d.spot, color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }}];
+            for (const p of (window.__openPositions || [])) {{
+              markers.push({{ value: p.strike, color: '#a371f7', label: p.label }});
+            }}
+            for (const m of markers) {{
+              const px = odPixelAtStrike(xs, m.value, d.strikes);
+              if (px < area.left || px > area.right) continue;
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 1.5;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(px, area.top);
+              ctx.lineTo(px, area.bottom);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.fillStyle = m.color;
+              ctx.font = '600 10px -apple-system,sans-serif';
+              ctx.textBaseline = 'top';
+              const w = ctx.measureText(m.label).width;
+              const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
+              ctx.fillText(m.label, tx, area.top + 4);
+            }}
             ctx.restore();
           }},
         }}],
@@ -3305,6 +3755,26 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         'skew_level': skew_alert_level(front_term.get('pc_iv_spread', 0)),
     }
 
+    # Previous-day state for day-over-day deltas in the Highlights card
+    prev_state = None
+    if len(snapshots) >= 2:
+        prev = snapshots[-2]
+        prev_terms = prev.get('term', [])
+        prev_front_term = next((t for t in prev_terms if t.get('dte', 0) >= 5),
+                                prev_terms[0] if prev_terms else {})
+        prev_gex = gex_walls(prev) or {}
+        prev_state = {
+            'date': prev.get('date', ''),
+            'spot': prev.get('spot', 0),
+            'rv30': prev.get('rv30', 0),
+            'iv_pct_2yr': prev.get('iv_pct_2yr', 0),
+            'front_atm_iv': prev_front_term.get('atm_iv', 0),
+            'front_pc_spread': prev_front_term.get('pc_iv_spread', 0),
+            'nvrp': round(prev_front_term.get('atm_iv', 0) / prev.get('rv30', 0), 2) if prev.get('rv30', 0) > 0 else 0,
+            'top_call_wall': (prev_gex.get('call_walls') or [{}])[0].get('strike') if prev_gex.get('call_walls') else None,
+            'top_put_wall': (prev_gex.get('put_walls') or [{}])[0].get('strike') if prev_gex.get('put_walls') else None,
+        }
+
     # Check all expirations for negative spread
     negative_spreads = []
     for t in latest.get('term', []):
@@ -3317,6 +3787,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         'num_snapshots': len(snapshots),
         'date_range': [snapshots[0]['date'], snapshots[-1]['date']],
         'current_state': current,
+        'prev_state': prev_state,
         'pc_spread_series': pc_series,
         'zero_crossings': crossings,
         'oi_deltas': oi_deltas,

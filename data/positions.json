@@ -1,0 +1,17 @@
+{
+  "_comment": "Open options positions. Read by trend.py (charts overlay) and weekly briefing. Each entry mirrors the journal's filename for cross-reference.",
+  "positions": [
+    {
+      "ticker": "MSTR",
+      "structure": "covered_call",
+      "side": "short",
+      "strike": 135,
+      "contracts": null,
+      "opened": "2026-04-13",
+      "expiry": null,
+      "status": "open_rolling",
+      "journal": "2026-04-13-MSTR-CC.md",
+      "label": "Short CC $135"
+    }
+  ]
+}
