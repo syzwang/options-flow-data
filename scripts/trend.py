@@ -2787,13 +2787,14 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     L = {
         'e1_label': 'IV 底线（卖权门槛）' if is_zh else 'Premium-sell IV floor',
         'e1_iv_pct': 'IV 分位' if is_zh else 'IV %ile',
-        'e1_pass': 'IV ≥ 50 → 卖权可开' if is_zh else 'IV ≥ 50 → selling premium ok',
+        'e1_pass': 'IV ≥ 50 → 任何卖权结构均可' if is_zh else 'IV ≥ 50 → any premium-sell structure ok',
+        'e1_warn': '30 ≤ IV < 50 → 仅 defined-risk（价差/IC），不开裸卖' if is_zh else '30 ≤ IV < 50 → defined-risk only (spreads/IC), no naked sells',
         'e1_block': 'IV 太低 — 改用长期权 / 借方价差' if is_zh else 'Vol cheap — favor long premium / debit spreads',
-        'e5_label': 'MSTR 短 Call 守护' if is_zh else 'MSTR short-call guardrail',
-        'e5_pass': '两道闸门均通过' if is_zh else 'Both gates open',
+        'e5_label': 'MSTR 短 Call 守护（mNAV）' if is_zh else 'MSTR short-call guardrail (mNAV)',
+        'e5_pass': 'mNAV 处于贵价区，短 Call 风险可控' if is_zh else 'mNAV rich enough; short-call risk acceptable',
         'e5_na': 'mNAV 数据缺失' if is_zh else 'mNAV unavailable',
         'e5_na_detail': '无法评估 — holdings 文件缺失' if is_zh else 'Cannot evaluate — holdings missing',
-        'e5_block': '不开新短 Call（CC / 裸卖 / 熊市 call 价差）' if is_zh else 'No new short calls (CC, naked, bear-call)',
+        'e5_block': '不开任何 MSTR 短 Call（CC / 裸卖 / 熊 call 价差）' if is_zh else 'No MSTR short calls in any form (CC, naked, bear-call)',
         'e6_label': 'TSLA 短 Call 纪律' if is_zh else 'TSLA short-call discipline',
         'e6_block': '低于 Call 墙 — 短 Call 被钉风险' if is_zh else 'Below the call wall — short calls trapped if pinned',
         'e6_pass': '高于 Call 墙；优先价差非裸卖' if is_zh else 'Above the wall; prefer spreads over naked',
@@ -2810,26 +2811,25 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     }
 
     # Rule rows: each is (code, label, status_text, status, detail)
-    # status: 'pass' | 'block' | 'na'
+    # status: 'pass' | 'warn' | 'block' | 'na'
     rules = []
 
-    # E1 — premium-sell IV floor (≥50)
+    # E1 — premium-sell IV floor (tri-state)
     if iv_pct_2yr >= 50:
         rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f}', 'pass', L['e1_pass']))
+    elif iv_pct_2yr >= 30:
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} (30-50)', 'warn', L['e1_warn']))
     else:
-        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 50', 'block', L['e1_block']))
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 30', 'block', L['e1_block']))
 
     if ticker == 'MSTR':
-        # E5 — MSTR short-call (IV pct ≥50 AND mNAV ≥1.4)
-        if iv_pct_2yr >= 50 and mnav_val is not None and mnav_val >= 1.4:
-            rules.append(('E5', L['e5_label'], f'IV {iv_pct_2yr:.0f} · mNAV {mnav_val:.2f}x', 'pass', L['e5_pass']))
-        elif mnav_val is None:
+        # E5 — MSTR short-call mNAV gate (decoupled from E1 — IV is E1's job)
+        if mnav_val is None:
             rules.append(('E5', L['e5_label'], L['e5_na'], 'na', L['e5_na_detail']))
+        elif mnav_val >= 1.4:
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x ≥ 1.4', 'pass', L['e5_pass']))
         else:
-            reasons = []
-            if iv_pct_2yr < 50: reasons.append(f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 50')
-            if mnav_val < 1.4: reasons.append(f'mNAV {mnav_val:.2f}x < 1.4')
-            rules.append(('E5', L['e5_label'], ' · '.join(reasons), 'block', L['e5_block']))
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x < 1.4', 'block', L['e5_block']))
 
         # V3 — BTC vol freeze (RV7 > 80% blocks)
         if btc_rv_7d is None:
@@ -2849,15 +2849,30 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         else:
             rules.append(('E6', L['e6_label'], L['e6_na'], 'na', L['e6_na_detail']))
 
-    # Aggregate verdict
+    # Aggregate verdict — most-restrictive wins (block > warn > pass)
     blocked = [r for r in rules if r[3] == 'block']
+    warned = [r for r in rules if r[3] == 'warn']
     if blocked:
         verdict_color = '#f85149'
         verdict_label = '今日不开仓' if is_zh else 'STAND ASIDE'
-        verdict_detail = (f'{len(blocked)} 条规则阻塞新短期权' if is_zh
-                          else f'{len(blocked)} rule(s) blocking new short premium')
-        verdict_action = ('改用借方价差 / 长期权 / 等 IV 回升' if is_zh
-                          else 'Use defined-risk / long premium / wait for IV to recover')
+        verdict_detail = (f'{len(blocked)} 条规则阻塞' if is_zh
+                          else f'{len(blocked)} rule(s) blocking')
+        # Detail what's blocked vs what's still allowed
+        blocked_codes = ', '.join(r[0] for r in blocked)
+        if ticker == 'MSTR' and any(r[0] == 'E5' for r in blocked):
+            verdict_action = (f'MSTR 短 Call 阻塞（{blocked_codes}）；其它 ticker 的 defined-risk 价差仍可视 E1 而定'
+                              if is_zh
+                              else f'MSTR short calls blocked ({blocked_codes}); defined-risk on other tickers still depends on E1')
+        else:
+            verdict_action = ('改用借方价差 / 长期权 / 等 IV 回升' if is_zh
+                              else 'Use defined-risk / long premium / wait for IV to recover')
+    elif warned:
+        verdict_color = '#d29922'
+        verdict_label = '仅 DEFINED-RISK' if is_zh else 'DEFINED-RISK ONLY'
+        verdict_detail = (f'{len(warned)} 条规则警告 — 不开裸卖' if is_zh
+                          else f'{len(warned)} rule(s) warn — no naked sells')
+        verdict_action = ('用价差 / Iron Condor / 借方结构；裸 CSP/CC 暂停' if is_zh
+                          else 'Use spreads / Iron Condors / debit structures; pause naked CSPs/CCs')
     else:
         verdict_color = '#3fb950'
         verdict_label = '闸门通过' if is_zh else 'GATES OPEN'
@@ -2865,8 +2880,8 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         verdict_action = '进入仓位 sizing (S1–S6) 与开仓' if is_zh else 'Proceed to sizing (S1–S6) and entry'
 
     # Build rule rows HTML
-    icons = {'pass': '✓', 'block': '✗', 'na': '·'}
-    icon_colors = {'pass': '#3fb950', 'block': '#f85149', 'na': '#8b949e'}
+    icons = {'pass': '✓', 'warn': '⚠', 'block': '✗', 'na': '·'}
+    icon_colors = {'pass': '#3fb950', 'warn': '#d29922', 'block': '#f85149', 'na': '#8b949e'}
     row_html = []
     for code, label, status_text, status, detail in rules:
         ic = icons[status]
@@ -2905,10 +2920,10 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # Card title + lead text
     if is_zh:
         verdict_title = '规则裁定'
-        verdict_lead = '基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断 — 任何一条阻塞 = 不开新短期权。'
+        verdict_lead = '基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断：✗ 阻塞 / ⚠ 仅 defined-risk / ✓ 全部放行。最严格的状态决定整体裁定。'
     else:
         verdict_title = 'Rulebook Verdict'
-        verdict_lead = "Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent — any blocked rule = no new short premium."
+        verdict_lead = "Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent: ✗ blocks / ⚠ defined-risk only / ✓ pass. The most restrictive status drives the aggregate verdict."
 
     # Inject verdict pill into highlights card
     verdict_pill_html = f'<a href="#verdict" style="text-decoration:none;background:{verdict_color}22;color:{verdict_color};border:1px solid {verdict_color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">{verdict_label}</a>'
