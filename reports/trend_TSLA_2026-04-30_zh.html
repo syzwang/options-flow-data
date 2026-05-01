@@ -68,7 +68,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>TSLA Flow Trend Analysis</h1>
   <span class="badge" style="background:#f0883e22;color:#f0883e;border:1px solid #f0883e;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-04-30 18:29</span>
+  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-04-30 21:57</span>
 </div>
 
 <!-- KPI Row -->
@@ -100,17 +100,18 @@ th:first-child, td:first-child { text-align:left; }
 </div>
 
 
-<div style="background:linear-gradient(90deg, rgba(63,185,80,0.15), rgba(63,185,80,0.03));
-            border:1px solid #3fb950; border-left:4px solid #3fb950;
+<div style="background:linear-gradient(90deg, rgba(88,166,255,0.15), rgba(88,166,255,0.03));
+            border:1px solid #58a6ff; border-left:4px solid #58a6ff;
             border-radius:8px; padding:14px 18px; margin:12px 0 20px;">
-  <div style="color:#3fb950; font-weight:600; font-size:15px; margin-bottom:6px;">
-    盘后模式 — 复盘与验证
+  <div style="color:#58a6ff; font-weight:600; font-size:15px; margin-bottom:6px;">
+    盘前模式 — 制定今日剧本
   </div>
   <div style="color:#c9d1d9; font-size:13px; line-height:1.6;">
-    关注： <b style="color:#e6edf3;">EM Accuracy</b>（今日是否落在区间内?）,
-    <b style="color:#e6edf3;">OI Delta</b>（新开仓是否验证了昨日信号?）,
-    <b style="color:#e6edf3;">Walls</b>（测试 / 突破 / 守住?）.
-    把发现写进交易日志和明日计划。
+    关注： <b style="color:#e6edf3;">Call/Put Walls</b>（价格锚点 — 在附近挂限价单）,
+    <b style="color:#e6edf3;">Persistent Volume</b>（多日支撑/阻力位）,
+    <b style="color:#e6edf3;">OI Delta</b>（隔夜 smart-money 持仓）,
+    <b style="color:#e6edf3;">NVRP</b>（卖权溢价优势）.
+    看一次、写计划、关掉 — 数据到明天 snapshot 前都不会变。
   </div>
 </div>
 
@@ -153,14 +154,14 @@ th:first-child, td:first-child { text-align:left; }
     <span>规则裁定</span>
     <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">今日不开仓</span>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断 — 任何一条阻塞 = 不开新短期权。</div>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断：✗ 阻塞 / ⚠ 仅 defined-risk / ✓ 全部放行。最严格的状态决定整体裁定。</div>
   <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E1</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">IV 底线（卖权门槛）</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV 分位 27 < 50 · IV 太低 — 改用长期权 / 借方价差</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV 分位 27 < 30 · IV 太低 — 改用长期权 / 借方价差</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -173,7 +174,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
   </div>
   <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#f85149;font-weight:600;">2 条规则阻塞新短期权.</span> 改用借方价差 / 长期权 / 等 IV 回升.
+    <span style="color:#f85149;font-weight:600;">2 条规则阻塞.</span> 改用借方价差 / 长期权 / 等 IV 回升.
   </div>
   
 </div>

@@ -12424,10 +12424,10 @@
     "window_days": 492
   },
   "btc_context": {
-    "btc_price": 76997.0,
-    "btc_24h": 1.61,
-    "btc_7d": -1.63,
-    "btc_rv_7d": 24.8,
+    "btc_price": 77039.0,
+    "btc_24h": 1.67,
+    "btc_7d": -1.57,
+    "btc_rv_7d": 25.1,
     "mstr_24h": 4.59,
     "correlation": 0.72,
     "beta": 2.19,

@@ -68,7 +68,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>TSLA Flow Trend Analysis</h1>
   <span class="badge" style="background:#f0883e22;color:#f0883e;border:1px solid #f0883e;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 snapshots | 2026-04-30 18:29</span>
+  <span style="color:#8b949e;font-size:13px;">10 snapshots | 2026-04-30 21:57</span>
 </div>
 
 <!-- KPI Row -->
@@ -100,17 +100,18 @@ th:first-child, td:first-child { text-align:left; }
 </div>
 
 
-<div style="background:linear-gradient(90deg, rgba(63,185,80,0.15), rgba(63,185,80,0.03));
-            border:1px solid #3fb950; border-left:4px solid #3fb950;
+<div style="background:linear-gradient(90deg, rgba(88,166,255,0.15), rgba(88,166,255,0.03));
+            border:1px solid #58a6ff; border-left:4px solid #58a6ff;
             border-radius:8px; padding:14px 18px; margin:12px 0 20px;">
-  <div style="color:#3fb950; font-weight:600; font-size:15px; margin-bottom:6px;">
-    POST-CLOSE MODE &mdash; review &amp; validate
+  <div style="color:#58a6ff; font-weight:600; font-size:15px; margin-bottom:6px;">
+    PRE-OPEN MODE &mdash; build today's playbook
   </div>
   <div style="color:#c9d1d9; font-size:13px; line-height:1.6;">
-    Focus on: <b style="color:#e6edf3;">EM Accuracy</b> (did today land inside the envelope?),
-    <b style="color:#e6edf3;">OI Delta</b> (did new positions validate yesterday's signal?),
-    <b style="color:#e6edf3;">Walls</b> (tested / broken / held?).
-    Feed findings into your trade journal and tomorrow's plan.
+    Focus on: <b style="color:#e6edf3;">Call/Put Walls</b> (price anchors &mdash; set limit orders near them),
+    <b style="color:#e6edf3;">Persistent Volume</b> (multi-day S/R levels),
+    <b style="color:#e6edf3;">OI Delta</b> (overnight smart-money positioning),
+    <b style="color:#e6edf3;">NVRP</b> (premium-selling edge).
+    Read once, write plan, then stop reading &mdash; data is static until tomorrow's snapshot.
   </div>
 </div>
 
@@ -153,14 +154,14 @@ th:first-child, td:first-child { text-align:left; }
     <span>Rulebook Verdict</span>
     <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">STAND ASIDE</span>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent — any blocked rule = no new short premium.</div>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent: ✗ blocks / ⚠ defined-risk only / ✓ pass. The most restrictive status drives the aggregate verdict.</div>
   <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E1</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">Premium-sell IV floor</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV %ile 27 < 50 · Vol cheap — favor long premium / debit spreads</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV %ile 27 < 30 · Vol cheap — favor long premium / debit spreads</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -173,7 +174,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
   </div>
   <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#f85149;font-weight:600;">2 rule(s) blocking new short premium.</span> Use defined-risk / long premium / wait for IV to recover.
+    <span style="color:#f85149;font-weight:600;">2 rule(s) blocking.</span> Use defined-risk / long premium / wait for IV to recover.
   </div>
   
 </div>
