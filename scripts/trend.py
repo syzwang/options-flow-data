@@ -1289,21 +1289,6 @@ def _mode_banner(mode):
     Use real-time options chain / time &amp; sales for live flow. Only come back here if price is testing a Wall or Persistent strike.
   </div>
 </div>"""
-    if mode == 'postclose':
-        return """
-<div style="background:linear-gradient(90deg, rgba(63,185,80,0.15), rgba(63,185,80,0.03));
-            border:1px solid #3fb950; border-left:4px solid #3fb950;
-            border-radius:8px; padding:14px 18px; margin:12px 0 20px;">
-  <div style="color:#3fb950; font-weight:600; font-size:15px; margin-bottom:6px;">
-    POST-CLOSE MODE &mdash; review &amp; validate
-  </div>
-  <div style="color:#c9d1d9; font-size:13px; line-height:1.6;">
-    Focus on: <b style="color:#e6edf3;">EM Accuracy</b> (did today land inside the envelope?),
-    <b style="color:#e6edf3;">OI Delta</b> (did new positions validate yesterday's signal?),
-    <b style="color:#e6edf3;">Walls</b> (tested / broken / held?).
-    Feed findings into your trade journal and tomorrow's plan.
-  </div>
-</div>"""
     return ""
 
 
