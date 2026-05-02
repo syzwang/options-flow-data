@@ -2881,26 +2881,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     </div>''')
     rules_table_html = '\n    '.join(row_html)
 
-    # Open positions block
     pos_html = ''
-    if open_positions:
-        pos_lines = []
-        for p in open_positions:
-            structure = p.get('structure', '').replace('_', ' ').title()
-            side = p.get('side', '').upper()
-            strike = p.get('strike')
-            opened = p.get('opened', '')
-            label = p.get('label', f'{side} {structure} ${strike}')
-            pos_lines.append(f'''<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:12px;">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#a371f7;"></span>
-        <span style="color:#e6edf3;font-weight:500;">{label}</span>
-        <span style="color:#8b949e;">opened {opened} · journal/{p.get('journal','')}</span>
-      </div>''')
-        pos_block_label = '当前持仓（图表中以紫色虚线标注）' if is_zh else 'Open positions on this ticker (marked on charts as purple dashed lines)'
-        pos_html = f'''<div style="margin-top:14px;padding:12px 14px;background:#0d1117;border:1px solid rgba(163,113,247,0.25);border-radius:10px;">
-      <div style="font-size:11px;color:#a371f7;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{pos_block_label}</div>
-      {''.join(pos_lines)}
-    </div>'''
 
     # Card title + lead text
     if is_zh:
@@ -3177,8 +3158,6 @@ th:first-child, td:first-child {{ text-align:left; }}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onload="initCharts()"></script>
 <script>
-// Open positions overlay (read by oi-markers and od-spot plugins)
-window.__openPositions = {positions_json};
 function initCharts() {{
   // P/C Spread Chart (enhanced)
   const spreadDates = {json.dumps(all_dates)};
@@ -3487,10 +3466,6 @@ function initCharts() {{
               {{ value: d.spot,     color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }},
               {{ value: d.max_pain, color: '#facc15', label: 'Max Pain $' + d.max_pain.toFixed(2) }},
             ];
-            // Append open-position strikes (purple, dashed)
-            for (const p of (window.__openPositions || [])) {{
-              markers.push({{ value: p.strike, color: '#a371f7', label: p.label }});
-            }}
             for (const m of markers) {{
               const px = pixelAtStrike(xs, m.value, d.strikes);
               if (px < area.left || px > area.right) continue;
@@ -3590,9 +3565,6 @@ function initCharts() {{
             const area = chart.chartArea;
             ctx.save();
             const markers = [{{ value: d.spot, color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }}];
-            for (const p of (window.__openPositions || [])) {{
-              markers.push({{ value: p.strike, color: '#a371f7', label: p.label }});
-            }}
             for (const m of markers) {{
               const px = odPixelAtStrike(xs, m.value, d.strikes);
               if (px < area.left || px > area.right) continue;

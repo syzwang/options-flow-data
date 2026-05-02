@@ -68,7 +68,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>TSLA Flow Trend Analysis</h1>
   <span class="badge" style="background:#f0883e22;color:#f0883e;border:1px solid #f0883e;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-05-01 21:13</span>
+  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-05-01 22:12</span>
 </div>
 
 <!-- KPI Row -->
@@ -461,8 +461,6 @@ th:first-child, td:first-child { text-align:left; }
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onload="initCharts()"></script>
 <script>
-// Open positions overlay (read by oi-markers and od-spot plugins)
-window.__openPositions = [];
 function initCharts() {
   // P/C Spread Chart (enhanced)
   const spreadDates = ["2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01"];
@@ -771,10 +769,6 @@ function initCharts() {
               { value: d.spot,     color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) },
               { value: d.max_pain, color: '#facc15', label: 'Max Pain $' + d.max_pain.toFixed(2) },
             ];
-            // Append open-position strikes (purple, dashed)
-            for (const p of (window.__openPositions || [])) {
-              markers.push({ value: p.strike, color: '#a371f7', label: p.label });
-            }
             for (const m of markers) {
               const px = pixelAtStrike(xs, m.value, d.strikes);
               if (px < area.left || px > area.right) continue;
@@ -874,9 +868,6 @@ function initCharts() {
             const area = chart.chartArea;
             ctx.save();
             const markers = [{ value: d.spot, color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }];
-            for (const p of (window.__openPositions || [])) {
-              markers.push({ value: p.strike, color: '#a371f7', label: p.label });
-            }
             for (const m of markers) {
               const px = odPixelAtStrike(xs, m.value, d.strikes);
               if (px < area.left || px > area.right) continue;
