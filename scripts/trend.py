@@ -1419,7 +1419,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         for b in BUCKET_ORDER:
             if b not in latest_state:
                 continue
-            events = sorted(by_bucket_cross.get(b, []), key=lambda x: x['date'], reverse=True)
+            events = sorted(by_bucket_cross.get(b, []), key=lambda x: x['date'], reverse=True)[:5]
             cur = latest_state.get(b)
             cur_col = '#8b949e' if cur is None else ('#f85149' if cur < 0 else '#3fb950')
             cur_pill = ''
