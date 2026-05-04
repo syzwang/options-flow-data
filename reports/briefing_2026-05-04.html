@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Weekly Options Briefing 2026-05-04</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{background:#0f1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;font-feature-settings:"tnum" 1;margin:0;padding:20px;line-height:1.5}
+.page-wrap{max-width:980px;margin:0 auto}
+
+/* ── TOPNAV ── */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;gap:14px;padding:10px 20px;margin:-20px -20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;align-items:center}
+.topnav a{color:#8b949e;text-decoration:none;padding:4px 10px;border-radius:6px;transition:background .12s,color .12s;white-space:nowrap}
+.topnav a:hover{color:#e6edf3;background:rgba(255,255,255,0.07)}
+.topnav a.active{color:#e6edf3;background:rgba(88,166,255,0.18)}
+.nav-left,.nav-right{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.nav-center{display:flex;gap:2px;flex:1;flex-wrap:wrap;justify-content:center}
+.nav-divider{color:#30363d;padding:0 2px}
+
+/* ── TYPE ── */
+h1{font-size:26px;font-weight:500;margin:0 0 4px;letter-spacing:-.02em}
+h2{font-size:20px;font-weight:500;margin:36px 0 10px;padding-bottom:8px;border-bottom:1px solid #21262d;color:#58a6ff;scroll-margin-top:64px}
+h3{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.6px;color:#8b949e;margin:22px 0 8px}
+.subtitle{color:#8b949e;font-size:13px;margin-bottom:4px}
+.headline{font-size:14px;margin:14px 0 28px;padding:12px 16px;background:#161b22;border-left:3px solid #58a6ff;border-radius:0 4px 4px 0;line-height:1.6}
+
+/* ── CARDS ── */
+.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:18px 20px;margin-bottom:16px;scroll-margin-top:64px}
+.card h2{margin-top:0;padding-bottom:6px}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;scroll-margin-top:64px}
+.kpi{background:#1c1f26;border:1px solid #21262d;border-radius:8px;padding:12px 14px;text-align:center}
+.k-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.6px}
+.k-val{font-size:20px;font-weight:500;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.k-note{font-size:11px;color:#8b949e;margin-top:3px;line-height:1.4}
+.green{color:#3fb950}.red{color:#f85149}.amber{color:#d29922}.blue{color:#58a6ff}.orange{color:#f0883e}
+
+/* ── BADGES / CHIPS ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-red{background:#f8514922;color:#f85149;border:1px solid #f85149}
+.badge-amber{background:#d2992222;color:#d29922;border:1px solid #d29922}
+.badge-green{background:#3fb95022;color:#3fb950;border:1px solid #3fb950}
+.badge-blue{background:#58a6ff22;color:#58a6ff;border:1px solid #58a6ff}
+.rule-tag{display:inline-block;background:#f8514918;color:#f85149;border:1px solid #f8514955;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin:0 2px;white-space:nowrap}
+.rule-ok{display:inline-block;background:#3fb95018;color:#3fb950;border:1px solid #3fb95055;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin:0 2px;white-space:nowrap}
+
+/* ── ALERT BOX ── */
+.alert{border-radius:8px;padding:12px 16px;margin:10px 0;font-size:13px;line-height:1.6}
+.alert-red{background:#f8514915;border:1px solid #f8514955}
+.alert-amber{background:#d2992215;border:1px solid #d2992255}
+.alert-blue{background:#58a6ff15;border:1px solid #58a6ff44}
+
+/* ── CONSTRAINTS LIST ── */
+.constraint-list{list-style:none;margin:0;padding:0}
+.constraint-list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px}
+.constraint-list li:last-child{border-bottom:none}
+.c-code{flex-shrink:0;width:36px;font-weight:700;font-size:12px}
+.blocked .c-code{color:#f85149}
+.clear .c-code{color:#3fb950}
+.c-desc{color:#c9d1d9;line-height:1.5}
+
+/* ── SCENARIOS ── */
+.scenarios{display:grid;gap:10px;margin-bottom:6px}
+.scn{background:#0d1117;border-radius:6px;padding:12px 16px;line-height:1.55}
+.scn-head{display:flex;justify-content:space-between;margin-bottom:6px}
+.scn-name{font-weight:700;font-size:12px;letter-spacing:.6px}
+.scn-prob{font-size:12px;color:#8b949e}
+.scn-path{font-size:13px;margin-bottom:6px}
+.scn-triggers{margin:0;padding-left:18px;font-size:12px;color:#8b949e}
+.scn-triggers li{margin:2px 0}
+
+/* ── TRADE TABLE ── */
+table.trades{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+table.trades th{text-align:left;padding:7px 10px;color:#8b949e;font-weight:500;border-bottom:1px solid #30363d;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+table.trades td{padding:9px 10px;border-bottom:1px solid #1c1f26;vertical-align:top;line-height:1.5}
+.td-muted{color:#8b949e;font-size:11px}
+.td-rationale{color:#c9d1d9;font-size:12px;max-width:230px}
+
+/* ── OPEN POSITION ── */
+.pos-card{background:#1c1f26;border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.pos-card.pos-danger{border-color:#f8514955;background:#f8514908}
+.pos-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.pos-title{font-weight:600;font-size:14px}
+.pos-meta{font-size:12px;color:#8b949e}
+.pos-detail{font-size:13px;color:#c9d1d9;margin-top:4px;line-height:1.6}
+
+/* ── TWO-COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
+ul.risks,ul.exits{margin:0;padding-left:18px;font-size:13px}
+ul.risks li,ul.exits li{margin:4px 0;line-height:1.5}
+
+/* ── POST-MORTEM ── */
+.pm-row{background:#1c1f26;border-radius:6px;padding:12px 16px;margin-bottom:8px;font-size:13px}
+.pm-empty{color:#8b949e;font-style:italic;font-size:13px}
+
+/* ── FOOTER ── */
+.footer{margin-top:60px;padding-top:14px;border-top:1px solid #21262d;font-size:11px;color:#8b949e}
+.footer a{color:#58a6ff;text-decoration:none}
+
+/* ── TLDR TABLE ── */
+.tldr-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
+.tldr-row:last-child{border-bottom:none}
+.tldr-ticker{width:48px;font-weight:700;flex-shrink:0;color:#e6edf3}
+.tldr-content{flex:1;line-height:1.6}
+
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.topnav{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- ═══════════════════ TOPNAV ═══════════════════ -->
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="index.html">Index</a>
+    <span class="nav-divider">|</span>
+    <a href="trend_MSTR_2026-05-01.html">MSTR Trend</a>
+    <a href="trend_TSLA_2026-05-01.html">TSLA Trend</a>
+  </div>
+  <div class="nav-center">
+    <a href="#tldr">TL;DR</a>
+    <a href="#open">Open</a>
+    <a href="#postmortem">Post-mortem</a>
+    <a href="#mstr">MSTR</a>
+    <a href="#mstr-trades">MSTR Trades</a>
+    <a href="#tsla">TSLA</a>
+    <a href="#tsla-trades">TSLA Trades</a>
+  </div>
+  <div class="nav-right">
+    <a href="briefing_2026-05-04.html" class="active">EN</a>
+    <a href="briefing_2026-05-04_zh.html">中文</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ TITLE ═══════════════════ -->
+<h1>Weekly Options Briefing</h1>
+<div class="subtitle">2026-05-04 &mdash; week of May 4&ndash;10 &nbsp;&bull;&nbsp; MSTR &bull; TSLA</div>
+<div class="headline">
+  <strong>STAND ASIDE — both tickers blocked by E1 + E3 this week.</strong>
+  MSTR: IV pct 43 and mNAV 1.28 fail both E1 and E5; FOMC blackout (E3) covers the full week. TSLA: IV pct 25 is the lowest in the 2-year window; premium selling has no edge.
+  One open position requires monitoring: MSTR CC $135 is $42 ITM (31% above strike) — M3 severely breached, roll only for credit per M5.
+</div>
+
+<!-- ═══════════════════ TL;DR DECISION CARD ═══════════════════ -->
+<div class="card" id="tldr">
+  <h2 style="margin-top:0;color:#58a6ff">TL;DR Decision Card</h2>
+
+  <div class="tldr-row">
+    <div class="tldr-ticker">MSTR</div>
+    <div class="tldr-content">
+      IV pct <strong>43</strong> &nbsp;(<span class="red">E1 BLOCKED — needs ≥50</span>) &nbsp;&bull;&nbsp;
+      mNAV <strong>1.28</strong> &nbsp;(<span class="red">E5 BLOCKED — needs ≥1.4</span>) &nbsp;&bull;&nbsp;
+      FOMC blackout <span class="rule-tag">E3</span> covers May 4–8. &nbsp;
+      Short calls <strong>OFF</strong>. CSPs <strong>OFF</strong>. All premium-selling <strong>OFF</strong>.
+      <br>
+      Open CC $135: spot $177.17 is <strong>$42 ITM</strong> — M3 breach, roll for credit only (M5). Do not add size.
+      BTC $78.1K, RV7d 27.8% (V3 clear), BTC +2.4% 24h (E4 clear).
+      Dominant GEX pin: $177.5 call wall (35.9B) &bull; $170/$165 put floors.
+    </div>
+  </div>
+
+  <div class="tldr-row">
+    <div class="tldr-ticker">TSLA</div>
+    <div class="tldr-content">
+      IV pct <strong>25</strong> &nbsp;(<span class="red">E1 BLOCKED — near 2-yr lows</span>) &nbsp;&bull;&nbsp;
+      NVRP <strong>0.97</strong> (slight buyer edge) &nbsp;&bull;&nbsp;
+      FOMC blackout <span class="rule-tag">E3</span> covers May 4–8. &nbsp;
+      All premium-selling <strong>OFF</strong>.
+      <br>
+      Spot $390.82 sits <strong>$0.82 above</strong> the dominant $390 put wall (−9.7B) — any close below $390 risks a fast move to $380.
+      Check earnings calendar before any future entry.
+    </div>
+  </div>
+
+  <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border:1px solid #f8514944;border-radius:6px;font-size:13px;">
+    <strong style="color:#f85149">Active Rule Blocks This Week:</strong>
+    &nbsp;<span class="rule-tag">E1</span> (both tickers — IV &lt; 50th pctl)
+    &nbsp;<span class="rule-tag">E5</span> (MSTR — IV pct &lt;50 AND mNAV &lt;1.4)
+    &nbsp;<span class="rule-tag">E3</span> (FOMC blackout — verify exact date, likely May 6–7)
+    &nbsp;&nbsp;All premium-selling is off until E3 clears and E1 resets.
+  </div>
+</div>
+
+<!-- ═══════════════════ OPEN POSITIONS ═══════════════════ -->
+<div class="card" id="open">
+  <h2 style="margin-top:0">Open Positions</h2>
+
+  <div class="pos-card pos-danger">
+    <div class="pos-head">
+      <span class="pos-title">MSTR Covered Call &mdash; Short $135 CC</span>
+      <span class="badge badge-red">DEEP ITM</span>
+      <span class="badge badge-red">M3 BREACHED</span>
+    </div>
+    <div class="pos-meta">
+      Opened 2026-04-13 &nbsp;&bull;&nbsp; Status: open / rolling &nbsp;&bull;&nbsp; Journal: <code>2026-04-13-MSTR-CC.md</code>
+    </div>
+    <div class="pos-detail">
+      <strong>Spot:</strong> $177.17 &nbsp;|&nbsp;
+      <strong>Strike:</strong> $135 &nbsp;|&nbsp;
+      <strong>Intrinsic ITM:</strong> $42.17 (31% above strike) &nbsp;|&nbsp;
+      <strong>Expiry / DTE:</strong> Being rolled — exact expiry unknown
+    </div>
+    <div class="pos-detail" style="margin-top:6px">
+      <strong>Management rules active:</strong><br>
+      <span class="rule-tag">M3</span> Strike-test defense — spot is 31% above $135; this breach is long-standing and ongoing. Roll whenever a credit can be captured.<br>
+      <span class="rule-tag">M5</span> Roll for credit only — do <em>not</em> roll for a debit. If no credit available at a defensible strike, wait.<br>
+      <span class="rule-tag">M6</span> Three-strike roll cap — confirm how many rolls have been executed; if at the cap, assess position closure vs acceptance of assignment.<br>
+      <span class="rule-tag">M7</span> Roll out max 30 days at a time — no rolling into a 60+ DTE position in one step.
+    </div>
+    <div class="alert alert-amber" style="margin-top:10px;font-size:12px">
+      <strong>Entry context (retrospective):</strong> Entered April 13 when IV pct was ~29% and mNAV ~1.0. Both
+      <span class="rule-tag">E1</span> and <span class="rule-tag">E5</span> would have blocked this trade under the current rulebook.
+      This position is the trade that <em>created</em> E5.
+      Manage defensively; do not add contracts at the current short strike or any higher strike while E1 and E5 remain blocked.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ POST-MORTEM ═══════════════════ -->
+<div class="card" id="postmortem">
+  <h2 style="margin-top:0">Post-Mortem (Closed Trades This Week)</h2>
+  <p class="pm-empty">No closed trades this week (Apr 28 – May 4). The MSTR CC $135 remains open/rolling.</p>
+
+  <div style="margin-top:12px;padding-top:12px;border-top:1px solid #21262d">
+    <h3 style="margin-top:0">Standing Lesson — MSTR CC $135 (Pending Close)</h3>
+    <div class="pm-row">
+      <div style="margin-bottom:4px;font-size:12px;color:#8b949e">MSTR &bull; Covered Call $135 &bull; OPEN (being rolled)</div>
+      <div style="font-size:13px;color:#c9d1d9;line-height:1.6">
+        <strong>Rule violations at entry:</strong> <span class="rule-tag">E1</span> (IV pct 29 &lt; 50) &amp; <span class="rule-tag">E5</span> (IV pct 29 &lt; 50 AND mNAV ~1.0 &lt; 1.4).<br>
+        <strong>Signal that should have stopped entry:</strong> IV (2y) pct 29, 63-DTE expected-move upper at $174, and strong call skew all argued against short calls.<br>
+        <strong>One-line lesson:</strong> <em>Don't sell calls on a BTC-leveraged proxy when vol is cheap and the structure is bullish, regardless of how attractive the strike looks vs spot.</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MSTR ═══════════════════ -->
+<section id="mstr">
+<h2>MSTR &nbsp;<span style="color:#8b949e;font-size:16px;font-weight:400">$177.17</span></h2>
+
+<!-- mNAV KPI row -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="k-label">mNAV</div>
+    <div class="k-val amber">1.28x</div>
+    <div class="k-note">NORMAL zone (1.2–1.8x). Needs ≥1.4 for E5 short calls. MC $62.1B / BTC value $63.9B (818,334 BTC @ $78,109)</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">IV %ile (2yr)</div>
+    <div class="k-val red">43</div>
+    <div class="k-note">Below 50 → E1 blocked. ATM IV 79.3% vs RV30 69.2%</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">NVRP</div>
+    <div class="k-val amber">1.15x</div>
+    <div class="k-note">Mild seller edge in theory, but E1 blocks acting on it</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Skew</div>
+    <div class="k-val orange">−6.3 pts</div>
+    <div class="k-note">EXTREME call skew. 23rd pctl of recent range. Calls richly priced vs puts</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">GEX Regime</div>
+    <div class="k-val green">Long</div>
+    <div class="k-note">Net GEX +51.8B. Spot pinned at $177.5 call wall (35.9B)</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">BTC Context</div>
+    <div class="k-val blue">$78,109</div>
+    <div class="k-note">+2.4% 24h · +0.8% 7d · RV7d 27.8% (V3 clear) · Beta 3.0x</div>
+  </div>
+</div>
+
+<!-- Active Constraints -->
+<h3>Active Constraints This Week</h3>
+<ul class="constraint-list">
+  <li class="blocked">
+    <span class="c-code">E1</span>
+    <span class="c-desc"><strong>Premium-sell IV floor — BLOCKED.</strong> IV pct 42.7% &lt; 50% threshold. No new CSPs, CCs, or spread credit sales permitted.</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E5</span>
+    <span class="c-desc"><strong>MSTR short-call guardrail — BLOCKED.</strong> Requires BOTH IV pct ≥ 50 AND mNAV ≥ 1.4. Current: IV pct 42.7% (fails) AND mNAV 1.28 (fails). No short calls under any structure.</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E3</span>
+    <span class="c-desc"><strong>FOMC blackout — ACTIVE.</strong> FOMC decision likely May 6–7 (verify exact date). E3 blocks new premium-selling 2 trading days before through 1 day after. That covers May 4–8 — the full trading week.</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">V3</span>
+    <span class="c-desc">BTC 7-day realized vol 27.8% — well below 80% threshold. MSTR/IBIT premium-sell freeze NOT active on this rule alone.</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">E4</span>
+    <span class="c-desc">BTC +2.4% on May 1 — below 5% single-session move threshold. No 48h MSTR short-call pause from E4.</span>
+  </li>
+</ul>
+
+<!-- Scenarios -->
+<h3>Scenarios (week of May 4–10)</h3>
+<div class="scenarios">
+  <div class="scn" style="border-left:3px solid #3fb950">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#3fb950">BULL — 20%</span>
+      <span class="scn-prob">FOMC dovish / BTC breaks higher</span>
+    </div>
+    <div class="scn-path">
+      FOMC signals rate cuts sooner than expected or BTC rallies above $82K, overwhelming the $177.5 GEX pin (35.9B). Forced dealer short-covering accelerates through $180 and toward the $182.5–$185 call cluster. A sustained break requires two consecutive daily closes above $178.50 on above-average volume to confirm the pin is broken.
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC closes above $82,000 on a daily basis</li>
+      <li>MSTR closes above $178.50 for two consecutive sessions on ≥1.5× avg volume</li>
+      <li>FOMC signals cuts sooner than the market's current pricing</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #58a6ff">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#58a6ff">BASE — 60%</span>
+      <span class="scn-prob">GEX pin holds, FOMC neutral</span>
+    </div>
+    <div class="scn-path">
+      Spot remains in the $170–$182 corridor, mechanically capped by the dominant $177.5 GEX call wall (35.9B) and floored by the $170/165 put walls (−523M/−508M). FOMC holds rates steady with no hawkish surprise. Front IV drifts lower from 79% toward 72–74% by end of week as the pin absorbs order flow. BTC stays range-bound. Call skew gradually compresses.
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC holds $74K–$82K range without a daily 5%+ move</li>
+      <li>MSTR closes between $170 and $182 for three or more consecutive sessions</li>
+      <li>FOMC: no rate change, balanced language</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #f85149">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#f85149">BEAR — 20%</span>
+      <span class="scn-prob">FOMC hawkish / BTC breaks lower</span>
+    </div>
+    <div class="scn-path">
+      FOMC turns hawkish or BTC breaks below $73K. MSTR breaches the $170 GEX put wall, triggering dealer delta selling that amplifies the decline toward $160–$165 (next GEX cluster: −508M at $165, −397M at $160). BTC beta of 3.0× means a 5% BTC drop cascades to ~15% MSTR decline from current levels.
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC closes below $73,000 on a daily basis</li>
+      <li>MSTR closes below $169 on above-average volume</li>
+      <li>FOMC hawkish surprise: rate hike or explicit commitment to hold high for longer</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Trades -->
+<h3 id="mstr-trades">MSTR Trades — Week of May 4–10</h3>
+<div class="alert alert-red">
+  <strong style="color:#f85149">No new premium-sell trades meet the rulebook this week — stand aside.</strong><br>
+  <span class="rule-tag">E1</span> IV pct 42.7% &lt; 50% blocks all premium-selling. &nbsp;
+  <span class="rule-tag">E5</span> mNAV 1.28 &lt; 1.4 additionally blocks all short calls. &nbsp;
+  <span class="rule-tag">E3</span> FOMC blackout covers the full trading week.<br>
+  <br>
+  <strong>For the open CC $135 (defensive management only):</strong><br>
+  Roll per M5 (credit only), M7 (max 30d extension), M6 (confirm roll count vs 3-strike cap). Do not open any new short-call leg on MSTR while E1 + E5 remain blocked. If a roll cannot be executed for credit at a defensible strike, hold and wait for IV expansion or mNAV improvement before adjusting.
+</div>
+
+<div class="two-col" style="margin-top:16px">
+  <div>
+    <h3>Risk Events</h3>
+    <ul class="risks">
+      <li><strong>FOMC (verify exact date — likely May 6–7):</strong> Any surprise triggers rapid BTC/MSTR repricing. Hawkish → MSTR tests the $170 put wall; dovish → forces dealer short-covering above $177.5.</li>
+      <li><strong>BTC beta 3.0×:</strong> A 5% BTC move implies ~15% MSTR swing — watch for any BTC breakout above $82K or breakdown below $73K.</li>
+      <li><strong>Front IV crush post-FOMC:</strong> May 8 ATM IV (79.3%) may collapse 12–18 pts by Thursday if FOMC is uneventful, improving roll conditions for the open CC.</li>
+      <li><strong>E4 watch:</strong> Any BTC session move exceeding 5% triggers a 48h pause on MSTR short-call activity (E4). Monitor BTC daily.</li>
+      <li><strong>MSTR earnings:</strong> Check calendar — do not let the CC roll span an earnings date without converting to a spread (V1/E2).</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Exit Triggers — Open CC $135</h3>
+    <ul class="exits">
+      <li><span class="rule-tag">M1</span> No credit has been collected at a standard level — monitor once rolls close, take profit at 50% of any roll credit received.</li>
+      <li><span class="rule-tag">M3</span> Spot already severely above strike; continue defensive rolling per M5.</li>
+      <li><span class="rule-tag">M5</span> Only execute roll if net credit is available. No debit rolls.</li>
+      <li><span class="rule-tag">M6</span> If at the 3-roll cap, assess buying back the short call and accepting the loss rather than rolling into a 4th iteration.</li>
+      <li><span class="rule-tag">M7</span> Each roll can extend expiry by max 30 calendar days. No jumping directly to a 60-DTE expiry.</li>
+      <li>If IV drops sharply post-FOMC (e.g., front ATM IV &lt; 65%), re-evaluate whether a net credit roll remains possible at an acceptable strike.</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════ TSLA ═══════════════════ -->
+<section id="tsla">
+<h2>TSLA &nbsp;<span style="color:#8b949e;font-size:16px;font-weight:400">$390.82</span></h2>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="k-label">IV %ile (2yr)</div>
+    <div class="k-val red">25</div>
+    <div class="k-note">Near 2-yr lows. E1 blocked. ATM IV 43.2% vs RV30 44.4%</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">NVRP</div>
+    <div class="k-val blue">0.97x</div>
+    <div class="k-note">Slight buyer edge — IV slightly underpriced vs RV30. Premium selling has no statistical edge.</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Skew</div>
+    <div class="k-val amber">−0.78 pts</div>
+    <div class="k-note">80th pctl of historical range. Near-flat: calls priced close to puts. Historically uncommon — puts usually dominate.</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">GEX Regime</div>
+    <div class="k-val green">Long</div>
+    <div class="k-note">Net GEX +108.5B. Spot $390.82 sits just $0.82 above the $390 put wall (−9.7B)</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Call Wall</div>
+    <div class="k-val">$400</div>
+    <div class="k-note">+15.4B (dominant ceiling). $392.5 also a barrier (+10.7B). 2.3% above spot.</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Put Wall</div>
+    <div class="k-val red">$390</div>
+    <div class="k-note">−9.7B dominant floor, only $0.82 below spot. Break below → fast move to $380 (−4.5B)</div>
+  </div>
+</div>
+
+<h3>Active Constraints This Week</h3>
+<ul class="constraint-list">
+  <li class="blocked">
+    <span class="c-code">E1</span>
+    <span class="c-desc"><strong>Premium-sell IV floor — BLOCKED.</strong> IV pct 24.6% is the lowest in the 2-year dataset. No premium-selling. NVRP 0.97 confirms the buyer, not seller, has edge right now.</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E3</span>
+    <span class="c-desc"><strong>FOMC blackout — ACTIVE.</strong> Same as MSTR — covers May 4–8. No new premium-selling regardless of E1 status.</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">E6</span>
+    <span class="c-desc">TSLA short-call discipline: stay above GEX call wall, prefer spreads over naked. Not currently applicable since E1+E3 block entry entirely, but note for future reference: the first call wall is $392.5 (10.7B), dominant ceiling at $400 (15.4B).</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">V2</span>
+    <span class="c-desc">Macro calendar: FOMC within the week. Also check TSLA earnings date before any new position (V1 and E2 would apply).</span>
+  </li>
+</ul>
+
+<h3>Scenarios (week of May 4–10)</h3>
+<div class="scenarios">
+  <div class="scn" style="border-left:3px solid #3fb950">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#3fb950">BULL — 30%</span>
+      <span class="scn-prob">FOMC dovish, $400 wall breaks</span>
+    </div>
+    <div class="scn-path">
+      A dovish FOMC surprise or a macro risk-on rally pushes TSLA through the $392.5 call wall (10.7B) and toward the dominant $400 ceiling (15.4B). A close above $400 triggers forced dealer short-covering, accelerating the move toward $410 (5.4B) and $420 (5.3B). Call skew at the 80th percentile suggests the market assigns more upside optionality than is historically typical.
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA closes above $395 on volume ≥1.3× 20-day average</li>
+      <li>FOMC signals rate cuts or pause for remainder of 2026</li>
+      <li>Broader equity rally with SPX +1.5%+ on a single session</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #58a6ff">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#58a6ff">BASE — 45%</span>
+      <span class="scn-prob">GEX corridor holds, FOMC neutral</span>
+    </div>
+    <div class="scn-path">
+      Spot remains coiled in the $388–$400 corridor. The $390 put wall provides bid support (−9.7B) and the $392.5/$395 call walls suppress rallies. FOMC is in-line with expectations. IV stays depressed near the 25th percentile. TSLA oscillates in a tight 3–4% daily range as the dominant GEX pin absorbs flow.
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA holds $388 and fails to close above $400 for three or more sessions</li>
+      <li>FOMC in-line: no change, balanced language</li>
+      <li>Options flow remains mixed — no one-sided accumulation</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #f85149">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#f85149">BEAR — 25%</span>
+      <span class="scn-prob">FOMC hawkish, $390 put wall breaks</span>
+    </div>
+    <div class="scn-path">
+      A hawkish FOMC or macro risk-off event breaks the $390 put wall (−9.7B). Negative-GEX dealer hedging amplifies the decline — a confirmed close below $390 is a fast-move trigger toward $380 (−4.5B support), then $375 (−3.0B). A close below $380 removes the primary dealer support structure and opens the $360–$370 zone. Note max pain for May 22 expiry is $380.
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA closes below $389 on above-average volume</li>
+      <li>FOMC hawkish: rate hike or explicit higher-for-longer commitment</li>
+      <li>Broader market selloff with SPX −2%+ intraday</li>
+    </ul>
+  </div>
+</div>
+
+<!-- TSLA Trades -->
+<h3 id="tsla-trades">TSLA Trades — Week of May 4–10</h3>
+<div class="alert alert-red">
+  <strong style="color:#f85149">No new premium-sell trades meet the rulebook this week — stand aside.</strong><br>
+  <span class="rule-tag">E1</span> IV pct 24.6% — near 2-year lows, far below the 50% floor. No premium-selling. &nbsp;
+  <span class="rule-tag">E3</span> FOMC blackout covers May 4–8.
+  NVRP 0.97 confirms IV is not even overpriced — there is no seller edge on TSLA this week.
+  <br><br>
+  <strong>Watchlist for future entry:</strong> When IV pct resets above 50 (E1 clears) and E3 blackout expires, the $380/$370 put spread (below both the $390 and $380 put walls) is the structurally sound premium-sell vehicle per E6 (spread over naked, above call wall). Track IV pct weekly.
+</div>
+
+<div class="two-col" style="margin-top:16px">
+  <div>
+    <h3>Risk Events</h3>
+    <ul class="risks">
+      <li><strong>FOMC (verify exact date — likely May 6–7):</strong> Dominant catalyst for the week. Any surprise collapses the GEX pin in either direction; the tight $0.82 gap between spot and the $390 put wall makes TSLA especially sensitive.</li>
+      <li><strong>$390 put wall cliff:</strong> The −9.7B put wall sits $0.82 below spot — a single hawkish headline could gap through it, triggering dealer selling to $380 with no GEX support in between.</li>
+      <li><strong>TSLA earnings:</strong> Check calendar. Do not open any new position spanning a TSLA earnings date (E2, V1). Verify before any entry after E3 clears.</li>
+      <li><strong>IV expansion risk:</strong> Current IV at 2-yr lows. A FOMC vol spike from 43% to 55%+ would provide a rare E1-clearing event. Watch for IV pct crossing 50.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Future Entry Criteria (when rules clear)</h3>
+    <ul class="exits">
+      <li>E1 unlocks when IV pct crosses 50 (currently at 25 — needs to roughly double from here)</li>
+      <li>E3 clears ~1 trading day after FOMC decision (verify exact date)</li>
+      <li>E6 says stay above GEX call wall ($392.5 / $400) for call-side entries; use spreads over naked</li>
+      <li>S1 still applies when resuming: max risk ≤2% of account per trade</li>
+      <li>S6: spread max-loss × contracts ≤2%; total spread premium at risk ≤5%</li>
+      <li>M1: Set 50% take-profit at entry. M2: Close or roll at 21 DTE regardless.</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<div class="footer">
+  Auto-generated 2026-05-04 &nbsp;&bull;&nbsp;
+  Data: <code>snapshots/trend-MSTR.json</code> · <code>snapshots/trend-TSLA.json</code> (as of 2026-05-01) &nbsp;&bull;&nbsp;
+  <a href="index.html">All dashboards →</a> &nbsp;&bull;&nbsp;
+  <a href="briefing_2026-05-04_zh.html">中文版 →</a>
+</div>
+
+</div><!-- .page-wrap -->
+</body></html>

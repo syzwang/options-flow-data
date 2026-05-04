@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-Hans"><head>
+<meta charset="utf-8">
+<title>每周期权简报 2026-05-04</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{background:#0f1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans CJK SC","SF Pro Text","Inter",system-ui,sans-serif;font-feature-settings:"tnum" 1;margin:0;padding:20px;line-height:1.6}
+.page-wrap{max-width:980px;margin:0 auto}
+
+/* ── TOPNAV ── */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(15,17,23,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;gap:14px;padding:10px 20px;margin:-20px -20px 20px;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;align-items:center}
+.topnav a{color:#8b949e;text-decoration:none;padding:4px 10px;border-radius:6px;transition:background .12s,color .12s;white-space:nowrap}
+.topnav a:hover{color:#e6edf3;background:rgba(255,255,255,0.07)}
+.topnav a.active{color:#e6edf3;background:rgba(88,166,255,0.18)}
+.nav-left,.nav-right{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.nav-center{display:flex;gap:2px;flex:1;flex-wrap:wrap;justify-content:center}
+.nav-divider{color:#30363d;padding:0 2px}
+
+/* ── TYPE ── */
+h1{font-size:26px;font-weight:500;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:20px;font-weight:500;margin:36px 0 10px;padding-bottom:8px;border-bottom:1px solid #21262d;color:#58a6ff;scroll-margin-top:64px}
+h3{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#8b949e;margin:22px 0 8px}
+.subtitle{color:#8b949e;font-size:13px;margin-bottom:4px}
+.headline{font-size:14px;margin:14px 0 28px;padding:12px 16px;background:#161b22;border-left:3px solid #58a6ff;border-radius:0 4px 4px 0;line-height:1.7}
+
+/* ── CARDS ── */
+.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:18px 20px;margin-bottom:16px;scroll-margin-top:64px}
+.card h2{margin-top:0;padding-bottom:6px}
+
+/* ── KPIs ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;scroll-margin-top:64px}
+.kpi{background:#1c1f26;border:1px solid #21262d;border-radius:8px;padding:12px 14px;text-align:center}
+.k-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:.5px}
+.k-val{font-size:20px;font-weight:500;margin:4px 0 0;font-variant-numeric:tabular-nums}
+.k-note{font-size:11px;color:#8b949e;margin-top:3px;line-height:1.4}
+.green{color:#3fb950}.red{color:#f85149}.amber{color:#d29922}.blue{color:#58a6ff}.orange{color:#f0883e}
+
+/* ── BADGES / CHIPS ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.badge-red{background:#f8514922;color:#f85149;border:1px solid #f85149}
+.badge-amber{background:#d2992222;color:#d29922;border:1px solid #d29922}
+.badge-green{background:#3fb95022;color:#3fb950;border:1px solid #3fb950}
+.badge-blue{background:#58a6ff22;color:#58a6ff;border:1px solid #58a6ff}
+.rule-tag{display:inline-block;background:#f8514918;color:#f85149;border:1px solid #f8514955;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin:0 2px;white-space:nowrap}
+.rule-ok{display:inline-block;background:#3fb95018;color:#3fb950;border:1px solid #3fb95055;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin:0 2px;white-space:nowrap}
+
+/* ── ALERT BOX ── */
+.alert{border-radius:8px;padding:12px 16px;margin:10px 0;font-size:13px;line-height:1.7}
+.alert-red{background:#f8514915;border:1px solid #f8514955}
+.alert-amber{background:#d2992215;border:1px solid #d2992255}
+.alert-blue{background:#58a6ff15;border:1px solid #58a6ff44}
+
+/* ── CONSTRAINTS LIST ── */
+.constraint-list{list-style:none;margin:0;padding:0}
+.constraint-list li{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px}
+.constraint-list li:last-child{border-bottom:none}
+.c-code{flex-shrink:0;width:36px;font-weight:700;font-size:12px}
+.blocked .c-code{color:#f85149}
+.clear .c-code{color:#3fb950}
+.c-desc{color:#c9d1d9;line-height:1.6}
+
+/* ── SCENARIOS ── */
+.scenarios{display:grid;gap:10px;margin-bottom:6px}
+.scn{background:#0d1117;border-radius:6px;padding:12px 16px;line-height:1.6}
+.scn-head{display:flex;justify-content:space-between;margin-bottom:6px}
+.scn-name{font-weight:700;font-size:12px;letter-spacing:.5px}
+.scn-prob{font-size:12px;color:#8b949e}
+.scn-path{font-size:13px;margin-bottom:6px}
+.scn-triggers{margin:0;padding-left:18px;font-size:12px;color:#8b949e}
+.scn-triggers li{margin:2px 0}
+
+/* ── OPEN POSITION ── */
+.pos-card{background:#1c1f26;border:1px solid #21262d;border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.pos-card.pos-danger{border-color:#f8514955;background:#f8514908}
+.pos-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.pos-title{font-weight:600;font-size:14px}
+.pos-meta{font-size:12px;color:#8b949e}
+.pos-detail{font-size:13px;color:#c9d1d9;margin-top:4px;line-height:1.6}
+
+/* ── TWO-COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:4px}
+ul.risks,ul.exits{margin:0;padding-left:18px;font-size:13px}
+ul.risks li,ul.exits li{margin:4px 0;line-height:1.6}
+
+/* ── POST-MORTEM ── */
+.pm-row{background:#1c1f26;border-radius:6px;padding:12px 16px;margin-bottom:8px;font-size:13px}
+.pm-empty{color:#8b949e;font-style:italic;font-size:13px}
+
+/* ── FOOTER ── */
+.footer{margin-top:60px;padding-top:14px;border-top:1px solid #21262d;font-size:11px;color:#8b949e}
+.footer a{color:#58a6ff;text-decoration:none}
+
+/* ── TLDR TABLE ── */
+.tldr-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
+.tldr-row:last-child{border-bottom:none}
+.tldr-ticker{width:48px;font-weight:700;flex-shrink:0;color:#e6edf3}
+.tldr-content{flex:1;line-height:1.7}
+
+@media(max-width:640px){.kpi-row{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.topnav{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<!-- ═══════════════════ TOPNAV ═══════════════════ -->
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="index.html">索引</a>
+    <span class="nav-divider">|</span>
+    <a href="trend_MSTR_2026-05-01.html">MSTR 趋势</a>
+    <a href="trend_TSLA_2026-05-01.html">TSLA 趋势</a>
+  </div>
+  <div class="nav-center">
+    <a href="#tldr">TL;DR</a>
+    <a href="#open">持仓</a>
+    <a href="#postmortem">复盘</a>
+    <a href="#mstr">MSTR</a>
+    <a href="#mstr-trades">MSTR 交易</a>
+    <a href="#tsla">TSLA</a>
+    <a href="#tsla-trades">TSLA 交易</a>
+  </div>
+  <div class="nav-right">
+    <a href="briefing_2026-05-04.html">EN</a>
+    <a href="briefing_2026-05-04_zh.html" class="active">中文</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════ TITLE ═══════════════════ -->
+<h1>每周期权简报</h1>
+<div class="subtitle">2026-05-04 &mdash; 本周覆盖 5月4日至10日 &nbsp;&bull;&nbsp; MSTR &bull; TSLA</div>
+<div class="headline">
+  <strong>本周两只标的均受 E1 + E3 封锁，建议全面观望。</strong>
+  MSTR：IV百分位43、mNAV 1.28，E1与E5双重封锁，FOMC窗口期（E3）覆盖全周。
+  TSLA：IV百分位25为近2年最低，买方优势明显，卖权无统计优势。
+  唯一需关注的持仓：MSTR CC $135 已深度实值42美元（高出行权价31%）——M3严重突破，仅可在M5规则下换仓（必须为净权利金收入）。
+</div>
+
+<!-- ═══════════════════ TL;DR ═══════════════════ -->
+<div class="card" id="tldr">
+  <h2 style="margin-top:0;color:#58a6ff">TL;DR 决策卡</h2>
+
+  <div class="tldr-row">
+    <div class="tldr-ticker">MSTR</div>
+    <div class="tldr-content">
+      IV百分位 <strong>43</strong>（<span class="red">E1封锁 — 需≥50</span>）&nbsp;&bull;&nbsp;
+      mNAV <strong>1.28</strong>（<span class="red">E5封锁 — 需≥1.4</span>）&nbsp;&bull;&nbsp;
+      FOMC窗口期 <span class="rule-tag">E3</span> 覆盖5月4日至8日。
+      卖call <strong>禁止</strong>。CSP <strong>禁止</strong>。一切卖权溢价操作 <strong>禁止</strong>。<br>
+      持仓CC $135：现价$177.17，实值<strong>$42</strong>——M3规则已触发，仅可按M5（净权利金收入）换仓，不得加仓。
+      BTC $78,109，RV7日 27.8%（V3未触发），BTC单日+2.4%（E4未触发）。
+      主要GEX锁定：$177.5 call wall（35.9B）&bull; $170/$165 put支撑。
+    </div>
+  </div>
+
+  <div class="tldr-row">
+    <div class="tldr-ticker">TSLA</div>
+    <div class="tldr-content">
+      IV百分位 <strong>25</strong>（<span class="red">E1封锁 — 近2年最低</span>）&nbsp;&bull;&nbsp;
+      NVRP <strong>0.97</strong>（轻微买方优势）&nbsp;&bull;&nbsp;
+      FOMC窗口期 <span class="rule-tag">E3</span> 覆盖5月4日至8日。
+      一切卖权溢价操作 <strong>禁止</strong>。<br>
+      现价$390.82，距主要 put wall $390（−9.7B）仅$0.82 — 跌破$390将快速测试$380。
+      开新仓前请核对TSLA财报日历。
+    </div>
+  </div>
+
+  <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border:1px solid #f8514944;border-radius:6px;font-size:13px;">
+    <strong style="color:#f85149">本周封锁规则汇总：</strong>
+    &nbsp;<span class="rule-tag">E1</span>（两标的 — IV &lt; 50百分位）
+    &nbsp;<span class="rule-tag">E5</span>（MSTR — IV百分位&lt;50 且 mNAV&lt;1.4）
+    &nbsp;<span class="rule-tag">E3</span>（FOMC窗口期 — 请核实具体日期，预计5月6–7日）
+    &nbsp;&nbsp;E3解除且E1重置前，一切卖权溢价操作禁止。
+  </div>
+</div>
+
+<!-- ═══════════════════ 持仓 ═══════════════════ -->
+<div class="card" id="open">
+  <h2 style="margin-top:0">持仓状态</h2>
+
+  <div class="pos-card pos-danger">
+    <div class="pos-head">
+      <span class="pos-title">MSTR 备兑认购 — Short $135 CC</span>
+      <span class="badge badge-red">深度实值</span>
+      <span class="badge badge-red">M3已触发</span>
+    </div>
+    <div class="pos-meta">
+      开仓日期：2026-04-13 &nbsp;&bull;&nbsp; 状态：持仓/滚仓中 &nbsp;&bull;&nbsp; 日志：<code>2026-04-13-MSTR-CC.md</code>
+    </div>
+    <div class="pos-detail">
+      <strong>现价：</strong>$177.17 &nbsp;|&nbsp;
+      <strong>行权价：</strong>$135 &nbsp;|&nbsp;
+      <strong>实值金额：</strong>$42.17（高出行权价31%）&nbsp;|&nbsp;
+      <strong>到期/DTE：</strong>滚仓中，精确到期日未知
+    </div>
+    <div class="pos-detail" style="margin-top:6px">
+      <strong>当前适用管理规则：</strong><br>
+      <span class="rule-tag">M3</span> 行权价触发防御 — 现价已超出$135行权价31%，触发持续已久，每当能收到净权利金时即进行换仓。<br>
+      <span class="rule-tag">M5</span> 仅限净权利金换仓 — 不可为净支出换仓。若无合适行权价可收到权利金，等待。<br>
+      <span class="rule-tag">M6</span> 三次换仓上限 — 确认已执行换仓次数；若已达上限，评估平仓止损或接受行权指派。<br>
+      <span class="rule-tag">M7</span> 单次换仓最多延伸30日 — 不可一步跳至60日以上到期。
+    </div>
+    <div class="alert alert-amber" style="margin-top:10px;font-size:12px">
+      <strong>开仓背景（事后分析）：</strong>开仓时IV百分位约29%，mNAV约1.0。依据当前规则，
+      <span class="rule-tag">E1</span>和<span class="rule-tag">E5</span>均应阻止此笔交易开仓。
+      此仓位正是E5规则的起源案例。
+      防御性管理，不得在E1和E5封锁期间新增任何行权价的空头call仓位。
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 复盘 ═══════════════════ -->
+<div class="card" id="postmortem">
+  <h2 style="margin-top:0">本周复盘（已平仓交易）</h2>
+  <p class="pm-empty">本周（4月28日 – 5月4日）无已平仓交易。MSTR CC $135仍处于持仓/滚仓状态。</p>
+
+  <div style="margin-top:12px;padding-top:12px;border-top:1px solid #21262d">
+    <h3 style="margin-top:0">持续教训 — MSTR CC $135（平仓前备忘）</h3>
+    <div class="pm-row">
+      <div style="margin-bottom:4px;font-size:12px;color:#8b949e">MSTR &bull; 备兑认购 $135 &bull; 持仓中（滚仓）</div>
+      <div style="font-size:13px;color:#c9d1d9;line-height:1.7">
+        <strong>开仓时违反规则：</strong><span class="rule-tag">E1</span>（IV百分位29 &lt; 50）和 <span class="rule-tag">E5</span>（IV百分位29 &lt; 50 且 mNAV ~1.0 &lt; 1.4）。<br>
+        <strong>本应阻止开仓的信号：</strong>IV（2年）百分位29、63日预期波动上轨$174、强烈call偏斜，三者均反对卖出call。<br>
+        <strong>核心教训：</strong><em>在波动率低廉、结构看涨时，不应在BTC杠杆代理标的上卖call，无论行权价相对现价看起来多有吸引力。</em>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MSTR ═══════════════════ -->
+<section id="mstr">
+<h2>MSTR &nbsp;<span style="color:#8b949e;font-size:16px;font-weight:400">$177.17</span></h2>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="k-label">mNAV</div>
+    <div class="k-val amber">1.28x</div>
+    <div class="k-note">正常区间（1.2–1.8x）。E5要求≥1.4方可卖call。MC $62.1B / BTC市值 $63.9B（818,334枚 @ $78,109）</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">IV百分位（2年）</div>
+    <div class="k-val red">43</div>
+    <div class="k-note">低于50 → E1封锁。ATM IV 79.3% vs RV30 69.2%</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">NVRP</div>
+    <div class="k-val amber">1.15x</div>
+    <div class="k-note">轻微卖方优势（理论上），但E1阻止采取行动</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">偏斜（Skew）</div>
+    <div class="k-val orange">−6.3 pts</div>
+    <div class="k-note">极端call偏斜，位于近期范围第23百分位。call权利金相对put更贵</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">GEX体制</div>
+    <div class="k-val green">多头Gamma</div>
+    <div class="k-note">净GEX +51.8B。现价锁定在$177.5 call wall（35.9B）</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">BTC背景</div>
+    <div class="k-val blue">$78,109</div>
+    <div class="k-note">+2.4% 日涨幅 · +0.8% 7日 · RV7日 27.8%（V3未触发）· Beta 3.0x</div>
+  </div>
+</div>
+
+<h3>本周活跃约束规则</h3>
+<ul class="constraint-list">
+  <li class="blocked">
+    <span class="c-code">E1</span>
+    <span class="c-desc"><strong>卖权IV门槛 — 封锁。</strong>IV百分位42.7% &lt; 50%门槛。不得新开CSP、CC或任何信用价差。</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E5</span>
+    <span class="c-desc"><strong>MSTR卖call安全阀 — 封锁。</strong>要求IV百分位≥50 且 mNAV≥1.4（两个条件均需满足）。当前：IV百分位42.7%（不满足）且mNAV 1.28（不满足）。任何结构的空头call均禁止。</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E3</span>
+    <span class="c-desc"><strong>FOMC窗口期封锁 — 生效。</strong>FOMC决议预计5月6–7日（请核实具体日期）。E3封锁决议前2个交易日至决议后1日的所有新卖权操作，即覆盖5月4日至8日全周。</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">V3</span>
+    <span class="c-desc">BTC 7日实际波动率27.8% — 远低于80%门槛。此规则不触发MSTR/IBIT卖权冻结。</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">E4</span>
+    <span class="c-desc">BTC 5月1日单日涨幅+2.4% — 低于5%单日波动门槛。E4不触发48小时MSTR暂停。</span>
+  </li>
+</ul>
+
+<h3>情景分析（5月4日至10日周）</h3>
+<div class="scenarios">
+  <div class="scn" style="border-left:3px solid #3fb950">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#3fb950">看涨 — 20%</span>
+      <span class="scn-prob">FOMC鸽派 / BTC突破上行</span>
+    </div>
+    <div class="scn-path">
+      FOMC发出意外降息信号，或BTC突破$82K，压垮$177.5 GEX锁定（35.9B）。经销商被迫回补空头引发加速，冲向$180并逼近$182.5–$185的call wall集群。有效突破需连续两个交易日收于$178.50以上且成交量为20日均量的1.5倍以上。
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC日线收盘突破$82,000</li>
+      <li>MSTR连续两日收于$178.50以上，成交量≥1.5倍均量</li>
+      <li>FOMC暗示比市场预期更早降息</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #58a6ff">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#58a6ff">基准 — 60%</span>
+      <span class="scn-prob">GEX锁定维持，FOMC中性</span>
+    </div>
+    <div class="scn-path">
+      现价在$170–$182区间震荡，机械性受制于$177.5 GEX call wall（35.9B）上方，并受$170/$165 put wall（−523M/−508M）支撑。FOMC维持利率不变，无鹰派意外。前端IV从79%缓慢下行至72–74%。BTC区间整理。call偏斜逐步收窄。
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC维持$74K–$82K区间，无单日5%+波动</li>
+      <li>MSTR连续三日或以上收于$170至$182之间</li>
+      <li>FOMC无变化，语言平衡</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #f85149">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#f85149">看跌 — 20%</span>
+      <span class="scn-prob">FOMC鹰派 / BTC跌破支撑</span>
+    </div>
+    <div class="scn-path">
+      FOMC鹰派转向或BTC跌破$73K。MSTR跌穿$170 GEX put wall，触发经销商delta对冲卖出放大跌幅，测试$160–$165区间（−508M位于$165，−397M位于$160）。BTC beta 3.0倍意味着BTC跌5%将引发MSTR从当前水平下跌约15%。
+    </div>
+    <ul class="scn-triggers">
+      <li>BTC日线收盘跌破$73,000</li>
+      <li>MSTR在高于均量成交下收于$169以下</li>
+      <li>FOMC鹰派意外：加息或明确维持高利率承诺</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="mstr-trades">MSTR 本周交易建议（5月4–10日）</h3>
+<div class="alert alert-red">
+  <strong style="color:#f85149">本周无满足规则手册要求的卖权溢价交易 — 全面观望。</strong><br>
+  <span class="rule-tag">E1</span> IV百分位42.7% &lt; 50%，封锁一切卖权溢价。&nbsp;
+  <span class="rule-tag">E5</span> mNAV 1.28 &lt; 1.4，额外封锁所有空头call。&nbsp;
+  <span class="rule-tag">E3</span> FOMC窗口期覆盖整个交易周。<br>
+  <br>
+  <strong>持仓CC $135的防御性管理（仅此项）：</strong><br>
+  按M5（仅限净权利金收入）、M7（单次最多延伸30日）、M6（确认换仓次数是否达到3次上限）执行换仓。E1+E5封锁期间不得在MSTR上新开任何空头call仓位。若无法以合理行权价换取净权利金，持仓等待IV扩大或mNAV改善后再调整。
+</div>
+
+<div class="two-col" style="margin-top:16px">
+  <div>
+    <h3>风险事件</h3>
+    <ul class="risks">
+      <li><strong>FOMC（请核实具体日期 — 预计5月6–7日）：</strong>任何意外将引发BTC/MSTR快速重新定价。鹰派 → MSTR测试$170 put wall；鸽派 → 经销商在$177.5以上被迫回补空头。</li>
+      <li><strong>BTC beta 3.0倍：</strong>BTC移动5%意味着MSTR波动约15%——密切关注BTC突破$82K或跌破$73K的迹象。</li>
+      <li><strong>FOMC后前端IV崩塌：</strong>若FOMC平淡无奇，5月8日ATM IV（79.3%）可能在周四前崩跌12–18个点，这将改善持仓CC的换仓条件。</li>
+      <li><strong>E4监控：</strong>任何BTC单日波动超过5%将触发48小时MSTR空头call暂停（E4）。每日监控BTC。</li>
+      <li><strong>MSTR财报：</strong>请核对财报日历 — 不可让CC换仓横跨财报日（V1/E2）。</li>
+    </ul>
+  </div>
+  <div>
+    <h3>持仓CC $135 离场触发器</h3>
+    <ul class="exits">
+      <li><span class="rule-tag">M1</span> 标准权利金收入尚未确定——换仓后监控，在换仓权利金收到50%时止盈。</li>
+      <li><span class="rule-tag">M3</span> 现价已大幅超越行权价；按M5继续防御性换仓。</li>
+      <li><span class="rule-tag">M5</span> 仅在净权利金可用时执行换仓。不可为净支出换仓。</li>
+      <li><span class="rule-tag">M6</span> 若已达3次换仓上限，评估买回空头call并接受亏损，而非进行第4次换仓。</li>
+      <li><span class="rule-tag">M7</span> 每次换仓最多延伸30日。不可一步跳至60+ DTE到期。</li>
+      <li>若FOMC后IV大幅下跌（如前端ATM IV &lt; 65%），重新评估在合理行权价处净权利金换仓的可行性。</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════ TSLA ═══════════════════ -->
+<section id="tsla">
+<h2>TSLA &nbsp;<span style="color:#8b949e;font-size:16px;font-weight:400">$390.82</span></h2>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="k-label">IV百分位（2年）</div>
+    <div class="k-val red">25</div>
+    <div class="k-note">接近2年最低。E1封锁。ATM IV 43.2% vs RV30 44.4%</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">NVRP</div>
+    <div class="k-val blue">0.97x</div>
+    <div class="k-note">轻微买方优势 — IV轻微低估。卖权溢价无统计优势。</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">偏斜（Skew）</div>
+    <div class="k-val amber">−0.78 pts</div>
+    <div class="k-note">历史范围第80百分位。接近平衡：call/put权利金基本持平。历史上put通常更贵。</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">GEX体制</div>
+    <div class="k-val green">多头Gamma</div>
+    <div class="k-note">净GEX +108.5B。现价$390.82仅高于$390 put wall（−9.7B）$0.82</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Call Wall（上阻）</div>
+    <div class="k-val">$400</div>
+    <div class="k-note">+15.4B（主要上限）。$392.5亦为阻力（+10.7B）。距现价+2.3%。</div>
+  </div>
+  <div class="kpi">
+    <div class="k-label">Put Wall（下支）</div>
+    <div class="k-val red">$390</div>
+    <div class="k-note">−9.7B主要支撑，距现价仅$0.82。跌穿→快速测试$380（−4.5B）</div>
+  </div>
+</div>
+
+<h3>本周活跃约束规则</h3>
+<ul class="constraint-list">
+  <li class="blocked">
+    <span class="c-code">E1</span>
+    <span class="c-desc"><strong>卖权IV门槛 — 封锁。</strong>IV百分位24.6%为2年数据集最低水平。禁止任何卖权溢价操作。NVRP 0.97确认买方当前具有优势，而非卖方。</span>
+  </li>
+  <li class="blocked">
+    <span class="c-code">E3</span>
+    <span class="c-desc"><strong>FOMC窗口期封锁 — 生效。</strong>与MSTR相同——覆盖5月4日至8日。无论E1状态如何，均不得新开卖权溢价仓位。</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">E6</span>
+    <span class="c-desc">TSLA空头call纪律：行权价需高于GEX call wall，优先使用价差而非裸卖。当前E1+E3完全封锁入场，但未来参考：第一个call wall为$392.5（10.7B），主要上限为$400（15.4B）。</span>
+  </li>
+  <li class="clear">
+    <span class="c-code">V2</span>
+    <span class="c-desc">宏观日历：FOMC在本周内。开任何新仓前亦需核实TSLA财报日期（届时适用V1和E2）。</span>
+  </li>
+</ul>
+
+<h3>情景分析（5月4日至10日周）</h3>
+<div class="scenarios">
+  <div class="scn" style="border-left:3px solid #3fb950">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#3fb950">看涨 — 30%</span>
+      <span class="scn-prob">FOMC鸽派，$400关口突破</span>
+    </div>
+    <div class="scn-path">
+      FOMC意外鸽派或宏观风险偏好上升，推动TSLA突破$392.5 call wall（10.7B），逼近$400主要关口（15.4B）。收盘站稳$400以上触发经销商被迫回补，加速向$410（5.4B）和$420（5.3B）进发。偏斜位于历史第80百分位显示市场分配了高于历史常态的上行期权价值。
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA收盘突破$395，成交量≥20日均量1.3倍</li>
+      <li>FOMC暗示2026年剩余时间降息或暂停加息</li>
+      <li>大盘单日涨幅≥1.5%（SPX）</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #58a6ff">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#58a6ff">基准 — 45%</span>
+      <span class="scn-prob">GEX走廊维持，FOMC中性</span>
+    </div>
+    <div class="scn-path">
+      现价继续在$388–$400走廊内盘整。$390 put wall提供买盘支撑（−9.7B），$392.5/$395 call wall压制反弹。FOMC符合预期。IV维持在第25百分位附近低位。TSLA在GEX锁定吸收市场流动性的背景下，在3–4%日振幅内震荡。
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA维持$388支撑，连续三日或以上未能收盘突破$400</li>
+      <li>FOMC在预期内：无变化，语言平衡</li>
+      <li>期权流保持混合，无单边积累</li>
+    </ul>
+  </div>
+
+  <div class="scn" style="border-left:3px solid #f85149">
+    <div class="scn-head">
+      <span class="scn-name" style="color:#f85149">看跌 — 25%</span>
+      <span class="scn-prob">FOMC鹰派，$390 put wall跌穿</span>
+    </div>
+    <div class="scn-path">
+      鹰派FOMC或宏观风险规避跌穿$390 put wall（−9.7B）。负GEX区的经销商delta对冲放大下跌——确认性收盘跌破$390后快速测试$380（−4.5B支撑），随后至$375（−3.0B）。跌破$380后主要经销商支撑消失，开放$360–$370区间。注意5月22日到期最大痛点为$380。
+    </div>
+    <ul class="scn-triggers">
+      <li>TSLA在高于均量成交下收于$389以下</li>
+      <li>FOMC鹰派意外：加息或明确维持高利率较长时间的承诺</li>
+      <li>大盘单日跌幅≥2%（SPX）</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="tsla-trades">TSLA 本周交易建议（5月4–10日）</h3>
+<div class="alert alert-red">
+  <strong style="color:#f85149">本周无满足规则手册要求的卖权溢价交易 — 全面观望。</strong><br>
+  <span class="rule-tag">E1</span> IV百分位24.6% — 接近2年最低，远低于50%门槛。禁止卖权溢价操作。&nbsp;
+  <span class="rule-tag">E3</span> FOMC窗口期覆盖5月4–8日。
+  NVRP 0.97确认IV未被高估——本周TSLA没有卖方统计优势。
+  <br><br>
+  <strong>未来入场候选（规则解锁后）：</strong>当IV百分位回升至50以上（E1解除）且E3窗口期结束后，$380/$370 put spread（位于$390和$380两个put wall下方）是符合E6纪律（价差优于裸卖、行权价低于call wall）的卖权溢价工具。每周跟踪IV百分位变化。
+</div>
+
+<div class="two-col" style="margin-top:16px">
+  <div>
+    <h3>风险事件</h3>
+    <ul class="risks">
+      <li><strong>FOMC（请核实具体日期 — 预计5月6–7日）：</strong>本周主要催化剂。任何意外均会在任意方向打破GEX锁定；现价与$390 put wall仅差$0.82，使TSLA对此尤为敏感。</li>
+      <li><strong>$390 put wall悬崖：</strong>−9.7B的put wall距现价仅$0.82——任何鹰派消息均可跳空跌穿，触发经销商卖出直至$380，中间无GEX支撑。</li>
+      <li><strong>TSLA财报：</strong>请核对财报日历。不可新开任何横跨TSLA财报日的仓位（E2、V1）。E3解除后入场前务必确认。</li>
+      <li><strong>IV扩张机会：</strong>当前IV处于2年最低水平。FOMC引发的波动率飙升（43%→55%+）将提供罕见的E1解除事件。关注IV百分位是否突破50。</li>
+    </ul>
+  </div>
+  <div>
+    <h3>未来入场标准（规则解锁后）</h3>
+    <ul class="exits">
+      <li>E1解除条件：IV百分位超过50（当前25，需约翻倍）</li>
+      <li>E3解除：FOMC决议约1个交易日后（请核实具体日期）</li>
+      <li>E6要求call端行权价高于GEX call wall（$392.5/$400）；使用价差而非裸卖</li>
+      <li>S1仍适用：每笔交易最大风险≤账户2%</li>
+      <li>S6：价差最大亏损×合约数≤2%；总价差权利金风险≤5%</li>
+      <li>M1：开仓即设50%止盈目标。M2：无论盈亏，21 DTE时平仓或换仓。</li>
+    </ul>
+  </div>
+</div>
+</section>
+
+<!-- ═══════════════════ 页脚 ═══════════════════ -->
+<div class="footer">
+  自动生成于 2026-05-04 &nbsp;&bull;&nbsp;
+  数据来源：<code>snapshots/trend-MSTR.json</code> · <code>snapshots/trend-TSLA.json</code>（截至2026-05-01）&nbsp;&bull;&nbsp;
+  <a href="index.html">所有仪表板 →</a> &nbsp;&bull;&nbsp;
+  <a href="briefing_2026-05-04.html">English version →</a>
+</div>
+
+</div><!-- .page-wrap -->
+</body></html>
