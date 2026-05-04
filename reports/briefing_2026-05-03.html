@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Weekly Options Briefing 2026-05-03</title>
+<style>
+* { box-sizing: border-box; }
+body { background:#0f1117; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; max-width:960px; margin:40px auto; padding:0 24px; line-height:1.5; }
+h1 { font-size:26px; font-weight:500; margin:0 0 4px; }
+h2 { font-size:22px; font-weight:500; margin:40px 0 8px; padding-bottom:8px; border-bottom:1px solid #30363d; color:#58a6ff; }
+h3 { font-size:14px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; color:#8b949e; margin:24px 0 10px; }
+.subtitle { color:#8b949e; font-size:13px; margin-bottom:8px; }
+.headline { color:#e6edf3; font-size:15px; margin:12px 0 28px; padding:12px 16px; background:#161b22; border-left:3px solid #58a6ff; border-radius:0 4px 4px 0; }
+.spot { color:#8b949e; font-size:16px; font-weight:400; margin-left:8px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.kpi { background:#161b22; border:1px solid #21262d; border-radius:6px; padding:12px 14px; }
+.k-label { font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.k-val { font-size:16px; font-weight:500; margin:4px 0; }
+.k-val.green { color:#3fb950; }
+.k-val.red { color:#f85149; }
+.k-val.amber { color:#d29922; }
+.k-val.blue { color:#58a6ff; }
+.k-note { font-size:11px; color:#8b949e; }
+.scenarios { display:grid; gap:10px; }
+.scn { background:#161b22; padding:12px 16px; border-radius:4px; }
+.scn-head { display:flex; justify-content:space-between; margin-bottom:6px; }
+.scn-name { font-weight:600; font-size:13px; letter-spacing:0.5px; }
+.scn-prob { font-size:13px; color:#8b949e; }
+.scn-path { font-size:14px; margin-bottom:8px; }
+.scn-triggers { margin:0; padding-left:18px; font-size:13px; color:#8b949e; }
+.scn-triggers li { margin:2px 0; }
+table.trades { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+table.trades th { text-align:left; padding:8px 10px; color:#8b949e; font-weight:500; border-bottom:1px solid #30363d; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+table.trades td { padding:10px; border-bottom:1px solid #21262d; vertical-align:top; }
+table.trades .rationale, table.trades .exit { color:#c9d1d9; font-size:12px; max-width:220px; }
+table.trades .muted { color:#8b949e; font-size:11px; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+ul.risks, ul.exits { margin:0; padding-left:18px; font-size:13px; }
+ul.risks li, ul.exits li { margin:4px 0; }
+.footer { margin-top:60px; padding-top:16px; border-top:1px solid #30363d; font-size:11px; color:#8b949e; }
+.footer a { color:#58a6ff; text-decoration:none; }
+@media (max-width:600px) { .kpis { grid-template-columns:repeat(2,1fr); } .two-col { grid-template-columns:1fr; } }
+</style>
+</head><body>
+<h1>Weekly Options Briefing</h1>
+<div class="subtitle">2026-05-03 — week ending 2026-05-08 · MSTR · TSLA</div>
+<div class="headline">MSTR mega-pinned directly at the $177.5 GEX wall (35.9B — largest single-strike gamma concentration in the dataset) with NVRP seller edge at 1.15; TSLA coiled in the tightest GEX corridor on record ($390 put wall vs $392.5 call wall, 0.6% wide) with IV at 2-year lows (24.6th pctl) — FOMC decision (May 6–7) is the primary pin-breaker catalyst for both names this week.</div>
+
+    <section class="ticker">
+      <h2>MSTR <span class="spot">$177.17</span></h2>
+      <h3>Setup</h3>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma Regime</div><div class="k-val green">Long</div><div class="k-note">Net GEX +51.8B; spot sits 0.19% below the $177.5 call wall (35.9B) — dealers are massively long gamma at this exact strike, mechanically selling every tick above $177.5 and buying every dip below it; the $170/$165 put walls (-523M / -508M) form a structural floor 4–7% below</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val blue">Call-dominant</div><div class="k-note">~65th pctl · pc_iv_spread −6.3 pts (May 8) narrowing to −4.9 (May 15) → consistent call premium across the front curve</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val amber">1.15</div><div class="k-note">seller edge · ATM IV 79.3% (May 8) vs RV30 69.2% → volatility is overpriced by ~15%; IV pctl 2yr: 42.7%</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$170 – $185</div><div class="k-note">magnet $177.5 · spot is essentially sitting on the dominant pin; 35.9B call wall creates an iron ceiling just $0.33 above spot</div></div>
+    </div>
+
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">FOMC delivers a dovish surprise or BTC breaks above $98K, overwhelming the $177.5 GEX pin; dealer forced short-covering accelerates the move through $180 and into the $182.5–$185 call cluster. Sustained break requires two daily closes above $178.5 to confirm the pin is broken.</div>
+            <ul class="scn-triggers"><li>BTC closes above $98,000 on a daily basis</li><li>MSTR closes above $178.50 on volume ≥1.5× 20-day average for two consecutive sessions</li><li>FOMC signals rate cuts sooner than market expected</li></ul>
+          </div>
+
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">60%</span></div>
+            <div class="scn-path">Spot oscillates in the $170–$182 corridor, pinned by the $177.5 GEX wall on the upside and the $170 GEX put wall on the downside. FOMC holds rates steady with no hawkish surprise; BTC remains range-bound; front IV drifts lower from 79% toward 72% over the week as the pin absorbs order flow. Call skew gradually compresses.</div>
+            <ul class="scn-triggers"><li>BTC holds above $90K and below $98K</li><li>MSTR closes between $170 and $182 for three or more consecutive sessions</li><li>FOMC no rate change, neutral language</li></ul>
+          </div>
+
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">FOMC turns hawkish or BTC breaks below $88K; MSTR breaches the $170 GEX put wall, triggering dealer delta selling that amplifies the move; tests the $160–$165 zone where the next significant put wall cluster sits (-509M at $165). BTC beta ~1.4 means a 5% BTC drop cascades to ~7% MSTR decline.</div>
+            <ul class="scn-triggers"><li>BTC closes below $88,000 on a daily basis</li><li>MSTR closes below $169 on above-average volume</li><li>FOMC signals higher-for-longer or hints at future rate hike</li></ul>
+          </div>
+        </div>
+
+      <h3>Trade Ideas</h3>
+
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strikes</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Iron Condor</strong></td>
+            <td>$165/$170 · $185/$190</td>
+            <td>2026-05-22<br><span class="muted">20d</span></td>
+            <td>~$3.50 cr</td>
+            <td class="rationale">Spot pinned at $177.5 GEX wall (35.9B) in a +51.8B long-gamma regime. NVRP 1.15 confirms premium is rich (ATM IV 72.0% vs RV30 69.2% at the 20-DTE point). Sell the $185 call wall (1.05B GEX ceiling) and the $170 put wall (−523M GEX floor). Both short strikes are at structural GEX boundaries where dealer flow anchors price.</td>
+            <td class="exit">TP at 50% max credit (~$1.75); stop if MSTR closes outside $168–$188 on two consecutive sessions; or if NVRP drops below 0.95</td>
+          </tr>
+
+          <tr>
+            <td><strong>Call Credit Spread</strong></td>
+            <td>$185/$200</td>
+            <td>2026-06-18<br><span class="muted">47d</span></td>
+            <td>~$4.50 cr</td>
+            <td class="rationale">Two reinforcing GEX call walls at $185 (1.05B) and $200 (1.19B) create layered resistance. Jun 18 ATM IV 72.2% vs RV30 69.2%; 47-DTE theta decay maximizes the NVRP seller edge over a full month while the long-gamma pin is structurally intact. Call skew (65th pctl) inflates the short $185 strike premium.</td>
+            <td class="exit">TP at 50% max credit (~$2.25); stop if MSTR closes above $187 on two consecutive sessions; roll short leg to $195 if spot consolidates at $183–$186</td>
+          </tr>
+
+          <tr>
+            <td><strong>Put Credit Spread</strong></td>
+            <td>$165/$155</td>
+            <td>2026-05-22<br><span class="muted">20d</span></td>
+            <td>~$2.25 cr</td>
+            <td class="rationale">Double put-wall support: $170 (−523M) and $165 (−508M) GEX provide two layers of mechanical dealer buying on any dip. Short $165 is 6.9% below spot. d25 put IV 73.4% (May 22) is elevated; base case calls for spot to remain above the $170 wall with 60% probability.</td>
+            <td class="exit">TP at 50% max credit; stop if MSTR closes below $167 or BTC breaks $88K on a daily close</td>
+          </tr>
+        </tbody>
+    </table>
+
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li><strong>FOMC (May 6–7):</strong> Any rate surprise can shatter the GEX pin — hawkish = cascades through BTC beta; dovish = forces dealer short-covering above $177.5</li><li><strong>BTC correlation:</strong> Beta ~1.4 means a 5% BTC move → ~7% MSTR move, potentially punching through either GEX wall</li><li><strong>Front IV crush post-FOMC:</strong> If FOMC is uneventful, May 8 ATM IV (79.3%) could collapse 15–20 pts by Thursday, compressing iron-condor mid-price rapidly</li><li><strong>Pin break risk:</strong> The $177.5 wall (35.9B) is so dominant that a break above it triggers forced short-covering that can gap price quickly to the $180–$182.5 cluster</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Exit all short premium positions immediately if NVRP drops below 0.95 (buyer edge returned)</li><li>Close iron condor if MSTR closes outside $168–$188 on two consecutive sessions — the long-gamma pin is broken</li><li>Roll call credit spread short leg from $185 to $190 if MSTR breaks and holds above $183 for two days</li><li>Close put spreads at full debit loss if BTC breaches $88K intraday with a closing confirmation</li></ul></div>
+      </div>
+    </section>
+
+    <section class="ticker">
+      <h2>TSLA <span class="spot">$390.82</span></h2>
+      <h3>Setup</h3>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma Regime</div><div class="k-val green">Long</div><div class="k-note">Net GEX +108.5B; spot is in the tightest GEX corridor in this dataset — $390 put wall (−9.7B, 0.21% below) vs $392.5 call wall (+10.7B, 0.43% above); the $400 call wall (+15.4B) is the dominant ceiling 2.35% above spot</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val blue">Balanced</div><div class="k-note">~40th pctl · pc_iv_spread −0.78 (May 8) → +0.26 (May 15); front-end barely call-dominant, mid-curve neutral; no strong directional premium signal</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val blue">0.97</div><div class="k-note">neutral · ATM IV 43.2% (May 8) vs RV30 44.4% → IV is modestly underpriced; IV pctl 2yr: 24.6% (historically cheap)</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$390 – $400</div><div class="k-note">magnet $392.5 · spot sandwiched in a 0.6% corridor; $400 is the dominant ceiling (+15.4B); break below $390 risks dealer amplification</div></div>
+    </div>
+
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">35%</span></div>
+            <div class="scn-path">FOMC dovish surprise or strong macro data breaks the $392.5 call wall; dealer hedging of short calls forces them to buy TSLA, accelerating the move toward the $400 ceiling (15.4B). A close above $400 would then target $410 (5.4B) and $420 (5.3B). Call/put volume ratio on May 1 (1.95:1) signals latent bullish positioning poised to express on a catalyst.</div>
+            <ul class="scn-triggers"><li>TSLA closes above $395 on volume ≥1.3× 20-day average</li><li>FOMC signals rate cuts or no hike for remainder of 2026</li><li>Broader equity rally with SPX +1.5%+ on a single session</li></ul>
+          </div>
+
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">40%</span></div>
+            <div class="scn-path">Spot remains coiled in the $388–$400 corridor; the $390 put wall provides bid support and the $392.5/$395 call walls suppress rallies; IV stays depressed near 24th percentile; FOMC is a non-event; TSLA oscillates in a 3% daily range as the GEX pin absorbs flow. Front IV (43.2%) edges toward RV30 (44.4%) with no breakout catalyst.</div>
+            <ul class="scn-triggers"><li>TSLA holds $388 and fails to close above $400 for three or more sessions</li><li>No major macro catalyst (FOMC in-line with expectations)</li><li>Options flow remains mixed with no one-sided accumulation</li></ul>
+          </div>
+
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">25%</span></div>
+            <div class="scn-path">Hawkish FOMC or macro risk-off breaks the $390 put wall; the negative-GEX cliff at $390 means dealer delta hedging amplifies the decline — expect a fast move to $380 (−4.5B support), then $375 (−3.0B). A close below $380 removes the primary dealer support and opens the $360–$370 zone.</div>
+            <ul class="scn-triggers"><li>TSLA closes below $389 on above-average volume</li><li>FOMC hawkish surprise: rate hike or commitment to hold higher for longer</li><li>Broader market selloff with SPX −2%+ intraday</li></ul>
+          </div>
+        </div>
+
+      <h3>Trade Ideas</h3>
+
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strikes</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Long Strangle</strong></td>
+            <td>$380/$407.5</td>
+            <td>2026-05-08<br><span class="muted">6d</span></td>
+            <td>~$8.50 db</td>
+            <td class="rationale">FOMC (May 6–7) is a near-certain volatility catalyst directly inside this expiry window. IV at 24.6th percentile makes this strangle historically cheap; NVRP 0.97 (neutral) means IV is not overstated. $380 put (below the −4.5B put wall) and $407.5 call (above the +10.7B call wall) bracket the two asymmetric break points where dealer hedging amplifies moves. A 4.4% move in either direction covers the debit.</td>
+            <td class="exit">Close each leg at 2× its individual cost; cut the losing leg at 50% loss if TSLA holds firmly on one side of the corridor for two sessions post-FOMC; close entire position by end of day May 7 if no directional break occurs</td>
+          </tr>
+
+          <tr>
+            <td><strong>Call Debit Spread</strong></td>
+            <td>$395/$415</td>
+            <td>2026-05-22<br><span class="muted">20d</span></td>
+            <td>~$6.50 db</td>
+            <td class="rationale">IV at 2-year lows (24.6th pctl) makes buying options the structurally cheap play. $400 GEX call wall (15.4B) is the dominant ceiling — a close above $400 triggers forced dealer short-covering into $410 (5.4B) and $415. Bull scenario (35% probability) is supported by the 1.95:1 call/put flow on May 1. NVRP 0.97 neutral means debit spreads are fairly priced vs realized vol.</td>
+            <td class="exit">TP at 75% of max profit ($20 width − debit); stop at full debit loss if TSLA closes below $388 on two consecutive days; scale out 50% if TSLA touches $403</td>
+          </tr>
+
+          <tr>
+            <td><strong>Iron Condor</strong></td>
+            <td>$375/$385 · $402.5/$412.5</td>
+            <td>2026-05-15<br><span class="muted">13d</span></td>
+            <td>~$5.50 cr</td>
+            <td class="rationale">If FOMC is uneventful, the GEX pin strengthens: $380 put wall (−4.5B) and $375 (−3.0B) provide structural floor; $400 call wall (15.4B) caps the ceiling. Short call at $402.5 is above the $400 GEX ceiling; short put at $385 is above the −4.5B $380 wall. Combines base-case range (40%) and partial bull (if rally stalls at $400) scenarios into one defined-risk structure.</td>
+            <td class="exit">TP at 50% max credit (~$2.75); stop if TSLA closes outside $382–$407 on two consecutive sessions; close the threatened wing if spot breaks a GEX wall with a confirmed close on two days</td>
+          </tr>
+        </tbody>
+    </table>
+
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li><strong>FOMC (May 6–7):</strong> Rate decision is the week's dominant event; any surprise at this IV level will produce an outsized realized move relative to the cheap implied vol priced in</li><li><strong>$390 put wall cliff:</strong> The −9.7B put wall sits 0.21% below spot — if breached, dealer delta selling could produce a 3–5% gap lower with no GEX support until $380</li><li><strong>Strangle theta burn:</strong> If FOMC is perfectly in-line and TSLA stays in the $390–$395 corridor, the May 8 strangle loses its time value rapidly over days 1–3; manage by EOD May 7</li><li><strong>IV expansion risk for iron condor:</strong> A post-FOMC vol spike from 43% to 55%+ could widen the condor mid-price even if spot doesn't move much directionally</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Strangle: close the entire position by end of day May 7 regardless of P&amp;L — do not hold through May 8 expiry with a binary FOMC outcome still open</li><li>Call spread: close at full debit loss if TSLA fails to reclaim $392 within five sessions of entry</li><li>Iron condor: close immediately if TSLA breaks below $388 (approaching the $390 put wall cliff) — the base case assumption is invalidated</li><li>All positions: reduce size or close if realized volatility spikes to 55%+ on two consecutive days, indicating the regime has changed from pinned to trending</li></ul></div>
+      </div>
+    </section>
+
+<div class="footer">
+Auto-generated from <code>snapshots/2026-05-01-*.json</code> · <code>snapshots/trend-*.json</code> ·
+<a href="index.html">All dashboards →</a>
+</div>
+</body></html>
