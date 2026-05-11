@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Weekly Options Briefing 2026-05-11</title>
+<style>
+* { box-sizing: border-box; }
+body { background:#0f1117; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,sans-serif; max-width:900px; margin:40px auto; padding:0 20px; line-height:1.5; }
+h1 { font-size:26px; font-weight:500; margin:0 0 4px; }
+h2 { font-size:22px; font-weight:500; margin:40px 0 8px; padding-bottom:8px; border-bottom:1px solid #30363d; color:#58a6ff; }
+h3 { font-size:14px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; color:#8b949e; margin:24px 0 10px; }
+.subtitle { color:#8b949e; font-size:13px; margin-bottom:8px; }
+.headline { color:#e6edf3; font-size:15px; margin:12px 0 28px; padding:12px 16px; background:#161b22; border-left:3px solid #58a6ff; border-radius:0 4px 4px 0; }
+.spot { color:#8b949e; font-size:16px; font-weight:400; margin-left:8px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.kpi { background:#161b22; border:1px solid #21262d; border-radius:6px; padding:12px 14px; }
+.k-label { font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.k-val { font-size:16px; font-weight:500; margin:4px 0; }
+.k-note { font-size:11px; color:#8b949e; }
+.scenarios { display:grid; gap:10px; }
+.scn { background:#161b22; padding:12px 16px; border-radius:4px; }
+.scn-head { display:flex; justify-content:space-between; margin-bottom:6px; }
+.scn-name { font-weight:600; font-size:13px; letter-spacing:0.5px; }
+.scn-prob { font-size:13px; color:#8b949e; }
+.scn-path { font-size:14px; margin-bottom:8px; }
+.scn-triggers { margin:0; padding-left:18px; font-size:13px; color:#8b949e; }
+.scn-triggers li { margin:2px 0; }
+table.trades { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+table.trades th { text-align:left; padding:8px 10px; color:#8b949e; font-weight:500; border-bottom:1px solid #30363d; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+table.trades td { padding:10px; border-bottom:1px solid #21262d; vertical-align:top; }
+table.trades .rationale, table.trades .exit { color:#c9d1d9; font-size:12px; max-width:220px; }
+table.trades .muted { color:#8b949e; font-size:11px; }
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+ul.risks, ul.exits { margin:0; padding-left:18px; font-size:13px; }
+ul.risks li, ul.exits li { margin:4px 0; }
+.footer { margin-top:60px; padding-top:16px; border-top:1px solid #30363d; font-size:11px; color:#8b949e; }
+.footer a { color:#58a6ff; text-decoration:none; }
+.empty { color:#8b949e; font-style:italic; font-size:13px; }
+@media (max-width:600px) { .kpis { grid-template-columns:repeat(2,1fr); } .two-col { grid-template-columns:1fr; } }
+</style>
+</head><body>
+<h1>Weekly Options Briefing</h1>
+<div class="subtitle">2026-05-11 &mdash; week ending 2026-05-15 &middot; MSTR &middot; TSLA</div>
+<div class="headline">MSTR is pinned below a massive 190 GEX call wall in an extreme call-skew regime while TSLA momentum has lifted spot to the dominant 430 dealer-gamma ceiling; both stocks are in long-gamma environments favoring credit-spread sellers this week.</div>
+
+    <section class="ticker">
+      <h2>MSTR <span class="spot">$187.59</span></h2>
+      <h3>Setup</h3>
+      
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma</div><div class="k-val">Long</div><div class="k-note">Net GEX +58B; dealers are long gamma so they sell into rallies and buy dips, compressing realized vol and anchoring spot near the 187.5-190 cluster.</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val">Call-dominant</div><div class="k-note">7th pctl</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val">1.0</div><div class="k-note">neutral</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$180.0 &ndash; $190.0</div><div class="k-note">magnet $188.0</div></div>
+    </div>
+    
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">25%</span></div>
+            <div class="scn-path">BTC accelerates above 82,000 and drags MSTR through the 190 call wall; gamma flip triggers short-covering toward the 200 secondary GEX supply cluster.</div>
+            <ul class="scn-triggers"><li>BTC daily close above 82,000</li><li>MSTR closes above 190 on volume 2x the 10-day average</li><li>NVRP drops below 0.95 as calls aggressively reprice higher</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">55%</span></div>
+            <div class="scn-path">Long gamma pins MSTR in the 183-192 range; extreme call skew (7th percentile) slowly fades as spot oscillates near the 187.5-190 dealer cluster through the May 15 expiry.</div>
+            <ul class="scn-triggers"><li>BTC holds 78,000-82,000 range</li><li>Front ATM IV stays 65-75%</li><li>Front P/C spread stays below -4.0 without widening sharply</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">BTC softness below 79,000 drags MSTR through 183; breach of the 187.5 put wall flips local dealer gamma negative and accelerates a move toward 180, then 175 structural support.</div>
+            <ul class="scn-triggers"><li>BTC daily close below 79,000</li><li>MSTR closes below 183 with expanding put OI at 180-175 strikes</li><li>NVRP rises above 1.20 as vol bid tilts put-side</li></ul>
+          </div>
+        </div>
+      <h3>Trade Ideas</h3>
+      
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strike</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Call Credit Spread</strong></td>
+            <td>$190/200</td>
+            <td>2026-05-29<br><span class="muted">18d</span></td>
+            <td>$3.20</td>
+            <td class="rationale">Fade extreme call skew (7th percentile) at the dominant 190 GEX call wall where $6.5B in dealer long-gamma creates a mechanical ceiling; long-gamma regime suppresses upside breakouts, making 190 a high-probability short-term cap.</td>
+            <td class="exit">Buy back for $1.00 (69% of max profit captured), or stop if MSTR closes above 190 on volume at least 2x the 10-day average.</td>
+          </tr>
+        
+          <tr>
+            <td><strong>Bull Put Spread</strong></td>
+            <td>$180/170</td>
+            <td>2026-05-29<br><span class="muted">18d</span></td>
+            <td>$2.80</td>
+            <td class="rationale">Sell put premium into the 180 GEX put wall (-$800M dealer gamma) where mechanical hedging flows provide structural support; collect elevated front ATM IV (69%) with a clearly defined downside.</td>
+            <td class="exit">Buy back for $0.90 (68% of max profit captured), or stop if MSTR closes below 181 with BTC below 79,000.</td>
+          </tr>
+        
+          <tr>
+            <td><strong>Call Credit Spread</strong></td>
+            <td>$195/210</td>
+            <td>2026-06-05<br><span class="muted">25d</span></td>
+            <td>$2.50</td>
+            <td class="rationale">Secondary upside hedge at the 195-200 GEX supply cluster; the extra DTE allows additional theta decay while BTC beta risk (2.37, correlation 0.85) remains capped below 82,000 where MSTR is trading at a +3.34pt BTC-implied premium.</td>
+            <td class="exit">Buy back for $0.80 (68% of max profit), or stop if spot closes above 195 on two consecutive sessions.</td>
+          </tr>
+        </tbody>
+    </table>
+    
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li>A BTC gap move above 82,000 could override dealer gamma pinning and trigger a call-wall breach at 190, invalidating both call credit spreads.</li><li>MSTR is trading at a +3.34pt premium to its BTC-implied fair value; mean-reversion compression could be fast and steep.</li><li>Skew percentile sample size is only 14 sessions, making the 7th-percentile reading statistically unreliable.</li><li>RV30 at 69% means a 5%+ daily move can rapidly erode the favorable risk-reward on short credit positions.</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Close all credit spreads if MSTR prints a daily close above 192 (clear break of 190 GEX wall) or below 179 (below secondary put wall).</li><li>Reduce net short-vega exposure by 50% if BTC drops more than 5% intraday.</li><li>Roll short strikes one expiry forward if NVRP falls below 0.90, signaling a shift to buyer-edge IV regime.</li></ul></div>
+      </div>
+    </section>
+    
+    <section class="ticker">
+      <h2>TSLA <span class="spot">$428.35</span></h2>
+      <h3>Setup</h3>
+      
+    <div class="kpis">
+      <div class="kpi"><div class="k-label">Gamma</div><div class="k-val">Long</div><div class="k-note">Net GEX +134.5B; the dominant 430 call wall alone holds $43.5B in dealer long-gamma, creating an unusually strong magnetic ceiling; expect strong mean-reversion forces near 428-430.</div></div>
+      <div class="kpi"><div class="k-label">Skew</div><div class="k-val">Call-dominant</div><div class="k-note">20th pctl</div></div>
+      <div class="kpi"><div class="k-label">NVRP</div><div class="k-val">1.08</div><div class="k-note">seller edge</div></div>
+      <div class="kpi"><div class="k-label">GEX Walls</div><div class="k-val">$420.0 &ndash; $430.0</div><div class="k-note">magnet $430.0</div></div>
+    </div>
+    
+      <h3>Scenarios</h3>
+      <div class="scenarios">
+          <div class="scn" style="border-left:3px solid #3fb950;">
+            <div class="scn-head"><span class="scn-name" style="color:#3fb950">BULL</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">A volume surge above 430 triggers dealer short-covering and a gamma flip; spot accelerates toward the 435-440-450 secondary GEX cluster on broad macro risk-on sentiment.</div>
+            <ul class="scn-triggers"><li>TSLA closes above 432 on volume 40% above its 20-day average</li><li>Macro catalyst such as a surprise dovish Fed statement or strong macro data print</li><li>430 call OI rolls up to 440 overnight indicating institutional upside repositioning</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #58a6ff;">
+            <div class="scn-head"><span class="scn-name" style="color:#58a6ff">BASE</span><span class="scn-prob">60%</span></div>
+            <div class="scn-path">Spot gravitates to the 430 GEX magnet through May 15 expiry; IV continues compressing from already-low 23rd percentile as long gamma keeps realized vol subdued in the 420-432 range.</div>
+            <ul class="scn-triggers"><li>No major macro catalyst this week</li><li>TSLA holds the 420-432 range</li><li>NVRP stays 1.05-1.12, confirming mild IV overpricing persists</li></ul>
+          </div>
+        
+          <div class="scn" style="border-left:3px solid #f85149;">
+            <div class="scn-head"><span class="scn-name" style="color:#f85149">BEAR</span><span class="scn-prob">20%</span></div>
+            <div class="scn-path">Rejection at the 430 call wall sends spot back to 420 put support; a close below 420 opens a fast move toward the 410-400 put wall cluster.</div>
+            <ul class="scn-triggers"><li>TSLA daily close below 422</li><li>Broad equity selloff with SPX down more than 1.5% on the day</li><li>430 call OI declines by more than 30% intraday signaling holders exiting</li></ul>
+          </div>
+        </div>
+      <h3>Trade Ideas</h3>
+      
+    <table class="trades">
+      <thead><tr><th>Structure</th><th>Strike</th><th>Expiry</th><th>Credit/Debit</th><th>Rationale</th><th>Exit</th></tr></thead>
+      <tbody>
+          <tr>
+            <td><strong>Call Credit Spread</strong></td>
+            <td>$430/440</td>
+            <td>2026-05-29<br><span class="muted">18d</span></td>
+            <td>$4.50</td>
+            <td class="rationale">Sell the dominant 430 GEX call wall where $43.5B in dealer long-gamma mechanically suppresses breakouts; NVRP at 1.08 (seller edge) confirms call premium is moderately overpriced versus realized vol.</td>
+            <td class="exit">Buy back for $1.50 (67% of max profit), or stop if TSLA closes above 432 on volume exceeding the 20-day average by 40% or more.</td>
+          </tr>
+        
+          <tr>
+            <td><strong>Bull Put Spread</strong></td>
+            <td>$415/400</td>
+            <td>2026-05-29<br><span class="muted">18d</span></td>
+            <td>$3.20</td>
+            <td class="rationale">Monetize dealer long-gamma support at the 420 put wall (-$2.1B GEX) and 400 put wall (-$3.0B GEX); the 415 short strike gives a 13-point buffer from spot while both GEX put walls provide layered mechanical support below.</td>
+            <td class="exit">Buy back for $1.00 (69% of max profit), or stop if TSLA closes below 420 on two consecutive sessions.</td>
+          </tr>
+        </tbody>
+    </table>
+    
+      <div class="two-col">
+        <div><h3>Risk Events</h3><ul class="risks"><li>The $43.5B 430 call wall is historically concentrated; a gamma flip above 430 could be unusually violent with limited dealer hedging supply to absorb moves above that strike.</li><li>IV at the 23rd 2-year percentile is near historical lows; any vol expansion event (earnings pre-announcement, macro shock) could reprice options sharply higher, hurting short-vega positions.</li><li>NVRP is declining (1.13 yesterday to 1.08 today); if it crosses below 1.0, the seller-edge rationale for the call spread weakens.</li><li>TSLA rallied approximately 15% in 10 sessions (372 to 428); an extended move increases mean-reversion risk that could gap past the 430 GEX ceiling if momentum is strong enough.</li></ul></div>
+        <div><h3>Exit Triggers</h3><ul class="exits"><li>Close all spreads immediately if TSLA prints a daily close above 433 (gamma flip zone) or below 418 (approaching 420 GEX put wall).</li><li>Take profits on the bull put spread early if TSLA retests 422-420 intraweek; buy back at $1.00 or less.</li><li>Close the call credit spread if the 430 call open interest drops by more than 25% intraday, signaling a gamma-flip event is in progress.</li></ul></div>
+      </div>
+    </section>
+    
+<div class="footer">
+Auto-generated from <code>snapshots/trend-*.json</code> &middot;
+<a href="index.html">All dashboards &rarr;</a>
+</div>
+</body></html>
