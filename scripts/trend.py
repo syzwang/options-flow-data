@@ -38,13 +38,98 @@ def load_snapshots(ticker, days=10):
     # Only keep files matching YYYY-MM-DD-TICKER.json pattern (exclude trend-TICKER.json etc)
     date_pattern = re.compile(r'\d{4}-\d{2}-\d{2}-' + re.escape(ticker) + r'\.json$')
     files = [f for f in all_files if date_pattern.search(os.path.basename(f))]
-    files = files[-days:]  # keep most recent N
+    if days:
+        files = files[-days:]  # keep most recent N
     snapshots = []
     for f in files:
         with open(f) as fh:
             data = json.load(fh)
             snapshots.append(data)
     return snapshots
+
+
+def front_term(snap):
+    """Use first expiry with DTE >= 5 to avoid pathological 0/1-DTE IV."""
+    terms = snap.get('term', [])
+    return next((t for t in terms if t.get('dte', 0) >= 5), terms[0] if terms else {})
+
+
+def constant_maturity_iv(snap, target_dte=14):
+    """
+    Variance-interpolated constant-maturity ATM/50-delta IV.
+
+    Snapshot data stores ATM-band IV by listed expiry. To approximate a
+    constant 14D 50-delta IV, interpolate total variance (IV^2 * T) between
+    the expiries bracketing the target DTE, then convert back to IV.
+    """
+    terms = [
+        {
+            'dte': float(t.get('dte') or 0),
+            'atm_iv': float(t.get('atm_iv') or 0),
+            'expiry': t.get('expiry', ''),
+        }
+        for t in snap.get('term', [])
+        if (t.get('dte') or 0) > 0 and (t.get('atm_iv') or 0) > 0
+    ]
+    terms = sorted(terms, key=lambda t: t['dte'])
+    if not terms:
+        return {'iv': 0, 'method': 'missing', 'target_dte': target_dte}
+
+    target_t = target_dte / 365.0
+    lower = next((t for t in reversed(terms) if t['dte'] <= target_dte), None)
+    upper = next((t for t in terms if t['dte'] >= target_dte), None)
+
+    if lower and upper and lower['dte'] != upper['dte']:
+        t1 = lower['dte'] / 365.0
+        t2 = upper['dte'] / 365.0
+        v1 = (lower['atm_iv'] / 100.0) ** 2 * t1
+        v2 = (upper['atm_iv'] / 100.0) ** 2 * t2
+        w = (target_t - t1) / (t2 - t1)
+        variance = v1 + w * (v2 - v1)
+        iv = (variance / target_t) ** 0.5 * 100.0 if target_t > 0 and variance > 0 else 0
+        return {
+            'iv': iv,
+            'method': 'variance_interpolated',
+            'target_dte': target_dte,
+            'lower_dte': lower['dte'],
+            'upper_dte': upper['dte'],
+            'lower_expiry': lower['expiry'],
+            'upper_expiry': upper['expiry'],
+        }
+
+    nearest = min(terms, key=lambda t: abs(t['dte'] - target_dte))
+    return {
+        'iv': nearest['atm_iv'],
+        'method': 'nearest_expiry',
+        'target_dte': target_dte,
+        'nearest_dte': nearest['dte'],
+        'nearest_expiry': nearest['expiry'],
+    }
+
+
+def iv_percentile_history(snapshots):
+    """
+    Local ATM IV percentile from accumulated option snapshots.
+    yfinance does not provide reliable 2-year historical option IV, so this
+    ranks each snapshot's 14D variance-interpolated ATM IV against saved history.
+    """
+    values = []
+    out = {}
+    for snap in sorted(snapshots, key=lambda s: s.get('date', '')):
+        iv = constant_maturity_iv(snap, 14).get('iv', 0) or 0
+        if iv <= 0:
+            continue
+        values.append(iv)
+        pct = sum(v <= iv for v in values) / len(values) * 100
+        out[snap.get('date')] = {
+            'iv_percentile': round(pct, 1),
+            'iv_percentile_n': len(values),
+            'iv_percentile_reliable': len(values) >= 60,
+            'iv_percentile_min': round(min(values), 1),
+            'iv_percentile_max': round(max(values), 1),
+            'iv_percentile_median': round(sorted(values)[len(values)//2], 1),
+        }
+    return out
 
 
 def pc_spread_timeseries(snapshots):
@@ -118,7 +203,7 @@ def detect_zero_crossings(series):
                     'spot': sorted_pts[i]['spot'],
                     'message': f"P/C spread crossed below zero in {bucket} bucket: "
                                f"{prev:+.1f} -> {curr:+.1f} pts. "
-                               f"Historical pattern: call skew dominance often signals near-term top."
+                               f"Historical pattern: call skew dominance flags elevated upside chase/squeeze risk."
                 })
             elif prev <= 0 and curr > 0:
                 crossings.append({
@@ -705,7 +790,7 @@ def em_accuracy(snapshots):
     return results
 
 
-def iv_trend(snapshots):
+def iv_trend(snapshots, iv_pct_by_date=None):
     """Track ATM IV and RV30 across days.
 
     Front IV: first expiry with DTE >= 5 — avoids 0/1-DTE collapse at expiration
@@ -713,17 +798,31 @@ def iv_trend(snapshots):
     Falls back to first available term if no DTE>=5 entry exists.
     """
     points = []
+    iv_pct_by_date = iv_pct_by_date or {}
     for snap in snapshots:
-        terms = snap.get('term', [])
-        front_term = next((t for t in terms if t.get('dte', 0) >= 5), terms[0] if terms else None)
-        front_iv = front_term['atm_iv'] if front_term else 0
+        term = front_term(snap)
+        front_iv = term.get('atm_iv', 0) if term else 0
+        cm14 = constant_maturity_iv(snap, 14)
+        iv14 = cm14.get('iv', 0) or front_iv
+        pct_meta = iv_pct_by_date.get(snap.get('date'), {})
         points.append({
             'date': snap['date'],
             'spot': snap['spot'],
             'rv30': snap.get('rv30', 0),
-            'iv_pct_2yr': snap.get('iv_pct_2yr', 0),
+            'rv30_pct_2yr': snap.get('rv30_pct_2yr', snap.get('iv_pct_2yr', 0)),
+            'iv_percentile': pct_meta.get('iv_percentile', 0),
+            'iv_percentile_n': pct_meta.get('iv_percentile_n', 0),
+            'iv_percentile_reliable': pct_meta.get('iv_percentile_reliable', False),
+            'iv_percentile_min': pct_meta.get('iv_percentile_min', 0),
+            'iv_percentile_max': pct_meta.get('iv_percentile_max', 0),
+            'iv_percentile_median': pct_meta.get('iv_percentile_median', 0),
             'front_atm_iv': front_iv,
-            'nvrp': round(front_iv / snap['rv30'], 2) if snap.get('rv30', 0) > 0 else 0,
+            'atm_14d_iv': iv14,
+            'atm_14d_method': cm14.get('method', ''),
+            'atm_14d_lower_dte': cm14.get('lower_dte'),
+            'atm_14d_upper_dte': cm14.get('upper_dte'),
+            'atm_14d_nearest_dte': cm14.get('nearest_dte'),
+            'nvrp': round(iv14 / snap['rv30'], 2) if snap.get('rv30', 0) > 0 else 0,
         })
     return points
 
@@ -789,12 +888,12 @@ ZH_REPLACEMENTS = [
     (">OI Delta by Strike (yesterday → today, per expiry)</h2>", ">行权价 OI 变化（昨日→今日，按到期日）</h2>"),
     ("Net OI change at each strike between",
      "各行权价持仓净变化，区间："),
-    ("Green up</b> = call OI built (new opens, bullish positioning).",
-     "绿色向上</b>= call 持仓新建（看涨开仓）。"),
-    ("Green down</b> = call OI unwound (closes / expirations). Same logic for <b style=\"color:#f85149;\">put</b> bars.",
-     "绿色向下</b>= call 持仓解除（平仓/到期）。<b style=\"color:#f85149;\">put</b> 红色条同理。"),
-    ("Roll detection:</b> simultaneous unwind at low strikes + build at higher strikes = positions rolled up.",
-     "Roll 检测：</b> 低行权价同时减仓 + 高行权价建仓 = 仓位向上展期。"),
+    ("Green up</b> = call OI increased; direction is unconfirmed without trade prints.",
+     "绿色向上</b>= call OI 增加；没有逐笔成交无法确认方向。"),
+    ("Green down</b> = call OI decreased. Same logic for <b style=\"color:#f85149;\">put</b> bars.",
+     "绿色向下</b>= call OI 减少。<b style=\"color:#f85149;\">put</b> 红色条同理。"),
+    ("Roll detection:</b> simultaneous decrease at low strikes + increase at higher strikes = possible roll-up.",
+     "Roll 检测：</b>低行权价减仓 + 高行权价增仓 = 可能向上展期。"),
     ("Per-strike call/put OI for one expiry.",
      "单一到期日的逐行权价 call/put 持仓。"),
     ("Green</b> = calls, <b style=\"color:#f85149;\">red</b> = puts.",
@@ -807,8 +906,8 @@ ZH_REPLACEMENTS = [
      "现价上方真空带</b>= 期权做市商在此区间无明显抵抗，股价容易漂移至下一组 call 堆积处。"),
     (">Expiry:</label>", ">到期日：</label>"),
     (">mNAV (MSTR Premium to BTC NAV)</h2>", ">mNAV（MSTR 相对 BTC 净值溢价）</h2>"),
-    ("EV-based premium MSTR trades at vs its BTC stash: <b style=\"color:#e6edf3;\">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.",
-     "基于企业价值的 MSTR 相对 BTC 储备溢价：<b style=\"color:#e6edf3;\">(市值 + 债务 + 优先股 − 现金) / BTC 储备价值</b>（与 strategy.com 公布的 mNAV 口径一致）。便宜 &lt; 1.2x · 正常 1.2–1.8x · 偏贵 &gt; 1.8x。历史区间约 1.0–3.5x；接近 1.0 的低点常对应吸筹区，&gt;2.5 的高点常对应派发区。"),
+    ("EV-based premium MSTR trades at vs its BTC stash: <b style=\"color:#e6edf3;\">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Near NAV &lt; 1.2x · Yellow zone 1.2–1.4x · Neutral 1.4–1.8x · Rich &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.",
+     "基于企业价值的 MSTR 相对 BTC 储备溢价：<b style=\"color:#e6edf3;\">(市值 + 债务 + 优先股 − 现金) / BTC 储备价值</b>（与 strategy.com 公布的 mNAV 口径一致）。接近净值 &lt; 1.2x · 黄区 1.2–1.4x · 中性 1.4–1.8x · 偏贵 &gt; 1.8x。历史区间约 1.0–3.5x；接近 1.0 的低点常对应吸筹区，&gt;2.5 的高点常对应派发区。"),
     ("(from yfinance close)", "（yfinance 收盘价）"),
     ("· source: strategy.com", "· 数据来源：strategy.com"),
     (">mNAV</div>", ">mNAV</div>"),
@@ -817,9 +916,10 @@ ZH_REPLACEMENTS = [
     (">BTC Reserve</div>", ">BTC 储备价值</div>"),
     (">Enterprise Value</div>", ">企业价值</div>"),
     (">Market Cap</div>", ">市值</div>"),
-    (">Cheap</div>", ">便宜</div>"),
-    (">Normal</div>", ">正常</div>"),
-    (">Expensive</div>", ">偏贵</div>"),
+    (">Near NAV</div>", ">接近净值</div>"),
+    (">Yellow zone</div>", ">黄区</div>"),
+    (">Neutral</div>", ">中性</div>"),
+    (">Rich</div>", ">偏贵</div>"),
     ("Holdings as of ", "持仓数据日期 "),
     (">Zero-Crossing Alerts (P/C Spread)</h2>", ">零轴穿越预警（P/C 偏度）</h2>"),
     (">Delta-25 Put/Call IV Spread (by expiration bucket)</h2>", ">Delta-25 Put/Call IV 偏度（按到期分桶）</h2>"),
@@ -886,7 +986,7 @@ ZH_REPLACEMENTS = [
     (">MSTR 24h</div>", ">MSTR 24小时</div>"),
     (">Correlation (", ">相关性 ("),
     (">MSTR β to BTC</div>", ">MSTR 对 BTC β</div>"),
-    (">IV %ile (2yr)</div>", ">IV 分位数 (2年)</div>"),
+    (">ATM IV %ile</div>", ">ATM IV 分位</div>"),
     # ===== Table headers =====
     ("<th>Strike</th>", "<th>行权价</th>"),
     ("<th>Magnitude</th>", "<th>幅度</th>"),
@@ -970,20 +1070,20 @@ ZH_REPLACEMENTS = [
     ("<b>No MSTR/BTC divergence</b> — MSTR move is consistent with BTC move × beta. Options flow can be taken at face value without premium/discount overlay.",
      "<b>MSTR/BTC 无背离</b> — MSTR 走势与 BTC × β 一致。期权流向可直接采信，无需溢价/折价修正。"),
     # ===== Zero-crossing card intro =====
-    ("Historical pattern: when delta-25 P/C IV spread breaks below zero, stock often near a local top within 1-3 weeks.",
-     "历史规律：delta-25 P/C IV spread 跌破 0 时，股票往往在 1-3 周内见到阶段顶。"),
+    ("Historical pattern: when delta-25 P/C IV spread breaks below zero, upside chase/squeeze demand is elevated; use it as a risk warning, not a standalone top call.",
+     "历史规律：delta-25 P/C IV spread 跌破 0 时，上行追涨/挤压需求升高；把它当风险提示，不要单独用来判顶。"),
     # ===== P/C spread chart legend =====
-    ("<b style=\"color:#e6edf3;\">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (speculative FOMO).",
-     "<b style=\"color:#e6edf3;\">偏度 = Put IV − Call IV</b>（delta-25 行权价）。正 = put 贵（正常对冲需求）；负 = call 贵（投机 FOMO）。"),
+    ("<b style=\"color:#e6edf3;\">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (upside chase/squeeze demand).",
+     "<b style=\"color:#e6edf3;\">偏度 = Put IV − Call IV</b>（delta-25 行权价）。正 = put 贵（正常对冲需求）；负 = call 贵（上行追涨/挤压需求）。"),
     ("<b>Safe zone</b> (spread &gt; 0) — puts cost more than calls, market pricing in downside risk = healthy",
      "<b>安全区</b>（偏度 > 0）— put 贵于 call，市场定价下行风险 = 健康"),
-    ("<b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, investors chasing upside = top signal",
-     "<b>危险区</b>（偏度 < 0）— call 贵于 put，投资者追涨 = 顶部信号"),
+    ("<b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, upside chase/squeeze demand elevated",
+     "<b>危险区</b>（偏度 < 0）— call 贵于 put，上行追涨/挤压需求升高"),
     ("Zero line (threshold)", "零轴（临界线）"),
     ("Spot price (right axis)", "现价（右轴）"),
     # ===== NVRP insight =====
-    ("<b style=\"color:#e6edf3;\">NVRP = ATM IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.",
-     "<b style=\"color:#e6edf3;\">NVRP = ATM IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。"),
+    ("<b style=\"color:#e6edf3;\">NVRP = 14D IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.",
+     "<b style=\"color:#e6edf3;\">NVRP = 14D IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。"),
     ("<b>Strong premium-selling edge</b>", "<b>卖权溢价优势明显</b>"),
     ("x (IV ", "x（IV "),
     ("%, +", "%，IV 高 "),
@@ -1006,7 +1106,8 @@ ZH_REPLACEMENTS = [
     (") cheaper than RV (", ") 比实际波动率 ("),
     (") — options underpriced. Consider BUYING vol (straddles/calls/puts) not selling.",
      ") 便宜 — 期权定价不足。考虑买波动率（跨式/calls/puts）而非卖。"),
-    (" IV %ile (2yr):", " IV 分位数 (2年):"),
+    (" ATM IV %ile (n=", " ATM IV 分位 (n="),
+    ("ATM IV %ile ", "ATM IV 分位 "),
     # ===== Skew percentile banner =====
     ("<b>Extreme call skew — bottom ", "<b>极端看涨偏度 — 底部 "),
     ("<b>Heavy call skew — ", "<b>看涨偏度偏重 — "),
@@ -1014,20 +1115,22 @@ ZH_REPLACEMENTS = [
     ("<b>Extreme put skew — top ", "<b>极端看跌偏度 — 顶部 "),
     ("<b>Skew within normal band</b>", "<b>偏度在正常区间</b>"),
     ("th %ile</b> of ", "分位数</b>（"),
+    ("th %ile of ", "分位数（"),
+    (" and 20", " 至 20"),
     ("-day history (current ", "天历史，当前 "),
     (" vs median ", " vs 中位数 "),
     (", low ", "，最低 "),
-    ("). When skew is this compressed, rally often near exhaustion — consider fading or hedging with cheap OTM puts.",
-     "）。偏度压到这种程度，涨势往往接近衰竭 — 考虑反向或用便宜的 OTM put 对冲。"),
-    ("). Bullish flow building; watch for deterioration toward extreme.",
-     "）。多头流正在建仓；留意继续恶化至极端。"),
+    ("). Treat as late-cycle chase/squeeze risk — consider hedging rather than assuming an immediate top.",
+     "）。把它当作晚期追涨/挤压风险 — 优先考虑对冲，不要直接假设马上见顶。"),
+    ("). Bullish chase/squeeze demand is building; watch for deterioration toward extreme.",
+     "）。看涨追涨/挤压需求正在升高；留意继续恶化至极端。"),
     ("). No extreme positioning signal.", "）。无极端仓位信号。"),
     ("). Fear bid on puts; historically a lagging bottom signal.",
      "）。对 put 的恐慌买盘；历史上是滞后底部信号。"),
     ("-day history. Capitulation / panic bid on puts; historically near local bottoms.",
      "天历史。恐慌性 put 买盘；历史上接近阶段底。"),
     (" only ", " 仅 "),
-    (" days of history — percentile unreliable until n≥60", " 天历史 — 分位数在 n≥60 前不可靠"),
+    (" days of history — do not use percentile in the verdict until n≥60", " 天历史 — n≥60 前不要把分位数纳入裁定"),
     # ===== Call DTE regime banner =====
     ("<b>Speculative call build — ", "<b>投机性 Call 建仓 — "),
     ("% short-dated (≤14d)</b>", "% 短期 (≤14天)</b>"),
@@ -1059,11 +1162,11 @@ ZH_REPLACEMENTS = [
     ("<b>Healthy skew</b> — all ", "<b>偏度健康</b> — 全部 "),
     (" buckets in danger zone (avg ", " 个到期桶在危险区（均值 "),
     (" pts, low ", " pts，最低 "),
-    ("). Speculative FOMO across the full term structure. Historical pattern: local top within 1-3 weeks. Consider buying OTM puts as hedge while they're relatively cheap.",
-     "）。整条期限结构都是投机 FOMO。历史规律：1-3 周内见阶段顶。考虑趁 OTM put 相对便宜时买入对冲。"),
+    ("). Speculative chase/squeeze demand across the full term structure. Treat as late-cycle risk and consider hedging while OTM puts are relatively cheap.",
+     "）。整条期限结构都有追涨/挤压需求。视为晚期风险，考虑趁 OTM put 相对便宜时对冲。"),
     (" expirations negative (avg ", " 个到期为负（均值 "),
-    (" pts). Bullish euphoria building; watch for further deterioration toward extreme levels.",
-     " pts）。多头情绪升温；留意继续恶化至极端。"),
+    (" pts). Chase/squeeze demand is building; watch for further deterioration toward extreme levels.",
+     " pts）。追涨/挤压需求升高；留意继续恶化至极端。"),
     (" buckets negative (low ", " 个到期桶为负（最低 "),
     ("). Speculative flow emerging in some expirations. Monitor if it spreads to all buckets.",
      "）。部分到期出现投机流，观察是否蔓延到所有桶。"),
@@ -1087,13 +1190,14 @@ ZH_REPLACEMENTS = [
     ("<b>Heavy tail-hedge buying</b> — ", "<b>重仓尾部对冲买入</b> — "),
     ("% of put OI growth is deep OTM (&lt;-15% spot, strikes ", "% 的 put OI 增长在深度 OTM（<-15% 现价，行权价 "),
     ("). Systematic insurance demand = real downside fear.", "）。系统性保险需求 = 真实下行恐慌。"),
-    ("<b>Clean bullish accumulation</b> — OTM call adds ", "<b>纯多头建仓</b> — OTM call 新增 "),
-    (" dominate; OTM put flow ", " 占主导；OTM put 流 "),
-    (" is minor. Directional upside bets, minimal hedging.",
-     " 较小。方向性上行押注，对冲很少。"),
-    ("<b>Directional put buying</b> — OTM put adds ", "<b>方向性 put 买入</b> — OTM put 新增 "),
-    (" dwarf call additions ", " 远超 call 新增 "),
-    (". Clear bearish positioning.", "。明确空头仓位。"),
+    ("<b>Call-side OI expansion</b> — OTM call OI increased ", "<b>Call 端 OI 扩张</b> — OTM call OI 增加 "),
+    (" while OTM put OI changed ", "，同时 OTM put OI 变化 "),
+    (". Bullish interpretation requires confirmation from price, volume, or trade prints.",
+     "。看涨解读需要价格、成交量或逐笔成交确认。"),
+    ("<b>Put-side OI expansion</b> — OTM put OI increased ", "<b>Put 端 OI 扩张</b> — OTM put OI 增加 "),
+    (", dwarfing call changes ", "，明显大于 call 变化 "),
+    (". Bearish/hedging interpretation requires confirmation from price, volume, or trade prints.",
+     "。看空/对冲解读需要价格、成交量或逐笔成交确认。"),
     ("<b>Mixed flow</b> — OTM calls ", "<b>混合流</b> — OTM calls "),
     (", OTM puts ", "，OTM puts "),
     (", ITM calls ", "，ITM calls "),
@@ -1103,7 +1207,7 @@ ZH_REPLACEMENTS = [
     ("ITM Call (&lt;spot)", "ITM Call (<现价)"),
     ("OTM Put (&lt;spot)", "OTM Put (<现价)"),
     ("Deep OTM Put (&lt;-15%)", "深度 OTM Put (<-15%)"),
-    ("upside bets", "上行押注"),
+    ("upside OI", "上行 OI"),
     ("often covered-call writing", "常为 covered-call 写卖"),
     ("downside / hedges", "下行 / 对冲"),
     ("tail insurance", "尾部保险"),
@@ -1111,8 +1215,8 @@ ZH_REPLACEMENTS = [
     ("How to read OI Delta by depth (click to expand)", "如何按深度读 OI Delta（点击展开）"),
     ("OI Delta = <b>net new contracts created</b> between snapshots (buyers + sellers both open). The headline total is misleading — <b>where the OI lands matters more than the total</b>.",
      "OI Delta = 两次 snapshot 之间<b>净新建合约</b>（买卖双方都开仓）。表面总数有误导性 — <b>OI 落在哪里比总量更重要</b>。"),
-    ("<b style=\"color:#3fb950;\">OTM Call (above spot)</b> = directional upside bets. Retail FOMO or institutional call buying.",
-     "<b style=\"color:#3fb950;\">OTM Call（现价之上）</b> = 方向性上行押注。散户 FOMO 或机构买 call。"),
+    ("<b style=\"color:#3fb950;\">OTM Call (above spot)</b> = call OI increased above spot. Direction is unconfirmed without trade prints; read alongside price and volume.",
+     "<b style=\"color:#3fb950;\">OTM Call（现价之上）</b> = 现价上方 call OI 增加。没有逐笔成交无法确认方向；需结合价格和成交量解读。"),
     ("<b style=\"color:#d29922;\">ITM Call (below spot)</b> = usually <b>covered-call writers</b> locking gains on existing stock. Increases OI but is <b>not bullish</b> — it's profit-taking.",
      "<b style=\"color:#d29922;\">ITM Call（现价之下）</b> = 通常是 <b>covered-call 写卖方</b>对已持股锁利。OI 增加但<b>并非看涨</b> — 是获利了结。"),
     ("<b style=\"color:#f85149;\">OTM Put (below spot)</b> = downside bets or portfolio hedges.",
@@ -1120,10 +1224,10 @@ ZH_REPLACEMENTS = [
     ("<b style=\"color:#f85149;\">Deep OTM Put (&lt;-15% spot)</b> = systematic tail insurance. Only bought by institutions/macro funds. When this surges, <b>smart money is nervous</b>.",
      "<b style=\"color:#f85149;\">深度 OTM Put（<-15% 现价）</b> = 系统性尾部保险。仅机构/宏观基金购买。激增 = <b>smart money 紧张</b>。"),
     ("<b>Classic patterns:</b>", "<b>经典模式：</b>"),
-    ("<b>Pure bullish:</b> OTM calls dominate, puts quiet → clean upside conviction",
-     "<b>纯多头：</b>OTM calls 占主导，puts 安静 → 纯上行定投"),
-    ("<b>Pure bearish:</b> OTM puts dominate, calls quiet → clean downside conviction",
-     "<b>纯空头：</b>OTM puts 占主导，calls 安静 → 纯下行定投"),
+    ("<b>Bullish candidate:</b> OTM call OI expands while puts stay quiet, especially if price/volume confirm",
+     "<b>看涨候选：</b>OTM call OI 扩张且 puts 安静，尤其需要价格/成交量确认"),
+    ("<b>Bearish/hedge candidate:</b> OTM put OI expands while calls stay quiet, especially if price/volume confirm",
+     "<b>看空/对冲候选：</b>OTM put OI 扩张且 calls 安静，尤其需要价格/成交量确认"),
     ("<b>\"Seatbelt on\":</b> ITM calls + deep OTM puts both swell → institutions taking profit + hedging = late-bull warning",
      "<b>「系安全带」：</b>ITM calls + 深度 OTM puts 同时膨胀 → 机构获利 + 对冲 = 晚期牛市警告"),
     ("<b>Rotation:</b> ITM calls closing (OI drops) + OTM calls opening (OI rises) → long positions being rolled up after a rally",
@@ -1145,8 +1249,8 @@ ZH_REPLACEMENTS = [
     ("moderate", "中等"),
     (", 50–65% = ", "，50–65% = "),
     ("weak", "弱"),
-    ("<b>Trade rules:</b> Sell CC at call wall · Sell CSP at put wall · Don't buy lottos above call wall · Watch wall migration (up = bullish re-rating, down = top signal, thinning = resistance weakening).",
-     "<b>交易规则：</b>在 call 墙卖 CC · 在 put 墙卖 CSP · 别买 call 墙上方的彩票 · 观察墙的迁移（向上 = 看涨重定价，向下 = 顶部信号，变稀 = 阻力减弱）。"),
+    ("<b>Trade rules:</b> Use walls as levels first. Short-vol structures require Playbook and Rulebook approval. Watch wall migration (up = bullish re-rating, down = top risk, thinning = resistance fading).",
+     "<b>交易规则：</b>先把墙作为价位。卖波动率结构需要最终计划和规则裁定同时允许。观察墙的迁移（向上 = 看涨重定价，向下 = 顶部风险，变稀 = 阻力减弱）。"),
     ("<b>⚠️ Asymmetry warning:</b> Dense call ladder + thin put side = late-bull euphoria (no hedging demand, market complacent).",
      "<b>⚠️ 不对称警告：</b>密集 call 阶梯 + 稀薄 put 端 = 晚期牛市狂热（无对冲需求，市场自满）。"),
     # ===== Wall insight headlines =====
@@ -1156,11 +1260,14 @@ ZH_REPLACEMENTS = [
     (". Dense call ladder + thin put support = <b>late-bull euphoria</b> (market complacent, no structural hedging). Expect upside to stall near call wall; downside has little cushion if sentiment flips.",
      "。密集 call 阶梯 + 稀薄 put 支撑 = <b>晚期牛市狂热</b>（市场自满、无结构对冲）。上行到 call 墙大概率停滞；情绪翻转时下行缓冲很少。"),
     ("<b>Balanced two-sided positioning</b>", "<b>双向持仓均衡</b>"),
+    ("<b>Balanced two-sided walls</b>", "<b>双向结构墙均衡</b>"),
     (" — both walls structural ", " — 两道墙都结构性 "),
     (" (call ", "（call "),
     (", put ", "，put "),
-    ("). Expect range-bound trade between the walls. Good regime for selling strangles / iron condors.",
-     "）。预期在墙之间区间震荡。适合卖勒式 / 铁鹰。"),
+    ("). Use the wall range for levels, but <b>do not treat this as a short-vol signal</b> while NVRP/GEX are unfavorable.",
+     "）。用墙区间做价位参考，但在 NVRP/GEX 不利时<b>不要把它当作卖波动率信号</b>。"),
+    ("). Expect range-bound trade between the walls. Premium-selling structures can be considered only if the rulebook gates pass.",
+     "）。预期在墙之间区间震荡；只有规则闸门通过时才考虑卖波动率结构。"),
     ("<b>Put-heavy / call-light</b>", "<b>Put 重 / Call 轻</b>"),
     (" — heavy put structure but no call resistance. Often seen after a washout — upside path open if market stabilizes.",
      " — put 结构重但无 call 阻力。常见于洗盘之后 — 市场企稳则上行通道打开。"),
@@ -1234,8 +1341,8 @@ ZH_REPLACEMENTS = [
     ("P/C spread crossed below zero in ", "P/C 偏度跌破 0（"),
     ("P/C spread normalized back above zero in ", "P/C 偏度回升至 0 之上（"),
     (" bucket: ", " 到期）："),
-    (" pts. Historical pattern: call skew dominance often signals near-term top.",
-     " pts。历史规律：call 偏度主导常预示近期顶。"),
+    (" pts. Historical pattern: call skew dominance flags elevated upside chase/squeeze risk.",
+     " pts。历史规律：call 偏度主导提示上行追涨/挤压风险升高。"),
     (" pts. Bullish euphoria fading.", " pts。看涨狂热消退。"),
     (": P/C spread ", "：P/C 偏度 "),
     ("No zero-crossings detected in this period.", "本期间未检测到零轴穿越。"),
@@ -1298,19 +1405,23 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     fname = os.path.basename(output_path)
     m = re.search(r'(\d{4}-\d{2}-\d{2})', fname)
     report_date = m.group(1) if m else datetime.now().strftime('%Y-%m-%d')
+    is_zh = (lang == 'zh')
     lang_suffix = '_zh' if lang == 'zh' else ''
-    if lang == 'zh':
+    if is_zh:
         nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = '概览', '偏度', '期限', '墙'
         nav_lbl_verdict = '裁定'
         nav_lbl_highlights = '要点'
+        nav_lbl_playbook = '计划'
     else:
         nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = 'KPIs', 'Skew', 'Term', 'Walls'
         nav_lbl_verdict = 'Verdict'
         nav_lbl_highlights = 'Today'
+        nav_lbl_playbook = 'Playbook'
 
     pc = trend_data['pc_spread_series']
     crossings = trend_data['zero_crossings']
     iv = trend_data['iv_trend']
+    iv_history = trend_data.get('iv_history') or iv
     oi = trend_data['oi_deltas']
     persist = trend_data['volume_persistence']
     em = trend_data['em_accuracy']
@@ -1367,12 +1478,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             'borderColor': colors.get(bucket, '#8b949e'),
         })
 
-    # IV trend chart data
-    iv_dates = [p['date'] for p in iv]
-    iv_values = [round(p['front_atm_iv'], 1) for p in iv]
-    rv_values = [round(p['rv30'], 1) for p in iv]
-    nvrp_values = [p['nvrp'] for p in iv]
-    spot_values = [round(p['spot'], 2) for p in iv]
+    # IV chart data: use all saved local history, not just the report window.
+    iv_dates = [p['date'] for p in iv_history]
+    iv_values = [round(p.get('atm_14d_iv') or p.get('front_atm_iv', 0), 1) for p in iv_history]
+    rv_values = [round(p['rv30'], 1) for p in iv_history]
+    nvrp_values = [p['nvrp'] for p in iv_history]
+    spot_values = [round(p['spot'], 2) for p in iv_history]
 
     # OI delta data (latest day)
     oi_latest = oi[-1] if oi else None
@@ -1567,6 +1678,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         total_call_vol = sum(p['total_volume'] for p in all_persist if p['type'] == 'CALL')
         total_put_vol = sum(p['total_volume'] for p in all_persist if p['type'] == 'PUT')
         cp_ratio = total_call_vol / total_put_vol if total_put_vol > 0 else 99.0
+        suppress_short_vol = ((current.get('nvrp') or 0) > 0 and (current.get('nvrp') or 0) < 1.0) or bool(gex_data and gex_data.get('regime') == 'short_gamma')
 
         def _w_strength(w):
             if not w:
@@ -1603,9 +1715,14 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
                       f"Expect upside to stall near call wall; downside has little cushion if sentiment flips.")
         elif cp_ratio > 2 and c_str == 'strong' and p_str in ('strong', 'moderate'):
             wi_color, wi_text, wi_icon = '#58a6ff', '#58a6ff', 'ℹ️'
-            wi_msg = (f"<b>Balanced two-sided positioning</b> — both walls structural "
-                      f"(call {c_str}, put {p_str}). Expect range-bound trade between the walls. "
-                      f"Good regime for selling strangles / iron condors.")
+            if suppress_short_vol:
+                wi_msg = (f"<b>Balanced two-sided walls</b> — both walls structural "
+                          f"(call {c_str}, put {p_str}). Use the wall range for levels, but "
+                          f"<b>do not treat this as a short-vol signal</b> while NVRP/GEX are unfavorable.")
+            else:
+                wi_msg = (f"<b>Balanced two-sided positioning</b> — both walls structural "
+                          f"(call {c_str}, put {p_str}). Expect range-bound trade between the walls. "
+                          f"Premium-selling structures can be considered only if the rulebook gates pass.")
         elif c_str == 'none' and p_str in ('strong', 'moderate'):
             wi_color, wi_text, wi_icon = '#3fb950', '#a8e6b8', '✓'
             wi_msg = (f"<b>Put-heavy / call-light</b> — heavy put structure but no call resistance. "
@@ -1815,12 +1932,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
                       f"(&lt;-15% spot, strikes {deep_otm_put:+,d}). Systematic insurance demand = real downside fear.")
         elif otm_call > abs(otm_put) * 2 and otm_call > 5000:
             oi_color, oi_text, oi_icon = '#3fb950', '#a8e6b8', '✓'
-            oi_msg = (f"<b>Clean bullish accumulation</b> — OTM call adds {otm_call:+,d} dominate; "
-                      f"OTM put flow {otm_put:+,d} is minor. Directional upside bets, minimal hedging.")
+            oi_msg = (f"<b>Call-side OI expansion</b> — OTM call OI increased {otm_call:+,d} while "
+                      f"OTM put OI changed {otm_put:+,d}. Bullish interpretation requires confirmation from price, volume, or trade prints.")
         elif abs(otm_put) > otm_call * 2 and abs(otm_put) > 5000:
             oi_color, oi_text, oi_icon = '#f85149', '#f85149', '🔥'
-            oi_msg = (f"<b>Directional put buying</b> — OTM put adds {otm_put:+,d} dwarf call additions "
-                      f"{otm_call:+,d}. Clear bearish positioning.")
+            oi_msg = (f"<b>Put-side OI expansion</b> — OTM put OI increased {otm_put:+,d}, dwarfing call changes "
+                      f"{otm_call:+,d}. Bearish/hedging interpretation requires confirmation from price, volume, or trade prints.")
         else:
             oi_color, oi_text, oi_icon = '#58a6ff', '#58a6ff', 'ℹ️'
             oi_msg = (f"<b>Mixed flow</b> — OTM calls {otm_call:+,d}, OTM puts {otm_put:+,d}, ITM calls {itm_call:+,d}. "
@@ -1834,7 +1951,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         oi_depth_html = f"""
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px;">
       <span style="padding:4px 9px;background:#3fb95022;border:1px solid #3fb95055;border-radius:6px;color:#e6edf3;">
-        OTM Call (&gt;spot) <b style="color:#3fb950;">{otm_call:+,d}</b> <span style="color:#8b949e;">upside bets</span>
+        OTM Call (&gt;spot) <b style="color:#3fb950;">{otm_call:+,d}</b> <span style="color:#8b949e;">upside OI</span>
       </span>
       <span style="padding:4px 9px;background:#d2992222;border:1px solid #d2992255;border-radius:6px;color:#e6edf3;">
         ITM Call (&lt;spot) <b style="color:#d29922;">{itm_call:+,d}</b> <span style="color:#8b949e;">often covered-call writing</span>
@@ -2023,10 +2140,18 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
                 latest_spread_vals[ds['label']] = last_val
 
     # Auto-generated NVRP insight
-    cur_iv = current.get('front_atm_iv', 0)
+    cur_iv = current.get('atm_14d_iv') or current.get('front_atm_iv', 0)
     cur_rv = current.get('rv30', 0)
     cur_nvrp = current.get('nvrp', 0)
-    cur_iv_pct = current.get('iv_pct_2yr', 0)
+    cur_iv_pct = current.get('iv_percentile', 0)
+    cur_iv_pct_n = current.get('iv_percentile_n', 0)
+    cur_iv_pct_reliable = current.get('iv_percentile_reliable', False)
+    cur_iv_pct_min = current.get('iv_percentile_min', 0)
+    cur_iv_pct_max = current.get('iv_percentile_max', 0)
+    cur_iv_pct_median = current.get('iv_percentile_median', 0)
+    long_vol_edge = cur_nvrp > 0 and cur_nvrp < 1.0
+    short_gamma_regime = bool(gex_data and gex_data.get('regime') == 'short_gamma')
+    short_vol_suppressed = long_vol_edge or short_gamma_regime
     nvrp_insight = ""
     if cur_nvrp > 0:
         if cur_nvrp >= 1.5:
@@ -2037,14 +2162,25 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             nv_color, nv_text, nv_icon, nv_msg = '#d29922', '#d29922', '⚠️', f"<b>Marginal / no edge</b> — NVRP {cur_nvrp:.2f}x between 1.0-1.3. IV ({cur_iv:.1f}%) only slightly above RV ({cur_rv:.1f}%); premium may not cover bid-ask + gamma risk. Avoid aggressive short vol."
         else:
             nv_color, nv_text, nv_icon, nv_msg = '#f85149', '#f85149', '🔥', f"<b>Long vol edge</b> — NVRP {cur_nvrp:.2f}x below 1.0. IV ({cur_iv:.1f}%) cheaper than RV ({cur_rv:.1f}%) — options underpriced. Consider BUYING vol (straddles/calls/puts) not selling."
-        pct_str = f' &nbsp;|&nbsp; IV %ile (2yr): <b>{cur_iv_pct:.0f}</b>' if cur_iv_pct > 0 else ''
+        if cur_iv_pct > 0 and cur_iv_pct_reliable:
+            pct_str = (
+                f' &nbsp;|&nbsp; ATM IV 分位: <b>{cur_iv_pct:.0f}</b>'
+                if is_zh else
+                f' &nbsp;|&nbsp; ATM IV %ile: <b>{cur_iv_pct:.0f}</b>'
+            )
+        elif cur_iv_pct > 0:
+            pct_str = (
+                f' &nbsp;|&nbsp; 本地 IV 样本 <b>n={cur_iv_pct_n}</b>，暂不用于裁定'
+                if is_zh else
+                f' &nbsp;|&nbsp; local IV sample <b>n={cur_iv_pct_n}</b>, not used for verdict'
+            )
         nvrp_insight = f"""
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid {nv_color};background:{nv_color}11;border-radius:4px;font-size:12px;line-height:1.5;">
     <span style="margin-right:6px;">{nv_icon}</span><span style="color:{nv_text};">{nv_msg}</span>{pct_str}
   </div>"""
 
-    # --- IV Term Structure: latest ATM IV per bucket ---
-    term_html = ""
+    # --- Compact IV Term Structure: latest ATM IV per bucket ---
+    term_compact_html = ""
     term_struct = {}
     if pc:
         ts_dates = {p['date'] for bucket_data in pc.values() for p in bucket_data}
@@ -2068,16 +2204,28 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
                      or term_struct.get('1m') or term_struct.get('2w') or front_iv_ts)
         slope = front_iv_ts - far_iv_ts  # >0 backwardation, <0 contango
 
-        if slope > 5:
-            ts_color, ts_icon, ts_msg = '#f85149', '🔥', f"<b>Backwardation</b> — Front IV ({front_iv_ts:.1f}%) above Far ({far_iv_ts:.1f}%) by {slope:+.1f} pts. Market pricing near-term event/risk; far-dated options relatively 'cheap'."
-        elif slope > 1:
-            ts_color, ts_icon, ts_msg = '#d29922', '⚠️', f"<b>Mild backwardation</b> — Front IV slightly above Far ({slope:+.1f} pts). Some near-term anxiety; not yet stress regime."
-        elif slope < -5:
-            ts_color, ts_icon, ts_msg = '#3fb950', '✓', f"<b>Steep contango</b> — Front IV ({front_iv_ts:.1f}%) well below Far ({far_iv_ts:.1f}%) by {slope:+.1f} pts. Market complacent now, pricing uncertainty over time. Front puts may be cheap insurance."
-        elif slope < -1:
-            ts_color, ts_icon, ts_msg = '#7ee787', '✓', f"<b>Normal contango</b> — Front below Far ({slope:+.1f} pts). Healthy term structure; nothing imminent priced in."
+        if is_zh:
+            if slope > 5:
+                ts_color, ts_icon, ts_msg = '#f85149', '🔥', f"<b>短端压力</b> — Front 比 Far 高 {slope:+.1f} 点；短期期权贵，市场在定价事件/跳空风险。"
+            elif slope > 1:
+                ts_color, ts_icon, ts_msg = '#d29922', '⚠', f"<b>轻微短端升水</b> — Front−Far {slope:+.1f} 点；短期有焦虑，但未到压力状态。"
+            elif slope < -5:
+                ts_color, ts_icon, ts_msg = '#3fb950', '✓', f"<b>远端升水较陡</b> — Front 比 Far 低 {abs(slope):.1f} 点；短期期权相对便宜，但也可能表示短期缺少事件。"
+            elif slope < -1:
+                ts_color, ts_icon, ts_msg = '#7ee787', '✓', f"<b>正常远端升水</b> — Front−Far {slope:+.1f} 点；期限结构健康。"
+            else:
+                ts_color, ts_icon, ts_msg = '#8b949e', '·', f"<b>期限平坦</b> — Front−Far {slope:+.1f} 点；没有明显期限偏好。"
         else:
-            ts_color, ts_icon, ts_msg = '#8b949e', '·', f"<b>Flat term structure</b> — IV roughly uniform across DTE ({slope:+.1f} pts). Neither stress nor complacency."
+            if slope > 5:
+                ts_color, ts_icon, ts_msg = '#f85149', '🔥', f"<b>Front-end stress</b> — Front is {slope:+.1f} pts above Far; short-dated options are rich and pricing event/gap risk."
+            elif slope > 1:
+                ts_color, ts_icon, ts_msg = '#d29922', '⚠', f"<b>Mild backwardation</b> — Front−Far {slope:+.1f} pts; some near-term anxiety, not a stress regime."
+            elif slope < -5:
+                ts_color, ts_icon, ts_msg = '#3fb950', '✓', f"<b>Steep contango</b> — Front is {abs(slope):.1f} pts below Far; short-dated options are relatively cheap, but may simply lack catalyst."
+            elif slope < -1:
+                ts_color, ts_icon, ts_msg = '#7ee787', '✓', f"<b>Normal contango</b> — Front−Far {slope:+.1f} pts; healthy term structure."
+            else:
+                ts_color, ts_icon, ts_msg = '#8b949e', '·', f"<b>Flat curve</b> — Front−Far {slope:+.1f} pts; no strong term preference."
 
         bar_rows = ""
         for bucket in ['front', '2w', '1m', '2m', 'far']:
@@ -2086,37 +2234,232 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             iv_val = term_struct[bucket]
             bar_w = int(iv_val / max_iv * 100) if max_iv > 0 else 0
             bar_rows += (
-                f"<div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'>"
+                f"<div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'>"
                 f"<div style='color:#e6edf3;font-weight:500;'>{bucket_labels[bucket]}</div>"
                 f"<div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>{iv_val:.1f}%</div>"
-                f"<div><div style='height:14px;width:{bar_w}%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div>"
+                f"<div><div style='height:10px;width:{bar_w}%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div>"
                 f"</div>"
             )
 
-        term_html = f"""
-<div class="card" id="term">
-  <h2>IV Term Structure (ATM IV by DTE)</h2>
-  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;line-height:1.6;">
-    Slope across the IV curve. <b style="color:#3fb950;">Contango</b> (rising IV with DTE) = normal/complacent. <b style="color:#f85149;">Backwardation</b> (falling) = market pricing immediate event risk. Use Front−Far &gt;5 pts as stress threshold.
+        term_title = 'IV 期限结构' if is_zh else 'IV Term Structure'
+        term_hint = '辅助：用于判断短端是否因事件变贵，以及选择期限。' if is_zh else 'Auxiliary: helps identify front-end event premium and choose tenor.'
+        term_compact_html = f"""
+  <div style="margin-top:12px;background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;">
+      <div>
+        <div style="font-size:12px;color:#e6edf3;font-weight:650;">{term_title}</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:2px;">{term_hint}</div>
+      </div>
+      <div style="font-size:11px;color:{ts_color};font-weight:600;">{ts_icon} {ts_msg}</div>
+    </div>
+    <div>{bar_rows}</div>
   </div>
-  <div style="margin:8px 0;padding:10px 12px;border-left:3px solid {ts_color};background:{ts_color}11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">{ts_icon}</span><span style="color:{ts_color};">{ts_msg}</span>
+"""
+
+    # --- IV dashboard: keep level, local percentile, realized vol, and curve separate ---
+    def _fmt_signed(v, digits=1, suffix=''):
+        if v is None:
+            return ''
+        if abs(v) < 0.05:
+            return f'<span style="color:#8b949e;font-size:11px;">{"持平" if is_zh else "flat"}</span>'
+        color = '#3fb950' if v > 0 else '#f85149'
+        return f'<span style="color:{color};font-size:11px;">{v:+.{digits}f}{suffix}</span>'
+
+    iv_day_change = None
+    rv_day_change = None
+    nvrp_day_change = None
+    if prev_state:
+        iv_day_change = cur_iv - (prev_state.get('atm_14d_iv') or prev_state.get('front_atm_iv') or 0)
+        rv_day_change = cur_rv - (prev_state.get('rv30') or 0)
+        nvrp_day_change = cur_nvrp - (prev_state.get('nvrp') or 0)
+
+    if cur_iv_pct_reliable:
+        pct_value = f'{cur_iv_pct:.0f}'
+        pct_note = (f'n={cur_iv_pct_n}，可参与规则裁定' if is_zh
+                    else f'n={cur_iv_pct_n}, eligible for rule verdicts')
+        pct_color = '#e6edf3'
+    else:
+        pct_value = '样本不足' if is_zh else 'insufficient'
+        pct_note = (f'本地 n={cur_iv_pct_n}；当前 {cur_iv_pct:.1f}% 只作参考，不当长期 IV 分位'
+                    if is_zh else
+                    f'local n={cur_iv_pct_n}; current {cur_iv_pct:.1f}% is reference only, not long-run IV percentile')
+        pct_color = '#d29922'
+
+    if cur_iv_pct_min and cur_iv_pct_max:
+        local_range = (f'本地 14D IV 区间 {cur_iv_pct_min:.1f}%–{cur_iv_pct_max:.1f}%，中位 {cur_iv_pct_median:.1f}%'
+                       if is_zh else
+                       f'Local 14D IV range {cur_iv_pct_min:.1f}%–{cur_iv_pct_max:.1f}%, median {cur_iv_pct_median:.1f}%')
+    else:
+        local_range = '本地 14D IV 区间缺失' if is_zh else 'Local 14D IV range unavailable'
+
+    if cur_nvrp >= 1.3:
+        edge_text = '卖波动率有溢价垫' if is_zh else 'premium-selling cushion'
+        edge_color = '#3fb950'
+    elif cur_nvrp >= 1.0:
+        edge_text = '卖波动率边际' if is_zh else 'marginal premium edge'
+        edge_color = '#d29922'
+    elif cur_nvrp > 0:
+        edge_text = '买波动率占优' if is_zh else 'long-vol edge'
+        edge_color = '#f85149'
+    else:
+        edge_text = 'NVRP 缺失' if is_zh else 'NVRP unavailable'
+        edge_color = '#8b949e'
+
+    term_dash = '期限结构缺失' if is_zh else 'term structure unavailable'
+    term_dash_note = ''
+    term_color = '#8b949e'
+    if len(term_struct) >= 2:
+        _front = term_struct.get('front', 0)
+        _far = (term_struct.get('2m') or term_struct.get('far') or term_struct.get('1m') or term_struct.get('2w') or _front)
+        _slope = _front - _far
+        if _slope > 1:
+            term_dash = '近月升水' if is_zh else 'backwardation'
+            term_color = '#f85149' if _slope > 5 else '#d29922'
+        elif _slope < -1:
+            term_dash = '远月升水' if is_zh else 'contango'
+            term_color = '#3fb950'
+        else:
+            term_dash = '期限平坦' if is_zh else 'flat curve'
+            term_color = '#8b949e'
+        term_dash_note = (f'Front−Far {_slope:+.1f} pts'
+                          if not is_zh else f'Front−Far {_slope:+.1f} 点')
+
+    iv_dashboard_title = 'Historical 14D 50Δ IV Trend（方差插值）' if is_zh else 'Historical 14D 50-Delta IV Trend (Variance Interpolated)'
+    iv_dashboard_lead = (
+        '使用快照里的到期 IV 做总方差插值，近似 14D 50Δ/ATM IV；本地样本不足两年时，只作为本地历史。'
+        if is_zh else
+        'Uses listed-expiry IV from snapshots and interpolates total variance to approximate 14D 50-delta/ATM IV; until local history reaches two years, treat it as local history only.'
+    )
+    iv_dashboard_html = f"""
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.6;">{iv_dashboard_lead}</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">14D 50Δ/ATM IV</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">{cur_iv:.1f}%</div>
+      <div style="margin-top:3px;">{_fmt_signed(iv_day_change, 1, ' pp')}</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">RV30</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">{cur_rv:.1f}%</div>
+      <div style="margin-top:3px;">{_fmt_signed(rv_day_change, 1, ' pp')}</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid {edge_color}44;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">NVRP</div>
+      <div style="font-size:20px;color:{edge_color};font-weight:650;margin-top:4px;">{cur_nvrp:.2f}x</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">{edge_text} {_fmt_signed(nvrp_day_change, 2)}</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid {pct_color}44;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{'本地 14D IV 分位' if is_zh else 'Local 14D IV %ile'}</div>
+      <div style="font-size:20px;color:{pct_color};font-weight:650;margin-top:4px;">{pct_value}</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">{pct_note}</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid {term_color}44;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{'期限结构' if is_zh else 'Term Structure'}</div>
+      <div style="font-size:20px;color:{term_color};font-weight:650;margin-top:4px;">{term_dash}</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">{term_dash_note}</div>
+    </div>
   </div>
-  <div style="margin-top:10px;">{bar_rows}</div>
-</div>"""
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">{local_range}</div>"""
 
     # Auto-generated current-state insight
     spread_insight = ""
+    skew_decision_html = ""
     if latest_spread_vals:
         vals = list(latest_spread_vals.values())
         neg_count = sum(1 for v in vals if v < 0)
         total = len(vals)
         extreme_neg = min(vals)
         avg_val = sum(vals) / len(vals)
+        if is_zh:
+            if neg_count == total:
+                state_title = '全期限 Call 偏度'
+                state_text = f'{neg_count}/{total} 个到期桶为负，均值 {avg_val:+.1f} 点，最低 {extreme_neg:+.1f} 点。'
+                meaning = '25Δ call IV 高于 put IV，说明上行追涨/挤压需求更强。'
+                use_it = '把它当作上行 squeeze 风险提示；突破 GEX Call 墙时，不要低估加速风险。'
+                avoid_it = '不要把负偏度单独当作顶部信号，也不要因为 call 贵就裸卖 call。'
+                decision_color = '#d29922'
+            elif neg_count >= total / 2:
+                state_title = '部分期限 Call 偏度'
+                state_text = f'{neg_count}/{total} 个到期桶为负，均值 {avg_val:+.1f} 点。'
+                meaning = '追涨需求集中在部分期限，还不是全期限一致。'
+                use_it = '重点看负偏度集中在哪个 DTE；短期负偏度更像事件/挤压，远期负偏度更结构化。'
+                avoid_it = '不要把所有到期日混成一个结论；先区分短期和远期。'
+                decision_color = '#d29922'
+            elif neg_count > 0:
+                state_title = '局部 Call 偏度'
+                state_text = f'{neg_count}/{total} 个到期桶为负，最低 {extreme_neg:+.1f} 点。'
+                meaning = '只有局部期限显示追涨需求，整体还不是极端状态。'
+                use_it = '只对相关到期日提高警惕；其它期限仍按主规则执行。'
+                avoid_it = '不要把局部异常放大成全局风险。'
+                decision_color = '#58a6ff'
+            else:
+                state_title = 'Put 偏度正常'
+                state_text = f'{total}/{total} 个到期桶为正，均值 {avg_val:+.1f} 点。'
+                meaning = 'put IV 高于 call IV，属于常见保护性需求。'
+                use_it = '偏度本身不阻止卖波动率；仍需看 NVRP、GEX 和事件风险。'
+                avoid_it = '不要只因偏度正常就忽略价格/GEX 风险。'
+                decision_color = '#3fb950'
+            panel_labels = ('当前状态', '含义', '怎么用', '不要这样用')
+        else:
+            if neg_count == total:
+                state_title = 'Full-curve call skew'
+                state_text = f'{neg_count}/{total} buckets are negative, avg {avg_val:+.1f} pts, low {extreme_neg:+.1f} pts.'
+                meaning = '25Δ call IV is above put IV: upside chase/squeeze demand is stronger.'
+                use_it = 'Treat it as upside squeeze risk; if price breaks a GEX call wall, do not underestimate acceleration risk.'
+                avoid_it = 'Do not use negative skew alone as a top signal, and do not sell naked calls just because calls are expensive.'
+                decision_color = '#d29922'
+            elif neg_count >= total / 2:
+                state_title = 'Partial call skew'
+                state_text = f'{neg_count}/{total} buckets are negative, avg {avg_val:+.1f} pts.'
+                meaning = 'Chase demand is present in some expiries, but not full-curve confirmation.'
+                use_it = 'Check which DTE owns the negative skew; short-dated skew is more event/squeeze-like, far skew is more structural.'
+                avoid_it = 'Do not collapse all expiries into one conclusion; separate short and far dates.'
+                decision_color = '#d29922'
+            elif neg_count > 0:
+                state_title = 'Localized call skew'
+                state_text = f'{neg_count}/{total} buckets are negative, low {extreme_neg:+.1f} pts.'
+                meaning = 'Only a local expiry zone shows chase demand; the whole curve is not extreme.'
+                use_it = 'Raise caution only for the affected expiries; keep other expiries under the main rules.'
+                avoid_it = 'Do not inflate a local anomaly into a whole-curve risk call.'
+                decision_color = '#58a6ff'
+            else:
+                state_title = 'Normal put skew'
+                state_text = f'{total}/{total} buckets are positive, avg {avg_val:+.1f} pts.'
+                meaning = 'Put IV is above call IV, typical of protection demand.'
+                use_it = 'Skew itself is not blocking short-vol; still check NVRP, GEX, and event risk.'
+                avoid_it = 'Do not ignore price/GEX risk just because skew is normal.'
+                decision_color = '#3fb950'
+            panel_labels = ('Current', 'Meaning', 'How to use', 'Do not use as')
+
+        def _skew_panel(label, body, accent):
+            return (
+                f'<div style="background:#0d1117;border:1px solid {accent}33;border-radius:8px;padding:10px 12px;min-height:82px;">'
+                f'<div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">{label}</div>'
+                f'<div style="font-size:12px;color:#e6edf3;line-height:1.5;">{body}</div></div>'
+            )
+
+        zero_details_label = '历史零轴穿越明细' if is_zh else 'Historical zero-crossing details'
+        skew_decision_html = f"""
+  <div style="margin:10px 0 12px;border:1px solid {decision_color}44;background:{decision_color}0d;border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="color:{decision_color};font-weight:650;font-size:14px;">{state_title}</div>
+      <div style="color:#8b949e;font-size:12px;">{state_text}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;">
+      {_skew_panel(panel_labels[1], meaning, decision_color)}
+      {_skew_panel(panel_labels[2], use_it, '#58a6ff')}
+      {_skew_panel(panel_labels[3], avoid_it, '#f85149')}
+    </div>
+  </div>
+  <details style="margin:8px 0 12px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">{zero_details_label}</summary>
+    <div style="margin-top:8px;">{alert_html}</div>
+  </details>"""
+
         if neg_count == total and extreme_neg < -10:
-            color, text_color, icon, msg = '#f85149', '#f85149', '🔥', f'<b>EXTREME CALL SKEW</b> — all {total} buckets in danger zone (avg {avg_val:+.1f} pts, low {extreme_neg:+.1f}). Speculative FOMO across the full term structure. Historical pattern: local top within 1-3 weeks. Consider buying OTM puts as hedge while they\'re relatively cheap.'
+            color, text_color, icon, msg = '#f85149', '#f85149', '🔥', f'<b>EXTREME CALL SKEW</b> — all {total} buckets in danger zone (avg {avg_val:+.1f} pts, low {extreme_neg:+.1f}). Speculative chase/squeeze demand across the full term structure. Treat as late-cycle risk and consider hedging while OTM puts are relatively cheap.'
         elif neg_count == total:
-            color, text_color, icon, msg = '#d29922', '#d29922', '⚠️', f'<b>Call skew across all buckets</b> — all {total} expirations negative (avg {avg_val:+.1f} pts). Bullish euphoria building; watch for further deterioration toward extreme levels.'
+            color, text_color, icon, msg = '#d29922', '#d29922', '⚠️', f'<b>Call skew across all buckets</b> — all {total} expirations negative (avg {avg_val:+.1f} pts). Chase/squeeze demand is building; watch for further deterioration toward extreme levels.'
         elif neg_count >= total / 2:
             color, text_color, icon, msg = '#d29922', '#d29922', '⚠️', f'<b>Partial call skew</b> — {neg_count}/{total} buckets negative (low {extreme_neg:+.1f}). Speculative flow emerging in some expirations. Monitor if it spreads to all buckets.'
         elif neg_count > 0:
@@ -2133,9 +2476,9 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     if skew_pct:
         regime_map = {
             'extreme_call_skew': ('#f85149', '#f85149', '🔥',
-                f"<b>Extreme call skew — bottom {skew_pct['percentile']:.0f}th %ile</b> of {skew_pct['sample_size']}-day history (current {skew_pct['current']:+.1f} vs median {skew_pct['median']:+.1f}, low {skew_pct['min']:+.1f}). When skew is this compressed, rally often near exhaustion — consider fading or hedging with cheap OTM puts."),
+                f"<b>Extreme call skew — bottom {skew_pct['percentile']:.0f}th %ile</b> of {skew_pct['sample_size']}-day history (current {skew_pct['current']:+.1f} vs median {skew_pct['median']:+.1f}, low {skew_pct['min']:+.1f}). Treat as late-cycle chase/squeeze risk — consider hedging rather than assuming an immediate top."),
             'heavy_call_skew': ('#d29922', '#d29922', '⚠️',
-                f"<b>Heavy call skew — {skew_pct['percentile']:.0f}th %ile</b> of {skew_pct['sample_size']}-day history (current {skew_pct['current']:+.1f} vs median {skew_pct['median']:+.1f}). Bullish flow building; watch for deterioration toward extreme."),
+                f"<b>Heavy call skew — {skew_pct['percentile']:.0f}th %ile</b> of {skew_pct['sample_size']}-day history (current {skew_pct['current']:+.1f} vs median {skew_pct['median']:+.1f}). Bullish chase/squeeze demand is building; watch for deterioration toward extreme."),
             'normal_range': ('#3fb950', '#a8e6b8', '✓',
                 f"<b>Skew within normal band</b> — {skew_pct['percentile']:.0f}th %ile of {skew_pct['sample_size']}-day history (current {skew_pct['current']:+.1f} vs median {skew_pct['median']:+.1f}). No extreme positioning signal."),
             'heavy_put_skew': ('#58a6ff', '#58a6ff', 'ℹ️',
@@ -2146,7 +2489,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         sc, st, si, smsg = regime_map.get(skew_pct['regime'], ('#8b949e', '#8b949e', 'ℹ️', ''))
         warn = ''
         if not skew_pct['reliable']:
-            warn = f' <span style="color:#8b949e;font-size:11px;">· ⚠ only {skew_pct["sample_size"]} days of history — percentile unreliable until n≥60</span>'
+            warn = f' <span style="color:#8b949e;font-size:11px;">· ⚠ only {skew_pct["sample_size"]} days of history — do not use percentile in the verdict until n≥60</span>'
         skew_pct_html = f"""
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid {sc};background:{sc}11;border-radius:4px;font-size:12px;line-height:1.5;">
     <span style="margin-right:6px;">{si}</span><span style="color:{st};">{smsg}</span>{warn}
@@ -2178,13 +2521,28 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     gex_card_html = ""
     if gex_data and (gex_data['call_walls'] or gex_data['put_walls']):
         spot = gex_data['spot']
-        regime_map = {
-            'long_gamma': ('#3fb950', '#a8e6b8', '✓',
-                f"<b>Dealers net long gamma</b> — price acts as <b>magnet</b>. Moves get suppressed; intraday chop inside the wall band is likely. Favorable for premium selling (CC/CSP) — positions pin toward high-gamma strikes."),
-            'short_gamma': ('#f85149', '#f85149', '🔥',
-                f"<b>Dealers net short gamma</b> — moves get <b>amplified</b>. Breakouts become squeezes, breakdowns become crashes. <b>Dangerous for premium selling</b>; consider straddles/long-vol. Spot crossing a major wall triggers mechanical hedging (chase rally / panic dump)."),
-            'neutral': ('#d29922', '#d29922', 'ℹ️',
-                f"<b>Mixed gamma regime</b> — calls and puts roughly balanced. Spot behavior neither magnetic nor explosive; walls are soft."),
+        if is_zh:
+            regime_map = {
+                'long_gamma': ('#3fb950', '#a8e6b8', '磁吸',
+                    '<b>做市商净多 Gamma</b> — 价格更容易被高 gamma 行权价磁吸，波动被压制，墙之间震荡概率更高。'),
+                'short_gamma': ('#f85149', '#f85149', '放大',
+                    '<b>做市商净空 Gamma</b> — 价格波动容易被放大；突破变 squeeze，跌破变加速下行。裸卖波动率风险高。'),
+                'neutral': ('#d29922', '#d29922', '偏软',
+                    '<b>混合 Gamma 环境</b> — call 与 put 大致平衡；墙偏软，更多作为价位参考。'),
+            }
+        else:
+            regime_map = {
+                'long_gamma': ('#3fb950', '#a8e6b8', 'MAGNET',
+                    '<b>Dealers net long gamma</b> — price tends to pin toward high-gamma strikes; moves are suppressed and wall-to-wall chop is more likely.'),
+                'short_gamma': ('#f85149', '#f85149', 'AMPLIFY',
+                    '<b>Dealers net short gamma</b> — moves tend to amplify; breakouts can squeeze and breakdowns can accelerate. Naked short-vol risk is high.'),
+                'neutral': ('#d29922', '#d29922', 'SOFT',
+                    '<b>Mixed gamma regime</b> — calls and puts are roughly balanced; walls are softer and mainly act as reference levels.'),
+            }
+        regime_names = {
+            'long_gamma': '净多 Gamma' if is_zh else 'Long Gamma',
+            'short_gamma': '净空 Gamma' if is_zh else 'Short Gamma',
+            'neutral': '混合 Gamma' if is_zh else 'Mixed Gamma',
         }
         gc, gt, gi, gmsg = regime_map.get(gex_data['regime'], ('#8b949e', '#8b949e', 'ℹ️', ''))
         # Scale GEX for readable display
@@ -2198,6 +2556,8 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         # Price ladder: strikes sorted high→low, spot divider in middle
         calls = list(gex_data['call_walls'])[:5]
         puts = list(gex_data['put_walls'])[:5]
+        top_call = calls[0] if calls else None
+        top_put = puts[0] if puts else None
         calls_by_strike = sorted(calls, key=lambda w: w['strike'], reverse=True)
         puts_by_strike = sorted(puts, key=lambda w: w['strike'], reverse=True)
         # Shared magnitude scale so call and put bar lengths are comparable
@@ -2228,6 +2588,84 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
         if not put_ladder:
             put_ladder = '<div style="color:#8b949e;font-size:11px;padding:4px 0;">No put walls within 25% OTM</div>'
 
+        def _dist_text(w):
+            if not w:
+                return 'n/a'
+            return f'{w["otm_pct"]:.1f}%'
+
+        if is_zh:
+            call_level = f'${top_call["strike"]:.0f}' if top_call else '无'
+            put_level = f'${top_put["strike"]:.0f}' if top_put else '无'
+            call_note = (f'上方 {call_level}，距现价 {_dist_text(top_call)}。先当阻力；有效突破后，做市商对冲可能追买，形成 squeeze。'
+                         if top_call else '25% OTM 内没有明显 Call GEX 墙；上方阻力来自期权对冲的信号较弱。')
+            put_note = (f'下方 {put_level}，距现价 {_dist_text(top_put)}。先当支撑；有效跌破后，对冲流可能放大下跌。'
+                        if top_put else '25% OTM 内没有明显 Put GEX 墙；下方期权对冲支撑较弱。')
+            if gex_data['regime'] == 'long_gamma':
+                trade_note = '价格在 Call/Put 墙之间更容易震荡；只有 NVRP、偏度和规则裁定也支持时，才考虑收租结构。'
+            elif gex_data['regime'] == 'short_gamma':
+                trade_note = '不要把墙当成稳固区间；墙被穿越时优先防加速，偏向限亏/买波动率结构。'
+            else:
+                trade_note = '墙只作为挂单/止损/止盈参考；方向仍看偏度、14D IV vs RV、BTC/mNAV。'
+            labels = {
+                'title': '做市商 Gamma 墙（GEX）',
+                'lead': 'GEX 衡量做市商为了对冲期权 Gamma，最可能在哪些行权价附近买卖股票。它是盘中支撑/阻力与加速风险的参考，不是方向预测。',
+                'regime': '净 Gamma 环境',
+                'call': '上方 Call 墙',
+                'put': '下方 Put 墙',
+                'trade': '交易用法',
+                'ladder': 'GEX 价位梯',
+                'call_hdr': '上方阻力 / 突破触发',
+                'put_hdr': '下方支撑 / 跌破触发',
+                'gex': 'GEX',
+                'details': 'GEX 墙 vs 成交量墙（点击）',
+            }
+        else:
+            call_level = f'${top_call["strike"]:.0f}' if top_call else 'None'
+            put_level = f'${top_put["strike"]:.0f}' if top_put else 'None'
+            call_note = (f'Nearest upside wall {call_level}, { _dist_text(top_call) } from spot. Treat as resistance first; a clean break can force dealer chase-buying and squeeze.'
+                         if top_call else 'No clear call GEX wall within 25% OTM; option-hedging resistance above spot is weak.')
+            put_note = (f'Nearest downside wall {put_level}, { _dist_text(top_put) } from spot. Treat as support first; a clean break can amplify downside hedging flow.'
+                        if top_put else 'No clear put GEX wall within 25% OTM; option-hedging support below spot is weak.')
+            if gex_data['regime'] == 'long_gamma':
+                trade_note = 'Wall-to-wall chop is more likely; only consider premium-selling structures when NVRP, skew, and rulebook also approve.'
+            elif gex_data['regime'] == 'short_gamma':
+                trade_note = 'Do not treat walls as a stable range; when a wall breaks, prioritize acceleration risk and defined-risk or long-vol structures.'
+            else:
+                trade_note = 'Use walls for entries, exits, and stops; directional bias still comes from skew, 14D IV vs RV, BTC/mNAV.'
+            labels = {
+                'title': 'Dealer Gamma Exposure (GEX) Walls',
+                'lead': 'GEX estimates where dealers are most likely to buy or sell stock while hedging option gamma. Use it as intraday support/resistance and acceleration-risk context, not a directional forecast.',
+                'regime': 'Net Gamma Regime',
+                'call': 'Upside Call Wall',
+                'put': 'Downside Put Wall',
+                'trade': 'Trading Use',
+                'ladder': 'GEX Ladder',
+                'call_hdr': 'Upside resistance / breakout trigger',
+                'put_hdr': 'Downside support / breakdown trigger',
+                'gex': 'GEX',
+                'details': 'How GEX walls differ from volume walls (click)',
+            }
+
+        def _gex_tile(icon, label, value, body, color):
+            return f"""
+    <div style="background:#0d1117;border:1px solid {color}44;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:{color}18;color:{color};font-weight:800;font-size:15px;">{icon}</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{label}</div>
+          <div style="font-size:18px;color:{color};font-weight:650;margin-top:2px;">{value}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">{body}</div>
+    </div>"""
+
+        gex_tiles_html = (
+            _gex_tile('G', labels['regime'], regime_names.get(gex_data['regime'], gex_data['regime']), gmsg, gc) +
+            _gex_tile('↑', labels['call'], call_level, call_note, '#3fb950') +
+            _gex_tile('↓', labels['put'], put_level, put_note, '#f85149') +
+            _gex_tile('↔', labels['trade'], 'Plan' if not is_zh else '计划', trade_note, '#58a6ff')
+        )
+
         spot_divider = (
             '<div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;'
             'margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;'
@@ -2239,27 +2677,28 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
 
         gex_card_html = f"""
 <div class="card" id="gex">
-  <h2>Dealer Gamma Exposure (GEX) Walls</h2>
+  <h2>{labels['title']}</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    Strikes ranked by <b style="color:#e6edf3;">Σ (gamma × OI × 100)</b> across all expirations — measures where <b style="color:#e6edf3;">dealer hedging flow</b> concentrates. More accurate than volume-weighted walls for identifying actual resistance/support.
-    Net GEX: <b style="color:{gc};">{_fmt_gex(gex_data['net_gex'])}</b> (call {_fmt_gex(gex_data['total_call_gex'])} + put {_fmt_gex(gex_data['total_put_gex'])}).
+    {labels['lead']}
+    <br>{'净 GEX' if is_zh else 'Net GEX'}: <b style="color:{gc};">{_fmt_gex(gex_data['net_gex'])}</b> (call {_fmt_gex(gex_data['total_call_gex'])} + put {_fmt_gex(gex_data['total_put_gex'])}).
   </div>
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid {gc};background:{gc}11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">{gi}</span><span style="color:{gt};">{gmsg}</span>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0;">
+    {gex_tiles_html}
   </div>
   <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{labels['ladder']}</div>
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
-      <span>Strike · OTM</span><span style="color:#3fb950;">▲ CALL WALLS (resistance)</span><span>GEX</span>
+      <span>Strike · OTM</span><span style="color:#3fb950;">↑ {labels['call_hdr']}</span><span>{labels['gex']}</span>
     </div>
     {call_ladder}
     {spot_divider}
     {put_ladder}
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
-      <span>&nbsp;</span><span style="color:#f85149;">▼ PUT WALLS (support)</span><span>&nbsp;</span>
+      <span>&nbsp;</span><span style="color:#f85149;">↓ {labels['put_hdr']}</span><span>&nbsp;</span>
     </div>
   </div>
   <details style="font-size:11px;color:#8b949e;margin-top:10px;">
-    <summary style="cursor:pointer;color:#58a6ff;">How GEX walls differ from volume walls (click)</summary>
+    <summary style="cursor:pointer;color:#58a6ff;">{labels['details']}</summary>
     <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
       <b style="color:#e6edf3;">Volume walls</b> (below, Persistent Volume Strikes) show where retail/institutional <b>flow concentrates</b> — backward-looking conviction.
       <br><b style="color:#e6edf3;">GEX walls</b> (this card) show where <b>dealer hedging pressure</b> is largest — forward-looking, drives actual intraday price behavior.
@@ -2385,7 +2824,7 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
 <div class="card" id="oidelta">
   <h2>OI Delta by Strike (yesterday → today, per expiry)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    Net OI change at each strike between {sample['prev_date']} and {sample['date']}. <b style="color:#3fb950;">Green up</b> = call OI built (new opens, bullish positioning). <b style="color:#3fb950;">Green down</b> = call OI unwound (closes / expirations). Same logic for <b style="color:#f85149;">put</b> bars. <b>Roll detection:</b> simultaneous unwind at low strikes + build at higher strikes = positions rolled up.
+    Net OI change at each strike between {sample['prev_date']} and {sample['date']}. <b style="color:#3fb950;">Green up</b> = call OI increased; direction is unconfirmed without trade prints. <b style="color:#3fb950;">Green down</b> = call OI decreased. Same logic for <b style="color:#f85149;">put</b> bars. <b>Roll detection:</b> simultaneous decrease at low strikes + increase at higher strikes = possible roll-up.
   </div>
   <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
     <label style="font-size:12px;color:#8b949e;">Expiry:</label>
@@ -2484,16 +2923,18 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
 
             def _verdict(x):
                 if x < 1.2:
-                    return ('#3fb950', 'Cheap')
-                if x <= 1.8:
-                    return ('#d29922', 'Normal')
-                return ('#f85149', 'Expensive')
+                    return ('#3fb950', 'Near NAV')
+                if x < 1.4:
+                    return ('#d29922', 'Yellow zone')
+                if x < 1.8:
+                    return ('#58a6ff', 'Neutral')
+                return ('#f85149', 'Rich')
             color, label = _verdict(mnav)
             mnav_card_html = f"""
 <div class="card" id="mnav">
   <h2>mNAV (MSTR Premium to BTC NAV)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    EV-based premium MSTR trades at vs its BTC stash: <b style="color:#e6edf3;">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.
+    EV-based premium MSTR trades at vs its BTC stash: <b style="color:#e6edf3;">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Near NAV &lt; 1.2x · Yellow zone 1.2–1.4x · Neutral 1.4–1.8x · Rich &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.
   </div>
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
@@ -2527,11 +2968,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # --- Daily Highlights card (5-second summary, day-over-day deltas) ---
     is_zh_hl = (lang == 'zh')
     spot_cur = current.get('spot') or 0
-    iv_cur = current.get('front_atm_iv') or 0
+    iv_cur = current.get('atm_14d_iv') or current.get('front_atm_iv') or 0
     rv_cur = current.get('rv30') or 0
     nvrp_cur = current.get('nvrp') or 0
     pc_cur = current.get('front_pc_spread') or 0
-    iv_pct_cur = current.get('iv_pct_2yr') or 0
+    iv_pct_cur = current.get('iv_percentile') or 0
+    iv_pct_n = current.get('iv_percentile_n') or 0
 
     # Day-over-day deltas (None when first snapshot)
     spot_chg_pct = None
@@ -2542,10 +2984,10 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     pc_flipped = None  # 'to_safe' / 'to_danger' / None
     if prev_state and prev_state.get('spot'):
         spot_chg_pct = (spot_cur / prev_state['spot'] - 1) * 100
-        iv_chg = iv_cur - (prev_state.get('front_atm_iv') or 0)
+        iv_chg = iv_cur - (prev_state.get('atm_14d_iv') or prev_state.get('front_atm_iv') or 0)
         nvrp_chg = nvrp_cur - (prev_state.get('nvrp') or 0)
         pc_chg = pc_cur - (prev_state.get('front_pc_spread') or 0)
-        iv_pct_chg = iv_pct_cur - (prev_state.get('iv_pct_2yr') or 0)
+        iv_pct_chg = iv_pct_cur - (prev_state.get('iv_percentile') or 0)
         pc_prev = prev_state.get('front_pc_spread') or 0
         if pc_prev < 0 and pc_cur >= 0:
             pc_flipped = 'to_safe'
@@ -2575,21 +3017,21 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # Fallback: pull from oi_delta_dist (today's date) — biggest abs change
     if oi_delta_dist:
         # oi_delta_dist is keyed by expiry, each with strikes/call_delta/put_delta arrays
-        best_call = (0, None)
-        best_put = (0, None)
+        best_call = (0, None, None)
+        best_put = (0, None, None)
         for exp, d in oi_delta_dist.items():
             strikes = d.get('strikes', [])
             cdeltas = d.get('call_delta', [])
             pdeltas = d.get('put_delta', [])
             for i, s in enumerate(strikes):
                 if i < len(cdeltas) and abs(cdeltas[i]) > abs(best_call[0]):
-                    best_call = (cdeltas[i], s)
+                    best_call = (cdeltas[i], s, exp)
                 if i < len(pdeltas) and abs(pdeltas[i]) > abs(best_put[0]):
-                    best_put = (pdeltas[i], s)
+                    best_put = (pdeltas[i], s, exp)
         if best_call[1] is not None and abs(best_call[0]) >= 1000:
-            top_call_oi_mover = {'strike': best_call[1], 'delta': best_call[0]}
+            top_call_oi_mover = {'strike': best_call[1], 'delta': best_call[0], 'expiry': best_call[2]}
         if best_put[1] is not None and abs(best_put[0]) >= 1000:
-            top_put_oi_mover = {'strike': best_put[1], 'delta': best_put[0]}
+            top_put_oi_mover = {'strike': best_put[1], 'delta': best_put[0], 'expiry': best_put[2]}
 
     # Format helpers
     def _delta_arrow(v, fmt='{:+.1f}', good_when_high=None, neutral_thresh=0.1, suffix=''):
@@ -2615,8 +3057,8 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # Build rows
     if is_zh_hl:
         L_hl = {
-            'title': '今日要点',
-            'lead': '昨日 → 今日的关键变化（5 秒概览）。详细图表见下方各卡。',
+            'title': '今日速览',
+            'lead': '只保留会改变计划的核心变化。',
             'price_label': '价格',
             'iv_label': 'IV / RV',
             'skew_label': '偏度',
@@ -2626,18 +3068,18 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             'flat': '持平',
             'unchanged': '稳',
             'flipped_safe': '⚠ 翻正（call 偏度回归正常）',
-            'flipped_danger': '⚠ 翻负（call 比 put 贵 — 顶部信号）',
+            'flipped_danger': '⚠ 翻负（call 比 put 贵 — 挤压/追涨风险）',
             'no_prev': '（首次快照，无对比）',
-            'call_built': '新建 Call 仓',
-            'call_unwound': 'Call 平仓',
-            'put_built': '新建 Put 仓',
-            'put_unwound': 'Put 平仓',
+            'call_built': 'Call OI 增加',
+            'call_unwound': 'Call OI 减少',
+            'put_built': 'Put OI 增加',
+            'put_unwound': 'Put OI 减少',
             'no_oi_mover': '无显著异动',
         }
     else:
         L_hl = {
-            'title': "Today's Highlights",
-            'lead': 'Key changes since yesterday (5-second summary). See cards below for full charts.',
+            'title': 'Signal Snapshot',
+            'lead': 'Only the changes that can alter the plan.',
             'price_label': 'Price',
             'iv_label': 'IV / RV',
             'skew_label': 'Skew',
@@ -2647,12 +3089,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             'flat': 'flat',
             'unchanged': 'unchanged',
             'flipped_safe': '⚠ flipped to positive (call-skew recovering)',
-            'flipped_danger': '⚠ flipped negative (calls > puts — top signal)',
+            'flipped_danger': '⚠ flipped negative (calls > puts — squeeze/chase risk)',
             'no_prev': '(first snapshot, no comparison)',
-            'call_built': 'Calls built',
-            'call_unwound': 'Calls unwound',
-            'put_built': 'Puts built',
-            'put_unwound': 'Puts unwound',
+            'call_built': 'Call OI up',
+            'call_unwound': 'Call OI down',
+            'put_built': 'Put OI up',
+            'put_unwound': 'Put OI down',
             'no_oi_mover': 'no significant movers',
         }
 
@@ -2670,7 +3112,13 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
             price_html += f' <span style="color:{color};font-size:11px;">({sign}{btc_24h_hl:.2f}%)</span>'
 
     # IV/RV row
-    iv_html = f'ATM IV {iv_cur:.1f}% {_delta_arrow(iv_chg, "{:+.1f}", suffix="pp")} &nbsp;·&nbsp; RV30 {rv_cur:.1f}% &nbsp;·&nbsp; NVRP {nvrp_cur:.2f}x {_delta_arrow(nvrp_chg, "{:+.2f}")} &nbsp;·&nbsp; IV %ile {iv_pct_cur:.0f} {_delta_arrow(iv_pct_chg, "{:+.0f}")}'
+    if cur_iv_pct_reliable:
+        iv_pct_inline = f'14D IV %ile {iv_pct_cur:.0f} <span style="color:#8b949e;font-size:11px;">(n={iv_pct_n})</span> {_delta_arrow(iv_pct_chg, "{:+.0f}")}'
+    else:
+        iv_pct_inline = (f'本地 IV 样本 <span style="color:#d29922;font-weight:600;">n={iv_pct_n} 不足</span>'
+                         if is_zh_hl else
+                         f'local IV sample <span style="color:#d29922;font-weight:600;">n={iv_pct_n} insufficient</span>')
+    iv_html = f'14D IV {iv_cur:.1f}% {_delta_arrow(iv_chg, "{:+.1f}", suffix="pp")} &nbsp;·&nbsp; RV30 {rv_cur:.1f}% &nbsp;·&nbsp; NVRP {nvrp_cur:.2f}x {_delta_arrow(nvrp_chg, "{:+.2f}")} &nbsp;·&nbsp; {iv_pct_inline}'
 
     # Skew row
     pc_color = '#3fb950' if pc_cur >= 0 else '#f85149'
@@ -2695,17 +3143,21 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     gex_html = f'Call {_wall_str(cur_call_wall, prev_call_wall, "#3fb950")} &nbsp;·&nbsp; Put {_wall_str(cur_put_wall, prev_put_wall, "#f85149")}'
 
     # OI movers row
+    def _expiry_tag(mover):
+        exp = mover.get('expiry') if mover else None
+        return f' <span style="color:#8b949e;font-size:11px;">{exp}</span>' if exp else ''
+
     oi_parts = []
     if top_call_oi_mover:
         d = top_call_oi_mover['delta']
         verb = L_hl['call_built'] if d > 0 else L_hl['call_unwound']
         color = '#3fb950' if d > 0 else '#f85149'
-        oi_parts.append(f'<span style="color:{color};">{verb}</span> @ ${top_call_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
+        oi_parts.append(f'<span style="color:{color};">{verb}</span> {_expiry_tag(top_call_oi_mover)} @ ${top_call_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
     if top_put_oi_mover:
         d = top_put_oi_mover['delta']
         verb = L_hl['put_built'] if d > 0 else L_hl['put_unwound']
         color = '#f85149' if d > 0 else '#3fb950'
-        oi_parts.append(f'<span style="color:{color};">{verb}</span> @ ${top_put_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
+        oi_parts.append(f'<span style="color:{color};">{verb}</span> {_expiry_tag(top_put_oi_mover)} @ ${top_put_oi_mover["strike"]:.0f} <span style="color:#8b949e;font-size:11px;">({d:+,.0f})</span>')
     oi_html = ' &nbsp;·&nbsp; '.join(oi_parts) if oi_parts else f'<span style="color:#6e7681;">{L_hl["no_oi_mover"]}</span>'
 
     # Verdict row — placeholder; will be filled after verdict block computes
@@ -2719,10 +3171,12 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     ]
     rows_html = []
     for icon, label, body in highlights_rows:
-        rows_html.append(f'''<div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">{icon}</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{label}</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">{body}</div>
+        rows_html.append(f'''<div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">{icon}</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">{label}</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">{body}</div>
     </div>''')
 
     if not prev_state:
@@ -2737,15 +3191,16 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     <span>{L_hl['title']}</span>
     {{VERDICT_PILL_PLACEHOLDER}}
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">{L_hl['lead']}</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:4px 14px;">
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">{L_hl['lead']}</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
     {''.join(rows_html)}
   </div>
   {no_prev_note}
 </div>"""
 
     # --- Rulebook Verdict card (top-of-page decision layer) ---
-    iv_pct_2yr = current.get('iv_pct_2yr') or 0
+    iv_pct = current.get('iv_percentile') or 0
+    iv_pct_n = current.get('iv_percentile_n') or 0
     spot_now = current.get('spot') or 0
 
     # Recompute mNAV (mNAV card may not have run if holdings missing)
@@ -2771,15 +3226,21 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     is_zh = (lang == 'zh')
     L = {
         'e1_label': 'IV 底线（卖权门槛）' if is_zh else 'Premium-sell IV floor',
-        'e1_iv_pct': 'IV 分位' if is_zh else 'IV %ile',
+        'e1_iv_pct': '14D IV 分位' if is_zh else '14D IV %ile',
+        'e1_local_sample': '本地 14D IV 样本' if is_zh else 'Local 14D IV sample',
+        'e1_sample_na': 'n<60，分位不参与裁定' if is_zh else 'n<60; percentile excluded from verdict',
+        'e1_sample_na_detail': '本地 IV 样本不足；不要把当前分位当长期 IV percentile，改看 14D IV、RV30、NVRP 与期限结构' if is_zh else 'Local IV sample is too small; do not treat the current percentile as long-run IV percentile. Use 14D IV, RV30, NVRP, and term structure instead',
+        'e1_sample_nvrp_low': '样本不足且 NVRP<1；卖波动率没有边际，优先限亏/买波动率结构' if is_zh else 'Sample too small and NVRP<1; no short-vol edge, prefer limited-risk or long-vol structures',
         'e1_pass': 'IV ≥ 50 → 任何卖权结构均可' if is_zh else 'IV ≥ 50 → any premium-sell structure ok',
-        'e1_warn': '30 ≤ IV < 50 → 仅 defined-risk（价差/IC），不开裸卖' if is_zh else '30 ≤ IV < 50 → defined-risk only (spreads/IC), no naked sells',
+        'e1_warn': '30 ≤ IV &lt; 50 → 只做限亏结构（价差/IC），不开裸卖' if is_zh else '30 ≤ IV &lt; 50 → limited-risk only (spreads/IC), no naked sells',
         'e1_block': 'IV 太低 — 改用长期权 / 借方价差' if is_zh else 'Vol cheap — favor long premium / debit spreads',
         'e5_label': 'MSTR 短 Call 守护（mNAV）' if is_zh else 'MSTR short-call guardrail (mNAV)',
-        'e5_pass': 'mNAV 处于贵价区，短 Call 风险可控' if is_zh else 'mNAV rich enough; short-call risk acceptable',
+        'e5_pass': 'mNAV 偏贵；短 Call 可按其它信号评估' if is_zh else 'mNAV rich; short calls can be evaluated with other signals',
+        'e5_warn_low': 'mNAV 黄区；只允许限亏/有保护的短 Call，不做裸卖或普通 CC' if is_zh else 'mNAV yellow zone; only limited-risk/protected short-call structures, no naked calls or plain CCs',
+        'e5_warn_mid': 'mNAV 中性；短 Call 需 GEX/偏度配合，优先限亏结构' if is_zh else 'mNAV neutral; short calls need GEX/skew confirmation, prefer limited-risk structures',
         'e5_na': 'mNAV 数据缺失' if is_zh else 'mNAV unavailable',
         'e5_na_detail': '无法评估 — holdings 文件缺失' if is_zh else 'Cannot evaluate — holdings missing',
-        'e5_block': '不开任何 MSTR 短 Call（CC / 裸卖 / 熊 call 价差）' if is_zh else 'No MSTR short calls in any form (CC, naked, bear-call)',
+        'e5_block': 'mNAV 接近净值；不开任何 MSTR 短 Call（CC / 裸卖 / 熊 call 价差）' if is_zh else 'mNAV near NAV; no MSTR short calls in any form (CC, naked, bear-call)',
         'e6_label': 'TSLA 短 Call 纪律' if is_zh else 'TSLA short-call discipline',
         'e6_block': '低于 Call 墙 — 短 Call 被钉风险' if is_zh else 'Below the call wall — short calls trapped if pinned',
         'e6_pass': '高于 Call 墙；优先价差非裸卖' if is_zh else 'Above the wall; prefer spreads over naked',
@@ -2799,22 +3260,31 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     # status: 'pass' | 'warn' | 'block' | 'na'
     rules = []
 
-    # E1 — premium-sell IV floor (tri-state)
-    if iv_pct_2yr >= 50:
-        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f}', 'pass', L['e1_pass']))
-    elif iv_pct_2yr >= 30:
-        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} (30-50)', 'warn', L['e1_warn']))
+    # E1 — premium-sell IV floor.
+    # The local ATM-IV percentile is not decision-grade until at least 60 saved snapshots.
+    if iv_pct_n < 60:
+        status = 'warn' if cur_nvrp > 0 and cur_nvrp < 1.0 else 'na'
+        detail = L['e1_sample_nvrp_low'] if status == 'warn' else L['e1_sample_na_detail']
+        rules.append(('E1', L['e1_label'], f'{L["e1_local_sample"]} n={iv_pct_n} < 60', status, detail))
+    elif iv_pct >= 50:
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct:.0f} (n={iv_pct_n})', 'pass', L['e1_pass']))
+    elif iv_pct >= 30:
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct:.0f} (30-50, n={iv_pct_n})', 'warn', L['e1_warn']))
     else:
-        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct_2yr:.0f} < 30', 'block', L['e1_block']))
+        rules.append(('E1', L['e1_label'], f'{L["e1_iv_pct"]} {iv_pct:.0f} < 30 (n={iv_pct_n})', 'block', L['e1_block']))
 
     if ticker == 'MSTR':
-        # E5 — MSTR short-call mNAV gate (decoupled from E1 — IV is E1's job)
+        # E5 — MSTR short-call mNAV gate (banded; decoupled from E1 — IV is E1's job)
         if mnav_val is None:
             rules.append(('E5', L['e5_label'], L['e5_na'], 'na', L['e5_na_detail']))
-        elif mnav_val >= 1.4:
-            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x ≥ 1.4', 'pass', L['e5_pass']))
+        elif mnav_val < 1.2:
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x < 1.2', 'block', L['e5_block']))
+        elif mnav_val < 1.4:
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x (1.2-1.4)', 'warn', L['e5_warn_low']))
+        elif mnav_val < 1.8:
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x (1.4-1.8)', 'warn', L['e5_warn_mid']))
         else:
-            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x < 1.4', 'block', L['e5_block']))
+            rules.append(('E5', L['e5_label'], f'mNAV {mnav_val:.2f}x ≥ 1.8', 'pass', L['e5_pass']))
 
         # V3 — BTC vol freeze (RV7 > 80% blocks)
         if btc_rv_7d is None:
@@ -2839,21 +3309,25 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     warned = [r for r in rules if r[3] == 'warn']
     if blocked:
         verdict_color = '#f85149'
-        verdict_label = '今日不开仓' if is_zh else 'STAND ASIDE'
         verdict_detail = (f'{len(blocked)} 条规则阻塞' if is_zh
                           else f'{len(blocked)} rule(s) blocking')
         # Detail what's blocked vs what's still allowed
         blocked_codes = ', '.join(r[0] for r in blocked)
         if ticker == 'MSTR' and any(r[0] == 'E5' for r in blocked):
-            verdict_action = (f'MSTR 短 Call 阻塞（{blocked_codes}）；其它 ticker 的 defined-risk 价差仍可视 E1 而定'
+            verdict_label = '禁短 CALL' if is_zh else 'NO SHORT CALLS'
+            verdict_action = (f'MSTR 短 Call 阻塞（{blocked_codes}）；其它 ticker 的限亏价差仍可视 E1 而定'
                               if is_zh
-                              else f'MSTR short calls blocked ({blocked_codes}); defined-risk on other tickers still depends on E1')
+                              else f'MSTR short calls blocked ({blocked_codes}); limited-risk structures on other tickers still depend on E1')
         else:
+            verdict_label = '今日不开仓' if is_zh else 'STAND ASIDE'
             verdict_action = ('改用借方价差 / 长期权 / 等 IV 回升' if is_zh
                               else 'Use defined-risk / long premium / wait for IV to recover')
     elif warned:
         verdict_color = '#d29922'
-        verdict_label = '仅 DEFINED-RISK' if is_zh else 'DEFINED-RISK ONLY'
+        if ticker == 'MSTR' and any(r[0] == 'E5' for r in warned):
+            verdict_label = '短 CALL 限亏' if is_zh else 'SHORT CALL LIMITED-RISK'
+        else:
+            verdict_label = '只做限亏结构' if is_zh else 'LIMITED-RISK ONLY'
         verdict_detail = (f'{len(warned)} 条规则警告 — 不开裸卖' if is_zh
                           else f'{len(warned)} rule(s) warn — no naked sells')
         verdict_action = ('用价差 / Iron Condor / 借方结构；裸 CSP/CC 暂停' if is_zh
@@ -2868,9 +3342,17 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     icons = {'pass': '✓', 'warn': '⚠', 'block': '✗', 'na': '·'}
     icon_colors = {'pass': '#3fb950', 'warn': '#d29922', 'block': '#f85149', 'na': '#8b949e'}
     row_html = []
+    chip_html = []
     for code, label, status_text, status, detail in rules:
         ic = icons[status]
         ic_color = icon_colors[status]
+        chip_html.append(
+            f'''<div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid {ic_color}44;border-radius:8px;padding:8px 10px;">
+      <span style="color:{ic_color};font-weight:700;font-size:14px;width:14px;text-align:center;">{ic}</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">{code}</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{status_text}</span>
+    </div>'''
+        )
         row_html.append(f'''<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div style="font-size:18px;font-weight:600;color:{ic_color};width:20px;text-align:center;">{ic}</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">{code}</div>
@@ -2880,16 +3362,19 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
       </div>
     </div>''')
     rules_table_html = '\n    '.join(row_html)
+    rules_chip_html = '\n    '.join(chip_html)
 
     pos_html = ''
 
     # Card title + lead text
     if is_zh:
         verdict_title = '规则裁定'
-        verdict_lead = '基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断：✗ 阻塞 / ⚠ 仅 defined-risk / ✓ 全部放行。最严格的状态决定整体裁定。'
+        verdict_lead = '只显示闸门结果；细则默认折叠。'
+        verdict_details_label = '展开规则细节'
     else:
         verdict_title = 'Rulebook Verdict'
-        verdict_lead = "Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent: ✗ blocks / ⚠ defined-risk only / ✓ pass. The most restrictive status drives the aggregate verdict."
+        verdict_lead = 'Gate result only; rule details are collapsed by default.'
+        verdict_details_label = 'Show rule details'
 
     # Inject verdict pill into highlights card
     verdict_pill_html = f'<a href="#verdict" style="text-decoration:none;background:{verdict_color}22;color:{verdict_color};border:1px solid {verdict_color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">{verdict_label}</a>'
@@ -2901,14 +3386,161 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     <span>{verdict_title}</span>
     <span style="background:{verdict_color}22;color:{verdict_color};border:1px solid {verdict_color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">{verdict_label}</span>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">{verdict_lead}</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
-    {rules_table_html}
-  </div>
-  <div style="margin-top:12px;padding:10px 14px;background:{verdict_color}10;border-left:3px solid {verdict_color};border-radius:6px;font-size:12px;color:#e6edf3;">
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">{verdict_lead}</div>
+  <div style="padding:10px 12px;background:{verdict_color}10;border-left:3px solid {verdict_color};border-radius:6px;font-size:12px;color:#e6edf3;">
     <span style="color:{verdict_color};font-weight:600;">{verdict_detail}.</span> {verdict_action}.
   </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
+    {rules_chip_html}
+  </div>
+  <details style="margin-top:10px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">{verdict_details_label}</summary>
+    <div style="margin-top:8px;background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+      {rules_table_html}
+    </div>
+  </details>
   {pos_html}
+</div>"""
+
+    # --- Final Playbook card: reconcile conflicting signals into one action layer ---
+    e5_blocked = ticker == 'MSTR' and any(r[0] == 'E5' and r[3] == 'block' for r in rules)
+    e5_warned = ticker == 'MSTR' and any(r[0] == 'E5' and r[3] == 'warn' for r in rules)
+    e1_warn_or_block = any(r[0] == 'E1' and r[3] in ('warn', 'block') for r in rules)
+
+    def _level(v):
+        return f'${v:.0f}' if v is not None else 'n/a'
+
+    def _persistent_level(w):
+        if not w:
+            return None
+        if w.get('is_band'):
+            return f'${w["lo"]:.0f}-${w["hi"]:.0f}'
+        return f'${w["strike"]:.0f}'
+
+    p_call_level = _persistent_level(call_wall)
+    p_put_level = _persistent_level(put_wall)
+
+    if is_zh:
+        if long_vol_edge and short_gamma_regime:
+            pb_bias = '偏向波动率扩张'
+            pb_bias_detail = f'NVRP {cur_nvrp:.2f}x < 1.0 且净 GEX 为负；不要把区间墙解读成卖波动率信号。'
+            pb_color = '#f85149'
+        elif e5_blocked:
+            pb_bias = '中性偏谨慎'
+            pb_bias_detail = f'mNAV {mnav_val:.2f}x 接近净值；MSTR 上行 squeeze 风险不值得卖。' if mnav_val else 'MSTR 短 Call 规则阻塞。'
+            pb_color = '#d29922'
+        elif e5_warned:
+            pb_bias = 'mNAV 黄区'
+            pb_bias_detail = f'mNAV {mnav_val:.2f}x 不是绝对便宜也不算贵；短 Call 只能做限亏/有保护结构，并需 GEX/偏度配合。'
+            pb_color = '#d29922'
+        elif cur_pc := current.get('front_pc_spread'):
+            pb_bias = 'Call 偏度升温' if cur_pc < 0 else '结构中性'
+            pb_bias_detail = 'Call IV 高于 Put IV，是追涨/挤压需求信号；只作为风险提示，不单独判顶。' if cur_pc < 0 else '偏度未显示明显追涨压力。'
+            pb_color = '#d29922' if cur_pc < 0 else '#58a6ff'
+        else:
+            pb_bias, pb_bias_detail, pb_color = '结构中性', '暂无单一主导信号。', '#58a6ff'
+
+        allowed = []
+        blocked_items = []
+        if long_vol_edge:
+            allowed.append('借方价差 / 长波动率结构 / 小仓位方向期权')
+        if e1_warn_or_block:
+            allowed.append('只做限亏结构（价差、IC、买权结构）')
+        if not allowed:
+            allowed.append('通过规则后按仓位系统开仓')
+        if e5_blocked:
+            blocked_items.append('MSTR covered call / 裸 short call / 熊 call 价差')
+        elif e5_warned:
+            blocked_items.append('MSTR 裸 short call / 普通 covered call；短 Call 只做限亏或有保护结构')
+        if short_vol_suppressed:
+            blocked_items.append('裸卖波动率；卖勒式/铁鹰只可观察，不作为主计划')
+        if not blocked_items:
+            blocked_items.append('无')
+
+        key_rows = [
+            ('现价', f'${spot_now:.2f}', '基准价格'),
+            ('GEX Call 墙', _level(cur_call_wall), '上方阻力/突破后挤压触发点'),
+            ('GEX Put 墙', _level(cur_put_wall), '下方支撑/跌破后放大风险'),
+            ('持续 Call 墙', p_call_level or 'n/a', '结构性成交阻力'),
+            ('持续 Put 墙', p_put_level or 'n/a', '结构性成交支撑'),
+        ]
+        pb_title, bias_lbl, allow_lbl, block_lbl, levels_lbl = '最终交易计划', '方向/环境', '允许', '禁止', '关键价位'
+    else:
+        if long_vol_edge and short_gamma_regime:
+            pb_bias = 'Vol expansion bias'
+            pb_bias_detail = f'NVRP {cur_nvrp:.2f}x < 1.0 and net GEX is negative; do not read range walls as a short-vol signal.'
+            pb_color = '#f85149'
+        elif e5_blocked:
+            pb_bias = 'Neutral/cautious'
+            pb_bias_detail = f'mNAV {mnav_val:.2f}x is near NAV; MSTR upside squeeze risk is not worth selling.' if mnav_val else 'MSTR short-call rule is blocking.'
+            pb_color = '#d29922'
+        elif e5_warned:
+            pb_bias = 'mNAV yellow zone'
+            pb_bias_detail = f'mNAV {mnav_val:.2f}x is neither cheap enough to block all trades nor rich enough for plain short calls; use protected/limited-risk short-call structures only with GEX/skew confirmation.'
+            pb_color = '#d29922'
+        else:
+            cur_pc = current.get('front_pc_spread') or 0
+            pb_bias = 'Call skew heating up' if cur_pc < 0 else 'Structurally neutral'
+            pb_bias_detail = 'Call IV is above put IV: chase/squeeze demand risk. Treat it as a warning, not a standalone top call.' if cur_pc < 0 else 'Skew does not show major upside-chase pressure.'
+            pb_color = '#d29922' if cur_pc < 0 else '#58a6ff'
+
+        allowed = []
+        blocked_items = []
+        if long_vol_edge:
+            allowed.append('debit spreads / long-vol structures / small directional options')
+        if e1_warn_or_block:
+            allowed.append('limited-risk only: spreads, ICs, long-premium structures')
+        if not allowed:
+            allowed.append('rulebook-approved entries subject to sizing')
+        if e5_blocked:
+            blocked_items.append('MSTR covered calls / naked short calls / bear-call spreads')
+        elif e5_warned:
+            blocked_items.append('MSTR naked short calls / plain covered calls; short calls only as protected or limited-risk structures')
+        if short_vol_suppressed:
+            blocked_items.append('naked short vol; strangles/iron condors are watchlist only, not the main plan')
+        if not blocked_items:
+            blocked_items.append('None')
+
+        key_rows = [
+            ('Spot', f'${spot_now:.2f}', 'baseline'),
+            ('GEX call wall', _level(cur_call_wall), 'resistance / squeeze trigger if broken'),
+            ('GEX put wall', _level(cur_put_wall), 'support / downside amplification if broken'),
+            ('Persistent call wall', p_call_level or 'n/a', 'structural volume resistance'),
+            ('Persistent put wall', p_put_level or 'n/a', 'structural volume support'),
+        ]
+        pb_title, bias_lbl, allow_lbl, block_lbl, levels_lbl = 'Final Playbook', 'Bias / Regime', 'Allowed', 'Avoid', 'Key Levels'
+
+    key_rows_html = ''.join(
+        f"<tr><td style='text-align:left;color:#8b949e;'>{name}</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>{level}</td><td style='text-align:left;color:#8b949e;'>{note}</td></tr>"
+        for name, level, note in key_rows
+    )
+    allowed_html = ''.join(f"<li>{item}</li>" for item in allowed)
+    blocked_html = ''.join(f"<li>{item}</li>" for item in blocked_items)
+
+    playbook_card_html = f"""
+<div class="card" id="playbook" style="border:1px solid {pb_color}40;">
+  <h2>{pb_title}</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:stretch;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{bias_lbl}</div>
+      <div style="font-size:18px;color:{pb_color};font-weight:600;margin-bottom:6px;">{pb_bias}</div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">{pb_bias_detail}</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#3fb950;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{allow_lbl}</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;">{allowed_html}</ul>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{block_lbl}</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;">{blocked_html}</ul>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">{levels_lbl}</div>
+    <table>
+      {key_rows_html}
+    </table>
+  </div>
 </div>"""
 
     html = f"""<!DOCTYPE html>
@@ -2957,6 +3589,7 @@ th:first-child, td:first-child {{ text-align:left; }}
   </div>
   <div class="nav-center">
     <a href="#highlights">{nav_lbl_highlights}</a>
+    <a href="#playbook">{nav_lbl_playbook}</a>
     <a href="#kpis">{nav_lbl_kpi}</a>
     <a href="#verdict">{nav_lbl_verdict}</a>
     <a href="#btc">BTC</a>
@@ -2995,8 +3628,8 @@ th:first-child, td:first-child {{ text-align:left; }}
     <div class="kpi-value" style="color:{skew_color};">{current_front_spread:+.1f} pts</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">ATM IV</div>
-    <div class="kpi-value">{current.get('front_atm_iv', 0):.1f}%</div>
+    <div class="kpi-label">14D 50Δ IV</div>
+    <div class="kpi-value">{current.get('atm_14d_iv', current.get('front_atm_iv', 0)):.1f}%</div>
   </div>
   <div class="kpi">
     <div class="kpi-label">RV30</div>
@@ -3007,12 +3640,15 @@ th:first-child, td:first-child {{ text-align:left; }}
     <div class="kpi-value">{current.get('nvrp', 0):.2f}x</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">IV %ile (2yr)</div>
-    <div class="kpi-value">{current.get('iv_pct_2yr', 0):.0f}</div>
+    <div class="kpi-label">{'本地 IV 分位' if is_zh else 'Local IV %ile'}</div>
+    <div class="kpi-value" style="color:{pct_color};font-size:{'22px' if cur_iv_pct_reliable else '18px'};">{f'{cur_iv_pct:.0f}' if cur_iv_pct_reliable else ('n<60' if not is_zh else '样本不足')}</div>
+    <div style="font-size:10px;color:#6e7681;margin-top:2px;">n={cur_iv_pct_n}{'' if cur_iv_pct_reliable else (' · 不用于裁定' if is_zh else ' · not used')}</div>
   </div>
 </div>
 
 {mode_banner_html}
+
+{playbook_card_html}
 
 {highlights_card_html}
 
@@ -3022,28 +3658,19 @@ th:first-child, td:first-child {{ text-align:left; }}
 
 {mnav_card_html}
 
-<!-- Zero-Crossing Alerts -->
-<div class="card">
-  <h2>Zero-Crossing Alerts (P/C Spread)</h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:8px;">
-    Historical pattern: when delta-25 P/C IV spread breaks below zero, stock often near a local top within 1-3 weeks.
-  </div>
-  {alert_html}
-</div>
-
 <!-- P/C Spread Time Series (full width) -->
 <div class="card" id="spread">
-  <h2>Delta-25 Put/Call IV Spread (by expiration bucket)</h2>
+  <h2>{'Delta-25 Put/Call IV 偏度：怎么用' if is_zh else 'Delta-25 Put/Call IV Skew: How to Use It'}</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (speculative FOMO).
+    <b style="color:#e6edf3;">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (upside chase/squeeze demand).
   </div>
   <div style="font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
     <span style="color:#a8e6b8;"><span style="display:inline-block;width:14px;height:10px;background:#3fb95022;border:1px solid #3fb95055;vertical-align:middle;margin-right:4px;"></span><b>Safe zone</b> (spread &gt; 0) — puts cost more than calls, market pricing in downside risk = healthy</span>
-    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, investors chasing upside = top signal</span>
+    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, upside chase/squeeze demand elevated</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #e6edf3;vertical-align:middle;margin-right:4px;"></span>Zero line (threshold)</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #8b949e;vertical-align:middle;margin-right:4px;"></span>Spot price (right axis)</span>
   </div>
-  {spread_insight}
+  {skew_decision_html}
   {skew_pct_html}
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;" id="spreadLegend"></div>
   <div class="chart-wrap-tall"><canvas id="spreadChart"></canvas></div>
@@ -3053,15 +3680,15 @@ th:first-child, td:first-child {{ text-align:left; }}
 
 <!-- IV + NVRP Trend -->
 <div class="card" id="iv">
-  <h2>ATM IV vs RV30 Trend</h2>
+  <h2>{iv_dashboard_title}</h2>
+  {iv_dashboard_html}
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">NVRP = ATM IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.
+    <b style="color:#e6edf3;">NVRP = 14D IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.
   </div>
   {nvrp_insight}
   <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
+  {term_compact_html}
 </div>
-
-{term_html}
 
 {gex_card_html}
 
@@ -3085,14 +3712,14 @@ th:first-child, td:first-child {{ text-align:left; }}
       <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
         OI Delta = <b>net new contracts created</b> between snapshots (buyers + sellers both open). The headline total is misleading — <b>where the OI lands matters more than the total</b>.
         <br><br>
-        <b style="color:#3fb950;">OTM Call (above spot)</b> = directional upside bets. Retail FOMO or institutional call buying.
+        <b style="color:#3fb950;">OTM Call (above spot)</b> = call OI increased above spot. Direction is unconfirmed without trade prints; read alongside price and volume.
         <br><b style="color:#d29922;">ITM Call (below spot)</b> = usually <b>covered-call writers</b> locking gains on existing stock. Increases OI but is <b>not bullish</b> — it's profit-taking.
         <br><b style="color:#f85149;">OTM Put (below spot)</b> = downside bets or portfolio hedges.
         <br><b style="color:#f85149;">Deep OTM Put (&lt;-15% spot)</b> = systematic tail insurance. Only bought by institutions/macro funds. When this surges, <b>smart money is nervous</b>.
         <br><br>
         <b>Classic patterns:</b>
-        <br>• <b>Pure bullish:</b> OTM calls dominate, puts quiet → clean upside conviction
-        <br>• <b>Pure bearish:</b> OTM puts dominate, calls quiet → clean downside conviction
+        <br>• <b>Bullish candidate:</b> OTM call OI expands while puts stay quiet, especially if price/volume confirm
+        <br>• <b>Bearish/hedge candidate:</b> OTM put OI expands while calls stay quiet, especially if price/volume confirm
         <br>• <b>"Seatbelt on":</b> ITM calls + deep OTM puts both swell → institutions taking profit + hedging = late-bull warning
         <br>• <b>Rotation:</b> ITM calls closing (OI drops) + OTM calls opening (OI rises) → long positions being rolled up after a rally
       </div>
@@ -3124,7 +3751,7 @@ th:first-child, td:first-child {{ text-align:left; }}
         <br><b style="color:#f85149;">Put Wall</b> — OTM put strike (3–15% below spot) with highest score. Dealers short these puts → auto-buy on dips near strike → support.
         <br><br><b>Sweet spot: 3–10% OTM</b>. Too close = magnet (gets crossed). Too far = lottery / breakout target, not active resistance.
         <br><b>Strength:</b> 85%+ persistence = <span style="color:#3fb950;">strong (structural)</span>, 65–85% = <span style="color:#d29922;">moderate</span>, 50–65% = <span style="color:#8b949e;">weak</span>.
-        <br><b>Trade rules:</b> Sell CC at call wall · Sell CSP at put wall · Don't buy lottos above call wall · Watch wall migration (up = bullish re-rating, down = top signal, thinning = resistance weakening).
+        <br><b>Trade rules:</b> Use walls as levels first. Short-vol structures require Playbook and Rulebook approval. Watch wall migration (up = bullish re-rating, down = top risk, thinning = resistance fading).
         <br><b>⚠️ Asymmetry warning:</b> Dense call ladder + thin put side = late-bull euphoria (no hedging demand, market complacent).
       </div>
     </details>
@@ -3299,16 +3926,16 @@ function initCharts() {{
     }}]
   }});
 
-  // IV + NVRP Chart
+  // Historical 14D IV + underlying close chart
   const ivDates = {json.dumps(iv_dates)};
   new Chart(document.getElementById('ivChart'), {{
     type: 'line',
     data: {{
       labels: ivDates,
       datasets: [
-        {{ label: 'ATM IV', data: {json.dumps(iv_values)}, borderColor: '#3fb950', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' }},
-        {{ label: 'RV30', data: {json.dumps(rv_values)}, borderColor: '#58a6ff', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' }},
-        {{ label: 'NVRP', data: {json.dumps(nvrp_values)}, borderColor: '#d29922', borderWidth: 2, pointRadius: 3, tension: 0, borderDash: [4,4], yAxisID: 'y1' }}
+        {{ label: '14D 50Δ IV', data: {json.dumps(iv_values)}, borderColor: '#f2cc60', borderWidth: 2.5, pointRadius: 2, tension: 0.15, yAxisID: 'y' }},
+        {{ label: 'RV30', data: {json.dumps(rv_values)}, borderColor: '#58a6ff', borderWidth: 1.5, pointRadius: 2, tension: 0.15, borderDash: [4,4], yAxisID: 'y' }},
+        {{ label: 'Underlying Close', data: {json.dumps(spot_values)}, borderColor: '#8b949e', borderWidth: 1.5, pointRadius: 0, tension: 0.15, borderDash: [6,3], yAxisID: 'yPrice' }}
       ]
     }},
     options: {{
@@ -3318,39 +3945,11 @@ function initCharts() {{
       plugins: {{ legend: {{ position: 'top', labels: {{ color: '#8b949e', font: {{ size: 11 }} }} }} }},
       scales: {{
         x: {{ ticks: {{ color: '#8b949e', font: {{ size: 10 }} }}, grid: {{ display: false }} }},
-        y: {{ position: 'left', ticks: {{ color: '#8b949e' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }}, title: {{ display: true, text: 'IV / RV (%)', color: '#8b949e' }} }},
-        y1: {{ position: 'right', ticks: {{ color: '#d29922' }}, grid: {{ display: false }}, title: {{ display: true, text: 'NVRP', color: '#d29922' }} }}
+        y: {{ position: 'left', ticks: {{ color: '#8b949e', callback: v => v.toFixed(0) + '%' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }}, title: {{ display: true, text: '14D IV / RV30 (%)', color: '#8b949e' }} }},
+        yPrice: {{ position: 'right', ticks: {{ color: '#8b949e', callback: v => '$' + v }}, grid: {{ display: false }}, title: {{ display: true, text: 'Underlying Close ($)', color: '#8b949e' }} }}
       }}
     }},
     plugins: [{{
-      // NVRP threshold reference lines (1.3 edge, 1.0 break-even)
-      beforeDatasetsDraw(chart) {{
-        const y1 = chart.scales.y1;
-        if (!y1) return;
-        const ctx = chart.ctx;
-        const area = chart.chartArea;
-        ctx.save();
-        [[1.3, '#d29922', 'edge 1.3'], [1.0, '#8b949e', 'breakeven 1.0']].forEach(([v, col, lbl]) => {{
-          const y = y1.getPixelForValue(v);
-          if (y < area.top || y > area.bottom) return;
-          ctx.strokeStyle = col;
-          ctx.globalAlpha = 0.35;
-          ctx.lineWidth = 1;
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(area.left, y);
-          ctx.lineTo(area.right, y);
-          ctx.stroke();
-          ctx.globalAlpha = 0.7;
-          ctx.setLineDash([]);
-          ctx.fillStyle = col;
-          ctx.font = '500 10px -apple-system,sans-serif';
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(lbl, area.right - 4, y - 8);
-        }});
-        ctx.restore();
-      }},
       // End-anchored labels with anti-overlap
       afterDatasetsDraw(chart) {{
         const ctx = chart.ctx;
@@ -3366,7 +3965,7 @@ function initCharts() {{
           if (lastIdx < 0) return;
           const pt = meta.data[lastIdx];
           const val = ds.data[lastIdx];
-          const fmt = ds.label === 'NVRP' ? val.toFixed(2) : val.toFixed(1) + '%';
+          const fmt = ds.label === 'Underlying Close' ? '$' + val.toFixed(0) : val.toFixed(1) + '%';
           labels.push({{ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: fmt }});
         }});
         labels.sort((a, b) => a.y - b.y);
@@ -3696,6 +4295,8 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         return None
 
     print(f"  Loaded {len(snapshots)} snapshots ({snapshots[0]['date']} to {snapshots[-1]['date']})")
+    history_snapshots = load_snapshots(ticker, None)
+    iv_pct_by_date = iv_percentile_history(history_snapshots)
 
     # Build all analyses
     pc_series = pc_spread_timeseries(snapshots)
@@ -3703,7 +4304,8 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
     oi_deltas = oi_delta(snapshots)
     persist = volume_persistence(snapshots)
     em = em_accuracy(snapshots)
-    iv = iv_trend(snapshots)
+    iv = iv_trend(snapshots, iv_pct_by_date)
+    iv_history = iv_trend(history_snapshots, iv_pct_by_date)
     skew_pct = skew_percentile_analysis(pc_series, 'front')
     call_dte = dte_call_build_ratio(snapshots)
     gex_data = gex_walls(snapshots[-1]) if snapshots else None
@@ -3714,35 +4316,59 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
 
     # Current state summary
     latest = snapshots[-1]
-    latest_terms = latest.get('term', [])
-    front_term = next((t for t in latest_terms if t.get('dte', 0) >= 5),
-                      latest_terms[0] if latest_terms else {})
+    front = front_term(latest)
+    latest_cm14 = constant_maturity_iv(latest, 14)
+    latest_iv14 = latest_cm14.get('iv', 0) or front.get('atm_iv', 0)
+    latest_iv_meta = iv_pct_by_date.get(latest.get('date'), {})
     current = {
         'spot': latest['spot'],
         'rv30': latest.get('rv30', 0),
-        'iv_pct_2yr': latest.get('iv_pct_2yr', 0),
-        'front_atm_iv': front_term.get('atm_iv', 0),
-        'front_pc_spread': front_term.get('pc_iv_spread', 0),
-        'nvrp': round(front_term.get('atm_iv', 0) / latest['rv30'], 2) if latest.get('rv30', 0) > 0 else 0,
-        'skew_level': skew_alert_level(front_term.get('pc_iv_spread', 0)),
+        'rv30_pct_2yr': latest.get('rv30_pct_2yr', latest.get('iv_pct_2yr', 0)),
+        'iv_percentile': latest_iv_meta.get('iv_percentile', 0),
+        'iv_percentile_n': latest_iv_meta.get('iv_percentile_n', 0),
+        'iv_percentile_reliable': latest_iv_meta.get('iv_percentile_reliable', False),
+        'iv_percentile_min': latest_iv_meta.get('iv_percentile_min', 0),
+        'iv_percentile_max': latest_iv_meta.get('iv_percentile_max', 0),
+        'iv_percentile_median': latest_iv_meta.get('iv_percentile_median', 0),
+        'front_atm_iv': front.get('atm_iv', 0),
+        'atm_14d_iv': latest_iv14,
+        'atm_14d_method': latest_cm14.get('method', ''),
+        'atm_14d_lower_dte': latest_cm14.get('lower_dte'),
+        'atm_14d_upper_dte': latest_cm14.get('upper_dte'),
+        'atm_14d_nearest_dte': latest_cm14.get('nearest_dte'),
+        'front_pc_spread': front.get('pc_iv_spread', 0),
+        'nvrp': round(latest_iv14 / latest['rv30'], 2) if latest.get('rv30', 0) > 0 else 0,
+        'skew_level': skew_alert_level(front.get('pc_iv_spread', 0)),
     }
 
     # Previous-day state for day-over-day deltas in the Highlights card
     prev_state = None
     if len(snapshots) >= 2:
         prev = snapshots[-2]
-        prev_terms = prev.get('term', [])
-        prev_front_term = next((t for t in prev_terms if t.get('dte', 0) >= 5),
-                                prev_terms[0] if prev_terms else {})
+        prev_front = front_term(prev)
+        prev_cm14 = constant_maturity_iv(prev, 14)
+        prev_iv14 = prev_cm14.get('iv', 0) or prev_front.get('atm_iv', 0)
         prev_gex = gex_walls(prev) or {}
+        prev_iv_meta = iv_pct_by_date.get(prev.get('date'), {})
         prev_state = {
             'date': prev.get('date', ''),
             'spot': prev.get('spot', 0),
             'rv30': prev.get('rv30', 0),
-            'iv_pct_2yr': prev.get('iv_pct_2yr', 0),
-            'front_atm_iv': prev_front_term.get('atm_iv', 0),
-            'front_pc_spread': prev_front_term.get('pc_iv_spread', 0),
-            'nvrp': round(prev_front_term.get('atm_iv', 0) / prev.get('rv30', 0), 2) if prev.get('rv30', 0) > 0 else 0,
+            'rv30_pct_2yr': prev.get('rv30_pct_2yr', prev.get('iv_pct_2yr', 0)),
+            'iv_percentile': prev_iv_meta.get('iv_percentile', 0),
+            'iv_percentile_n': prev_iv_meta.get('iv_percentile_n', 0),
+            'iv_percentile_reliable': prev_iv_meta.get('iv_percentile_reliable', False),
+            'iv_percentile_min': prev_iv_meta.get('iv_percentile_min', 0),
+            'iv_percentile_max': prev_iv_meta.get('iv_percentile_max', 0),
+            'iv_percentile_median': prev_iv_meta.get('iv_percentile_median', 0),
+            'front_atm_iv': prev_front.get('atm_iv', 0),
+            'atm_14d_iv': prev_iv14,
+            'atm_14d_method': prev_cm14.get('method', ''),
+            'atm_14d_lower_dte': prev_cm14.get('lower_dte'),
+            'atm_14d_upper_dte': prev_cm14.get('upper_dte'),
+            'atm_14d_nearest_dte': prev_cm14.get('nearest_dte'),
+            'front_pc_spread': prev_front.get('pc_iv_spread', 0),
+            'nvrp': round(prev_iv14 / prev.get('rv30', 0), 2) if prev.get('rv30', 0) > 0 else 0,
             'top_call_wall': (prev_gex.get('call_walls') or [{}])[0].get('strike') if prev_gex.get('call_walls') else None,
             'top_put_wall': (prev_gex.get('put_walls') or [{}])[0].get('strike') if prev_gex.get('put_walls') else None,
         }
@@ -3755,7 +4381,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
 
     trend_data = {
         'ticker': ticker,
-        'date': datetime.now().strftime('%Y-%m-%d'),
+        'date': latest.get('date') or datetime.now().strftime('%Y-%m-%d'),
         'num_snapshots': len(snapshots),
         'date_range': [snapshots[0]['date'], snapshots[-1]['date']],
         'current_state': current,
@@ -3766,6 +4392,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
         'volume_persistence': persist,
         'em_accuracy': em,
         'iv_trend': iv,
+        'iv_history': iv_history,
         'negative_spreads': negative_spreads,
         'skew_percentile': skew_pct,
         'call_dte_ratio': call_dte,
@@ -3784,7 +4411,7 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
 
     # Console summary
     print(f"\n  === {ticker} TREND SUMMARY ===")
-    print(f"  Spot: ${current['spot']:.2f}  |  ATM IV: {current['front_atm_iv']:.1f}%  |  RV30: {current['rv30']:.1f}%  |  NVRP: {current['nvrp']:.2f}x")
+    print(f"  Spot: ${current['spot']:.2f}  |  14D IV: {current.get('atm_14d_iv', current['front_atm_iv']):.1f}%  |  RV30: {current['rv30']:.1f}%  |  NVRP: {current['nvrp']:.2f}x")
     print(f"  Front P/C Spread: {current['front_pc_spread']:+.1f} pts  →  {current['skew_level']}")
 
     if negative_spreads:
@@ -3816,7 +4443,8 @@ def analyze(ticker, days=10, html=False, mode='auto', lang='en'):
     # Generate HTML if requested
     if html:
         suffix = f"_{lang}" if lang != 'en' else ""
-        html_path = os.path.join(REPORT_DIR, f"trend_{ticker}_{datetime.now().strftime('%Y-%m-%d')}{suffix}.html")
+        report_date = trend_data.get('date') or datetime.now().strftime('%Y-%m-%d')
+        html_path = os.path.join(REPORT_DIR, f"trend_{ticker}_{report_date}{suffix}.html")
         generate_html(ticker, trend_data, html_path, mode=mode, lang=lang)
         print(f"\n  HTML report: {html_path}")
         return trend_data, html_path

@@ -198,12 +198,13 @@ def snapshot(sym):
         except Exception as e:
             print(f"  skip {exp}: {e}")
 
-    # RV30 over 2 years
+    # RV30 over 2 years. This is realized-vol percentile, not IV percentile.
+    # True IV percentile is computed in trend.py from accumulated option snapshots.
     h = t.history(period='2y')
     r = h['Close'].pct_change().dropna()
     rv30 = (r.rolling(30).std() * np.sqrt(252) * 100).dropna()
     cur_rv = float(rv30.iloc[-1])
-    iv_pct_2yr = float((rv30 < cur_rv).mean() * 100)
+    rv30_pct_2yr = float((rv30 < cur_rv).mean() * 100)
 
     # Market context
     ctx = market_context()
@@ -214,7 +215,7 @@ def snapshot(sym):
         'date': datetime.now().strftime('%Y-%m-%d'),
         'spot': spot,
         'rv30': cur_rv,
-        'iv_pct_2yr': iv_pct_2yr,
+        'rv30_pct_2yr': rv30_pct_2yr,
         'term': term,
         'chains': chains,
         'expected_moves': expected_moves,
@@ -234,7 +235,7 @@ def main():
             with open(path, 'w') as f:
                 json.dump(data, f, default=str)
             print(f"  -> {path}")
-            print(f"  spot={data['spot']:.2f}  RV30={data['rv30']:.1f}%  IV%ile={data['iv_pct_2yr']:.0f}")
+            print(f"  spot={data['spot']:.2f}  RV30={data['rv30']:.1f}%  RV30%ile={data.get('rv30_pct_2yr', 0):.0f}")
             if data['term']:
                 em = data['term'][0]
                 print(f"  EM (front): +/-{em['expected_move_pct']:.1f}%  [{em['em_lower']:.2f}, {em['em_upper']:.2f}]")

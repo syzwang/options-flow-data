@@ -44,6 +44,7 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   <div class="nav-center">
     <a href="#highlights">要点</a>
+    <a href="#playbook">计划</a>
     <a href="#kpis">概览</a>
     <a href="#verdict">裁定</a>
     <a href="#btc">BTC</a>
@@ -68,7 +69,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>TSLA Flow Trend Analysis</h1>
   <span class="badge" style="background:#d2992222;color:#d29922;border:1px solid #d29922;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-05-18 18:33</span>
+  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-05-20 22:09</span>
 </div>
 
 <!-- KPI Row -->
@@ -82,8 +83,8 @@ th:first-child, td:first-child { text-align:left; }
     <div class="kpi-value" style="color:#d29922;">-3.1 pts</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">ATM IV</div>
-    <div class="kpi-value">43.9%</div>
+    <div class="kpi-label">14D 50Δ IV</div>
+    <div class="kpi-value">45.2%</div>
   </div>
   <div class="kpi">
     <div class="kpi-label">RV30</div>
@@ -91,44 +92,81 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   <div class="kpi">
     <div class="kpi-label">NVRP</div>
-    <div class="kpi-value">1.04x</div>
+    <div class="kpi-value">1.08x</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">IV 分位数 (2年)</div>
-    <div class="kpi-value">19</div>
+    <div class="kpi-label">本地 IV 分位</div>
+    <div class="kpi-value" style="color:#d29922;font-size:18px;">样本不足</div>
+    <div style="font-size:10px;color:#6e7681;margin-top:2px;">n=25 · 不用于裁定</div>
   </div>
 </div>
 
 
 
 
+<div class="card" id="playbook" style="border:1px solid #d2992240;">
+  <h2>最终交易计划</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:stretch;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">方向/环境</div>
+      <div style="font-size:18px;color:#d29922;font-weight:600;margin-bottom:6px;">Call 偏度升温</div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">Call IV 高于 Put IV，是追涨/挤压需求信号；只作为风险提示，不单独判顶。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#3fb950;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">允许</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>通过规则后按仓位系统开仓</li></ul>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">禁止</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>裸卖波动率；卖勒式/铁鹰只可观察，不作为主计划</li></ul>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">关键价位</div>
+    <table>
+      <tr><td style='text-align:left;color:#8b949e;'>现价</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$409.99</td><td style='text-align:left;color:#8b949e;'>基准价格</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX Call 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$435</td><td style='text-align:left;color:#8b949e;'>上方阻力/突破后挤压触发点</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX Put 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$400</td><td style='text-align:left;color:#8b949e;'>下方支撑/跌破后放大风险</td></tr><tr><td style='text-align:left;color:#8b949e;'>持续 Call 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$430-$450</td><td style='text-align:left;color:#8b949e;'>结构性成交阻力</td></tr><tr><td style='text-align:left;color:#8b949e;'>持续 Put 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$400</td><td style='text-align:left;color:#8b949e;'>结构性成交支撑</td></tr>
+    </table>
+  </div>
+</div>
+
+
 <div class="card" id="highlights">
   <h2 style="display:flex;align-items:center;gap:10px;">
-    <span>今日要点</span>
+    <span>今日速览</span>
     <a href="#verdict" style="text-decoration:none;background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">今日不开仓</a>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">昨日 → 今日的关键变化（5 秒概览）。详细图表见下方各卡。</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:4px 14px;">
-    <div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">💰</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">价格</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">现价 $409.99 <span style="color:#f85149;font-size:11px;">(-2.90%)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">📊</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">IV / RV</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">ATM IV 43.9% <span style="color:#f85149;font-size:11px;">(-4.6pp)</span> &nbsp;·&nbsp; RV30 42.0% &nbsp;·&nbsp; NVRP 1.04x <span style="color:#f85149;font-size:11px;">(-0.12)</span> &nbsp;·&nbsp; IV %ile 19 <span style="color:#3fb950;font-size:11px;">(+1)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">⚖️</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">偏度</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">25Δ front <span style="color:#f85149;font-weight:600;">-3.1 pts</span> <span style="color:#f85149;font-size:11px;">(-1.4pp)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">🧱</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">GEX 墙</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">Call <span style="color:#3fb950;font-weight:600;">$435</span> <span style="color:#8b949e;font-size:11px;">(was $422, +12)</span> &nbsp;·&nbsp; Put <span style="color:#f85149;font-weight:600;">$400</span> <span style="color:#8b949e;font-size:11px;">(was $420, -20)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">📈</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">OI 异动</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;"><span style="color:#3fb950;">新建 Call 仓</span> @ $435 <span style="color:#8b949e;font-size:11px;">(+7,844)</span> &nbsp;·&nbsp; <span style="color:#f85149;">新建 Put 仓</span> @ $250 <span style="color:#8b949e;font-size:11px;">(+30,894)</span></div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只保留会改变计划的核心变化。</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">💰</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">价格</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">现价 $409.99 <span style="color:#f85149;font-size:11px;">(-2.90%)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📊</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">IV / RV</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">14D IV 45.2% <span style="color:#3fb950;font-size:11px;">(+0.7pp)</span> &nbsp;·&nbsp; RV30 42.0% &nbsp;·&nbsp; NVRP 1.08x <span style="color:#8b949e;font-size:11px;">(持平)</span> &nbsp;·&nbsp; 本地 IV 样本 <span style="color:#d29922;font-weight:600;">n=25 不足</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">⚖️</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">偏度</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">25Δ front <span style="color:#f85149;font-weight:600;">-3.1 pts</span> <span style="color:#f85149;font-size:11px;">(-1.4pp)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">🧱</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">GEX 墙</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Call <span style="color:#3fb950;font-weight:600;">$435</span> <span style="color:#8b949e;font-size:11px;">(was $422, +12)</span> &nbsp;·&nbsp; Put <span style="color:#f85149;font-weight:600;">$400</span> <span style="color:#8b949e;font-size:11px;">(was $420, -20)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📈</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">OI 异动</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;"><span style="color:#3fb950;">Call OI 增加</span>  <span style="color:#8b949e;font-size:11px;">2026-05-22</span> @ $435 <span style="color:#8b949e;font-size:11px;">(+7,844)</span> &nbsp;·&nbsp; <span style="color:#f85149;">Put OI 增加</span>  <span style="color:#8b949e;font-size:11px;">2026-05-22</span> @ $250 <span style="color:#8b949e;font-size:11px;">(+30,894)</span></div>
     </div>
   </div>
   <div style="font-size:10px;color:#6e7681;margin-top:8px;">vs 2026-05-15</div>
@@ -140,14 +178,31 @@ th:first-child, td:first-child { text-align:left; }
     <span>规则裁定</span>
     <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">今日不开仓</span>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">基于规则手册（E 进场 / S 仓位 / M 管理 / V 事件）的今日开仓闸门检查。每条规则独立判断：✗ 阻塞 / ⚠ 仅 defined-risk / ✓ 全部放行。最严格的状态决定整体裁定。</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只显示闸门结果；细则默认折叠。</div>
+  <div style="padding:10px 12px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:#f85149;font-weight:600;">1 条规则阻塞.</span> 改用借方价差 / 长期权 / 等 IV 回升.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #8b949e44;border-radius:8px;padding:8px 10px;">
+      <span style="color:#8b949e;font-weight:700;font-size:14px;width:14px;text-align:center;">·</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E1</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">本地 14D IV 样本 n=25 < 60</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:8px 10px;">
+      <span style="color:#f85149;font-weight:700;font-size:14px;width:14px;text-align:center;">✗</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E6</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">现价 $410 < Call 墙 $435</span>
+    </div>
+  </div>
+  <details style="margin-top:10px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">展开规则细节</summary>
+    <div style="margin-top:8px;background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:18px;font-weight:600;color:#8b949e;width:20px;text-align:center;">·</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E1</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">IV 底线（卖权门槛）</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV 分位 19 < 30 · IV 太低 — 改用长期权 / 借方价差</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">本地 14D IV 样本 n=25 < 60 · 本地 IV 样本不足；不要把当前分位当长期 IV percentile，改看 14D IV、RV30、NVRP 与期限结构</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -158,10 +213,8 @@ th:first-child, td:first-child { text-align:left; }
         <div style="font-size:11px;color:#8b949e;margin-top:2px;">现价 $410 < Call 墙 $435 · 低于 Call 墙 — 短 Call 被钉风险</div>
       </div>
     </div>
-  </div>
-  <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#f85149;font-weight:600;">2 条规则阻塞.</span> 改用借方价差 / 长期权 / 等 IV 回升.
-  </div>
+    </div>
+  </details>
   
 </div>
 
@@ -169,34 +222,37 @@ th:first-child, td:first-child { text-align:left; }
 
 
 
-<!-- Zero-Crossing Alerts -->
-<div class="card">
-  <h2>零轴穿越预警（P/C 偏度）</h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:8px;">
-    历史规律：delta-25 P/C IV spread 跌破 0 时，股票往往在 1-3 周内见到阶段顶。
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;"><span style="color:#8b949e;font-size:11px;margin-right:2px;">各到期桶当前 spread：</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FRONT</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-2.3</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2W</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.0</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">1M</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-1.1</span></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;"><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FRONT</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 -2.3</span></div><div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">本窗口无穿越</div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2W</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +0.0</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-2.8 &rarr; <b style="color:#3fb950;">+0.0</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-08</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+1.6 &rarr; <b style="color:#f85149;">-0.5</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-07</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-1.6 &rarr; <b style="color:#3fb950;">+1.6</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">1M</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 -1.1</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-07</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+0.4 &rarr; <b style="color:#f85149;">-0.8</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-06</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-0.3 &rarr; <b style="color:#3fb950;">+0.4</b></span></div></div></div>
-</div>
-
 <!-- P/C Spread Time Series (full width) -->
 <div class="card" id="spread">
-  <h2>Delta-25 Put/Call IV 偏度（按到期分桶）</h2>
+  <h2>Delta-25 Put/Call IV 偏度：怎么用</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">偏度 = Put IV − Call IV</b>（delta-25 行权价）。正 = put 贵（正常对冲需求）；负 = call 贵（投机 FOMO）。
+    <b style="color:#e6edf3;">偏度 = Put IV − Call IV</b>（delta-25 行权价）。正 = put 贵（正常对冲需求）；负 = call 贵（上行追涨/挤压需求）。
   </div>
   <div style="font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
     <span style="color:#a8e6b8;"><span style="display:inline-block;width:14px;height:10px;background:#3fb95022;border:1px solid #3fb95055;vertical-align:middle;margin-right:4px;"></span><b>安全区</b>（偏度 > 0）— put 贵于 call，市场定价下行风险 = 健康</span>
-    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>危险区</b>（偏度 < 0）— call 贵于 put，投资者追涨 = 顶部信号</span>
+    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>危险区</b>（偏度 < 0）— call 贵于 put，上行追涨/挤压需求升高</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #e6edf3;vertical-align:middle;margin-right:4px;"></span>零轴（临界线）</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #8b949e;vertical-align:middle;margin-right:4px;"></span>现价（右轴）</span>
   </div>
   
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #d29922;background:#d2992211;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">⚠️</span><span style="color:#d29922;"><b>部分 call 偏</b> — 2/3 个到期桶为负（最低 -2.3）。部分到期出现投机流，观察是否蔓延到所有桶。</span>
+  <div style="margin:10px 0 12px;border:1px solid #d2992244;background:#d299220d;border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="color:#d29922;font-weight:650;font-size:14px;">部分期限 Call 偏度</div>
+      <div style="color:#8b949e;font-size:12px;">2/3 个到期桶为负，均值 -1.1 点。</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;">
+      <div style="background:#0d1117;border:1px solid #d2992233;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">含义</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">追涨需求集中在部分期限，还不是全期限一致。</div></div>
+      <div style="background:#0d1117;border:1px solid #58a6ff33;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">怎么用</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">重点看负偏度集中在哪个 DTE；短期负偏度更像事件/挤压，远期负偏度更结构化。</div></div>
+      <div style="background:#0d1117;border:1px solid #f8514933;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">不要这样用</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">不要把所有到期日混成一个结论；先区分短期和远期。</div></div>
+    </div>
   </div>
+  <details style="margin:8px 0 12px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">历史零轴穿越明细</summary>
+    <div style="margin-top:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;"><span style="color:#8b949e;font-size:11px;margin-right:2px;">各到期桶当前 spread：</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FRONT</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-2.3</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2W</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.0</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">1M</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-1.1</span></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;"><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FRONT</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 -2.3</span></div><div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">本窗口无穿越</div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2W</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +0.0</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-2.8 &rarr; <b style="color:#3fb950;">+0.0</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-08</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+1.6 &rarr; <b style="color:#f85149;">-0.5</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-07</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-1.6 &rarr; <b style="color:#3fb950;">+1.6</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">1M</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 -1.1</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-07</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+0.4 &rarr; <b style="color:#f85149;">-0.8</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-06</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-0.3 &rarr; <b style="color:#3fb950;">+0.4</b></span></div></div></div></div>
+  </details>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>偏度在正常区间</b> — 40th %ile of 40天历史，当前 -3.1 vs 中位数 -2.2）。无极端仓位信号。</span> <span style="color:#8b949e;font-size:11px;">· ⚠ 仅 40 天历史 — 分位数在 n≥60 前不可靠</span>
+    <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>偏度在正常区间</b> — 40分位数（40天历史，当前 -3.1 vs 中位数 -2.2）。无极端仓位信号。</span> <span style="color:#8b949e;font-size:11px;">· ⚠ 仅 40 天历史 — n≥60 前不要把分位数纳入裁定</span>
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;" id="spreadLegend"></div>
   <div class="chart-wrap-tall"><canvas id="spreadChart"></canvas></div>
@@ -212,15 +268,15 @@ th:first-child, td:first-child { text-align:left; }
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">当前 SKEW</div>
-      <div class="kpi-value" style="color:#d29922;">138.4</div>
+      <div class="kpi-value" style="color:#d29922;">132.3</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">判定</div>
-      <div class="kpi-value" style="color:#d29922;">正常</div>
+      <div class="kpi-value" style="color:#d29922;">Normal</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">2 年分位</div>
-      <div class="kpi-value">12</div>
+      <div class="kpi-value">4</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">2 年均值</div>
@@ -232,7 +288,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div class="kpi">
       <div class="kpi-label">历史天数</div>
-      <div class="kpi-value">491</div>
+      <div class="kpi-value">492</div>
     </div>
   </div>
   <div class="chart-wrap"><canvas id="skewChart"></canvas></div>
@@ -240,48 +296,119 @@ th:first-child, td:first-child { text-align:left; }
 
 <!-- IV + NVRP Trend -->
 <div class="card" id="iv">
-  <h2>ATM IV vs RV30 趋势</h2>
+  <h2>Historical 14D 50Δ IV Trend（方差插值）</h2>
+  
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.6;">使用快照里的到期 IV 做总方差插值，近似 14D 50Δ/ATM IV；本地样本不足两年时，只作为本地历史。</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">14D 50Δ/ATM IV</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">45.2%</div>
+      <div style="margin-top:3px;"><span style="color:#3fb950;font-size:11px;">+0.7 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">RV30</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">42.0%</div>
+      <div style="margin-top:3px;"><span style="color:#3fb950;font-size:11px;">+0.5 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">NVRP</div>
+      <div style="font-size:20px;color:#d29922;font-weight:650;margin-top:4px;">1.08x</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">卖波动率边际 <span style="color:#8b949e;font-size:11px;">持平</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">本地 14D IV 分位</div>
+      <div style="font-size:20px;color:#d29922;font-weight:650;margin-top:4px;">样本不足</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">本地 n=25；当前 52.0% 只作参考，不当长期 IV 分位</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">期限结构</div>
+      <div style="font-size:20px;color:#f85149;font-weight:650;margin-top:4px;">近月升水</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">Front−Far +5.8 点</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">本地 14D IV 区间 41.8%–58.0%，中位 45.2%</div>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">NVRP = ATM IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。
+    <b style="color:#e6edf3;">NVRP = 14D IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。
   </div>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #d29922;background:#d2992211;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">⚠️</span><span style="color:#d29922;"><b>优势边际 / 无优势</b> — NVRP 1.04x 在 1.0-1.3 区间。IV (43.9%) 仅略高于实际波动率 (42.0%），溢价可能不足以覆盖买卖价差 + gamma 风险。避免激进做空波动率。</span> &nbsp;|&nbsp; IV 分位数 (2年): <b>19</b>
+    <span style="margin-right:6px;">⚠️</span><span style="color:#d29922;"><b>优势边际 / 无优势</b> — NVRP 1.08x 在 1.0-1.3 区间。IV (45.2%) 仅略高于实际波动率 (42.0%），溢价可能不足以覆盖买卖价差 + gamma 风险。避免激进做空波动率。</span> &nbsp;|&nbsp; 本地 IV 样本 <b>n=25</b>，暂不用于裁定
   </div>
   <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
-</div>
-
-
-<div class="card" id="term">
-  <h2>IV 期限结构（ATM IV 按 DTE）</h2>
-  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;line-height:1.6;">
-    IV 曲线斜率。 <b style="color:#3fb950;">Contango</b> （IV 随 DTE 上升）= 正常/松懈。 <b style="color:#f85149;">Backwardation</b> （下降）= 市场在定价短期事件风险。Front−Far &gt;5 pts 视为压力阈值。
+  
+  <div style="margin-top:12px;background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;">
+      <div>
+        <div style="font-size:12px;color:#e6edf3;font-weight:650;">IV 期限结构</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:2px;">辅助：用于判断短端是否因事件变贵，以及选择期限。</div>
+      </div>
+      <div style="font-size:11px;color:#f85149;font-weight:600;">🔥 <b>短端压力</b> — Front 比 Far 高 +5.8 点；短期期权贵，市场在定价事件/跳空风险。</div>
+    </div>
+    <div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>前周 (≤7天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>50.9%</div><div><div style='height:10px;width:100%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>2周 (8-14天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>45.2%</div><div><div style='height:10px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>1月 (15-35天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>45.0%</div><div><div style='height:10px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div></div>
   </div>
-  <div style="margin:8px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>倒挂（Backwardation）</b> — 前周 IV (50.9%) 高于远期 (45.0%)，差值 +5.8 pts。市场定价短期事件/风险；远期合约相对便宜。</span>
-  </div>
-  <div style="margin-top:10px;"><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>前周 (≤7天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>50.9%</div><div><div style='height:14px;width:100%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>2周 (8-14天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>45.2%</div><div><div style='height:14px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>1月 (15-35天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>45.0%</div><div><div style='height:14px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div></div>
+
 </div>
 
 
 <div class="card" id="gex">
   <h2>做市商 Gamma 墙（GEX）</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    按 <b style="color:#e6edf3;">Σ (gamma × OI × 100)</b> 汇总所有到期的行权价 — 衡量<b style="color:#e6edf3;">做市商对冲流</b>集中处。相比成交量墙更能反映实际支撑/阻力。
-    净 GEX: <b style="color:#f85149;">$-2.76B</b>（call $+47.39B + put $-50.14B).
+    GEX 衡量做市商为了对冲期权 Gamma，最可能在哪些行权价附近买卖股票。它是盘中支撑/阻力与加速风险的参考，不是方向预测。
+    <br>净 GEX: <b style="color:#f85149;">$-2.76B</b>（call $+47.39B + put $-50.14B).
   </div>
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>做市商净空 gamma</b> — 波动被<b>放大</b>。突破变 squeeze，跌破变 crash。<b>卖权危险</b>，考虑跨式/做多波动率。价格穿过关键墙触发机械对冲（追涨 / 恐慌抛售）。</span>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0;">
+    
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f8514918;color:#f85149;font-weight:800;font-size:15px;">G</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">净 Gamma 环境</div>
+          <div style="font-size:18px;color:#f85149;font-weight:650;margin-top:2px;">净空 Gamma</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;"><b>做市商净空 Gamma</b> — 价格波动容易被放大；突破变 squeeze，跌破变加速下行。裸卖波动率风险高。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #3fb95044;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#3fb95018;color:#3fb950;font-weight:800;font-size:15px;">↑</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">上方 Call 墙</div>
+          <div style="font-size:18px;color:#3fb950;font-weight:650;margin-top:2px;">$435</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">上方 $435，距现价 6.1%。先当阻力；有效突破后，做市商对冲可能追买，形成 squeeze。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f8514918;color:#f85149;font-weight:800;font-size:15px;">↓</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">下方 Put 墙</div>
+          <div style="font-size:18px;color:#f85149;font-weight:650;margin-top:2px;">$400</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">下方 $400，距现价 2.4%。先当支撑；有效跌破后，对冲流可能放大下跌。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #58a6ff44;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#58a6ff18;color:#58a6ff;font-weight:800;font-size:15px;">↔</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">交易用法</div>
+          <div style="font-size:18px;color:#58a6ff;font-weight:650;margin-top:2px;">计划</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">不要把墙当成稳固区间；墙被穿越时优先防加速，偏向限亏/买波动率结构。</div>
+    </div>
   </div>
   <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">GEX 价位梯</div>
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
-      <span>行权价 · OTM</span><span style="color:#3fb950;">▲ CALL 墙（阻力位）</span><span>GEX</span>
+      <span>行权价 · OTM</span><span style="color:#3fb950;">↑ 上方阻力 / 突破触发</span><span>GEX</span>
     </div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$450</span><span style="color:#8b949e;font-size:11px;">+9.8%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:93.8%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+3.94B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$440</span><span style="color:#8b949e;font-size:11px;">+7.3%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:66.5%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+2.79B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$435</span><span style="color:#8b949e;font-size:11px;">+6.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:100.0%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+4.20B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$430</span><span style="color:#8b949e;font-size:11px;">+4.9%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:71.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+2.99B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$410</span><span style="color:#8b949e;font-size:11px;">+0.0%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:74.9%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+3.14B</span></div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;background:#e6edf308;"><span style="color:#e6edf3;font-weight:600;font-size:12px;">$409.99</span><span style="color:#8b949e;font-size:10px;">现价</span><div></div><div></div></div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$408</span><span style="color:#8b949e;font-size:11px;">−0.6%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:37.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-1.57B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$405</span><span style="color:#8b949e;font-size:11px;">−1.2%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:41.7%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-1.75B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$400</span><span style="color:#8b949e;font-size:11px;">−2.4%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:71.7%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-3.01B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$395</span><span style="color:#8b949e;font-size:11px;">−3.7%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:25.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-1.07B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$390</span><span style="color:#8b949e;font-size:11px;">−4.9%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:38.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-1.61B</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
-      <span>&nbsp;</span><span style="color:#f85149;">▼ PUT 墙（支撑位）</span><span>&nbsp;</span>
+      <span>&nbsp;</span><span style="color:#f85149;">↓ 下方支撑 / 跌破触发</span><span>&nbsp;</span>
     </div>
   </div>
   <details style="font-size:11px;color:#8b949e;margin-top:10px;">
@@ -316,7 +443,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="oidelta">
   <h2>行权价 OI 变化（昨日→今日，按到期日）</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    各行权价持仓净变化，区间： 2026-05-15 and 2026-05-18. <b style="color:#3fb950;">绿色向上</b>= call 持仓新建（看涨开仓）。 <b style="color:#3fb950;">绿色向下</b>= call 持仓解除（平仓/到期）。<b style="color:#f85149;">put</b> 红色条同理。 <b>Roll 检测：</b> 低行权价同时减仓 + 高行权价建仓 = 仓位向上展期。
+    各行权价持仓净变化，区间： 2026-05-15 至 2026-05-18. <b style="color:#3fb950;">绿色向上</b>= call OI 增加；没有逐笔成交无法确认方向。 <b style="color:#3fb950;">绿色向下</b>= call OI 减少。<b style="color:#f85149;">put</b> 红色条同理。 <b>Roll 检测：</b>低行权价减仓 + 高行权价增仓 = 可能向上展期。
   </div>
   <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
     <label style="font-size:12px;color:#8b949e;">到期日：</label>
@@ -341,7 +468,7 @@ th:first-child, td:first-child { text-align:left; }
     
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px;">
       <span style="padding:4px 9px;background:#3fb95022;border:1px solid #3fb95055;border-radius:6px;color:#e6edf3;">
-        OTM Call (>现价) <b style="color:#3fb950;">+31,571</b> <span style="color:#8b949e;">上行押注</span>
+        OTM Call (>现价) <b style="color:#3fb950;">+31,571</b> <span style="color:#8b949e;">上行 OI</span>
       </span>
       <span style="padding:4px 9px;background:#d2992222;border:1px solid #d2992255;border-radius:6px;color:#e6edf3;">
         ITM Call (<现价) <b style="color:#d29922;">+267</b> <span style="color:#8b949e;">常为 covered-call 写卖</span>
@@ -355,7 +482,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     
     <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
-      <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>纯多头建仓</b> — OTM call 新增 +31,571 占主导；OTM put 流 +6,008 较小。方向性上行押注，对冲很少。</span>
+      <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>Call 端 OI 扩张</b> — OTM call OI 增加 +31,571，同时 OTM put OI 变化 +6,008。看涨解读需要价格、成交量或逐笔成交确认。</span>
     </div>
     
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
@@ -366,14 +493,14 @@ th:first-child, td:first-child { text-align:left; }
       <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
         OI Delta = 两次 snapshot 之间<b>净新建合约</b>（买卖双方都开仓）。表面总数有误导性 — <b>OI 落在哪里比总量更重要</b>。
         <br><br>
-        <b style="color:#3fb950;">OTM Call (above spot)</b> = directional 上行押注. Retail FOMO or institutional call buying.
+        <b style="color:#3fb950;">OTM Call（现价之上）</b> = 现价上方 call OI 增加。没有逐笔成交无法确认方向；需结合价格和成交量解读。
         <br><b style="color:#d29922;">ITM Call（现价之下）</b> = 通常是 <b>covered-call 写卖方</b>对已持股锁利。OI 增加但<b>并非看涨</b> — 是获利了结。
         <br><b style="color:#f85149;">OTM Put（现价之下）</b> = 下行押注或组合对冲。
         <br><b style="color:#f85149;">Deep OTM Put (&lt;-15% spot)</b> = systematic 尾部保险. Only bought by institutions/macro funds. When this surges, <b>smart money is nervous</b>.
         <br><br>
         <b>经典模式：</b>
-        <br>• <b>纯多头：</b>OTM calls 占主导，puts 安静 → 纯上行定投
-        <br>• <b>纯空头：</b>OTM puts 占主导，calls 安静 → 纯下行定投
+        <br>• <b>看涨候选：</b>OTM call OI 扩张且 puts 安静，尤其需要价格/成交量确认
+        <br>• <b>看空/对冲候选：</b>OTM put OI 扩张且 calls 安静，尤其需要价格/成交量确认
         <br>• <b>「系安全带」：</b>ITM calls + 深度 OTM puts 同时膨胀 → 机构获利 + 对冲 = 晚期牛市警告
         <br>• <b>轮动：</b>ITM calls 平仓（OI 下降）+ OTM calls 开仓（OI 上升）→ 多头仓位在涨后向上 roll
       </div>
@@ -419,7 +546,7 @@ th:first-child, td:first-child { text-align:left; }
         <br><b style="color:#f85149;">Put 墙</b> — OTM put 行权价（现价下方 3–15%），得分最高。做市商 short 这些 put → 接近此位自动买入 → 支撑。
         <br><br><b>最佳区间：3–10% OTM</b>。太近 = 磁吸（会被穿过）；太远 = 彩票 / 突破目标，非真实阻力。
         <br><b>强度：</b>持续性 85%+ = <span style="color:#3fb950;">强（结构性）</span>，65–85% = <span style="color:#d29922;">中等</span>，50–65% = <span style="color:#8b949e;">弱</span>.
-        <br><b>Trade rules:</b> Sell CC at call wall · Sell CSP at put wall · Don't buy lottos above call wall · Watch wall migration (up = bullish re-rating, down = top signal, thinning = resistance 弱ening).
+        <br><b>交易规则：</b>先把墙作为价位。卖波动率结构需要最终计划和规则裁定同时允许。观察墙的迁移（向上 = 看涨重定价，向下 = 顶部风险，变稀 = 阻力减弱）。
         <br><b>⚠️ 不对称警告：</b>密集 call 阶梯 + 稀薄 put 端 = 晚期牛市狂热（无对冲需求，市场自满）。
       </div>
     </details>
@@ -602,16 +729,16 @@ function initCharts() {
     }]
   });
 
-  // IV + NVRP Chart
-  const ivDates = ["2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18"];
+  // Historical 14D IV + underlying close chart
+  const ivDates = ["2026-04-15", "2026-04-16", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18"];
   new Chart(document.getElementById('ivChart'), {
     type: 'line',
     data: {
       labels: ivDates,
       datasets: [
-        { label: 'ATM IV', data: [44.8, 44.5, 49.4, 47.1, 52.0, 54.3, 53.3, 50.9, 48.4, 43.9], borderColor: '#3fb950', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' },
-        { label: 'RV30', data: [42.2, 42.7, 43.7, 43.4, 43.3, 43.8, 42.6, 42.4, 41.6, 42.0], borderColor: '#58a6ff', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' },
-        { label: 'NVRP', data: [1.06, 1.04, 1.13, 1.08, 1.2, 1.24, 1.25, 1.2, 1.16, 1.04], borderColor: '#d29922', borderWidth: 2, pointRadius: 3, tension: 0, borderDash: [4,4], yAxisID: 'y1' }
+        { label: '14D 50Δ IV', data: [58.0, 53.6, 53.2, 54.4, 52.0, 53.4, 52.7, 44.1, 42.4, 44.5, 43.0, 41.9, 41.9, 41.8, 43.9, 43.4, 43.1, 46.6, 44.7, 50.7, 50.7, 49.7, 47.2, 44.5, 45.2], borderColor: '#f2cc60', borderWidth: 2.5, pointRadius: 2, tension: 0.15, yAxisID: 'y' },
+        { label: 'RV30', data: [44.9, 43.8, 44.7, 44.7, 44.7, 44.9, 44.9, 45.5, 44.7, 44.7, 44.6, 44.5, 44.9, 44.4, 43.3, 42.2, 42.7, 43.7, 43.4, 43.3, 43.8, 42.6, 42.4, 41.6, 42.0], borderColor: '#58a6ff', borderWidth: 1.5, pointRadius: 2, tension: 0.15, borderDash: [4,4], yAxisID: 'y' },
+        { label: 'Underlying Close', data: [391.95, 388.9, 400.62, 400.62, 392.5, 386.42, 387.51, 373.72, 376.3, 378.67, 376.02, 372.8, 381.63, 390.82, 392.51, 389.37, 398.73, 411.79, 428.35, 445.0, 433.45, 445.27, 443.3, 422.24, 409.99], borderColor: '#8b949e', borderWidth: 1.5, pointRadius: 0, tension: 0.15, borderDash: [6,3], yAxisID: 'yPrice' }
       ]
     },
     options: {
@@ -621,39 +748,11 @@ function initCharts() {
       plugins: { legend: { position: 'top', labels: { color: '#8b949e', font: { size: 11 } } } },
       scales: {
         x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } },
-        y: { position: 'left', ticks: { color: '#8b949e' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'IV / RV (%)', color: '#8b949e' } },
-        y1: { position: 'right', ticks: { color: '#d29922' }, grid: { display: false }, title: { display: true, text: 'NVRP', color: '#d29922' } }
+        y: { position: 'left', ticks: { color: '#8b949e', callback: v => v.toFixed(0) + '%' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: '14D IV / RV30 (%)', color: '#8b949e' } },
+        yPrice: { position: 'right', ticks: { color: '#8b949e', callback: v => '$' + v }, grid: { display: false }, title: { display: true, text: 'Underlying Close ($)', color: '#8b949e' } }
       }
     },
     plugins: [{
-      // NVRP threshold reference lines (1.3 edge, 1.0 break-even)
-      beforeDatasetsDraw(chart) {
-        const y1 = chart.scales.y1;
-        if (!y1) return;
-        const ctx = chart.ctx;
-        const area = chart.chartArea;
-        ctx.save();
-        [[1.3, '#d29922', 'edge 1.3'], [1.0, '#8b949e', 'breakeven 1.0']].forEach(([v, col, lbl]) => {
-          const y = y1.getPixelForValue(v);
-          if (y < area.top || y > area.bottom) return;
-          ctx.strokeStyle = col;
-          ctx.globalAlpha = 0.35;
-          ctx.lineWidth = 1;
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(area.left, y);
-          ctx.lineTo(area.right, y);
-          ctx.stroke();
-          ctx.globalAlpha = 0.7;
-          ctx.setLineDash([]);
-          ctx.fillStyle = col;
-          ctx.font = '500 10px -apple-system,sans-serif';
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(lbl, area.right - 4, y - 8);
-        });
-        ctx.restore();
-      },
       // End-anchored labels with anti-overlap
       afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
@@ -669,7 +768,7 @@ function initCharts() {
           if (lastIdx < 0) return;
           const pt = meta.data[lastIdx];
           const val = ds.data[lastIdx];
-          const fmt = ds.label === 'NVRP' ? val.toFixed(2) : val.toFixed(1) + '%';
+          const fmt = ds.label === 'Underlying Close' ? '$' + val.toFixed(0) : val.toFixed(1) + '%';
           labels.push({ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: fmt });
         });
         labels.sort((a, b) => a.y - b.y);
@@ -896,7 +995,7 @@ function initCharts() {
   }
 
   // --- Macro SKEW (^SKEW 2y) line chart ---
-  const skewData = {"dates": ["2024-05-20", "2024-05-21", "2024-05-22", "2024-05-23", "2024-05-24", "2024-05-28", "2024-05-29", "2024-05-31", "2024-06-03", "2024-06-04", "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-10", "2024-06-11", "2024-06-14", "2024-06-17", "2024-06-18", "2024-06-20", "2024-06-21", "2024-06-24", "2024-06-25", "2024-06-26", "2024-06-27", "2024-06-28", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-05", "2024-07-08", "2024-07-09", "2024-07-10", "2024-07-11", "2024-07-12", "2024-07-15", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-22", "2024-07-23", "2024-07-24", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-02", "2024-08-05", "2024-08-09", "2024-08-12", "2024-08-13", "2024-08-14", "2024-08-15", "2024-08-16", "2024-08-19", "2024-08-20", "2024-08-21", "2024-08-22", "2024-08-23", "2024-08-26", "2024-08-27", "2024-08-28", "2024-08-29", "2024-08-30", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-09", "2024-09-10", "2024-09-11", "2024-09-12", "2024-09-13", "2024-09-16", "2024-09-17", "2024-09-18", "2024-09-19", "2024-09-20", "2024-09-23", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-30", "2024-10-02", "2024-10-03", "2024-10-04", "2024-10-07", "2024-10-08", "2024-10-09", "2024-10-10", "2024-10-11", "2024-10-14", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-29", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-27", "2024-12-30", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-10", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-01-31", "2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31", "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-28", "2025-04-29", "2025-04-30", "2025-05-01", "2025-05-02", "2025-05-05", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-06-02", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-16", "2025-06-17", "2025-06-18", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-30", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31", "2025-08-01", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-09-02", "2025-09-03", "2025-09-04", "2025-09-05", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-15", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-02", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18"], "values": [144.54, 149.52, 150.14, 153.33, 155.86, 152.23, 151.8, 148.1, 139.01, 138.18, 141.4, 140.18, 139.61, 141.56, 144.7, 156.18, 153.84, 142.9, 148.6, 151.79, 147.13, 146.64, 143.49, 143.06, 141.79, 145.82, 147.16, 148.83, 150.2, 148.53, 151.09, 156.96, 152.23, 150.86, 147.4, 151.53, 146.39, 151.12, 146.99, 141.38, 137.0, 136.84, 134.17, 131.73, 128.93, 127.31, 136.69, 139.65, 145.3, 144.52, 140.82, 143.87, 141.82, 143.56, 142.55, 141.5, 146.26, 149.67, 154.16, 153.95, 151.5, 151.83, 151.68, 153.01, 159.0, 163.6, 160.9, 156.71, 148.98, 140.33, 139.75, 139.73, 145.88, 149.99, 152.17, 157.54, 167.42, 171.72, 165.75, 165.6, 160.48, 158.67, 160.99, 154.3, 161.5, 162.78, 156.43, 155.57, 156.28, 156.93, 154.09, 159.43, 153.08, 159.69, 161.85, 165.82, 155.55, 150.97, 146.8, 146.97, 144.71, 148.91, 148.46, 150.74, 153.45, 152.07, 146.66, 148.95, 152.68, 148.11, 152.12, 150.34, 140.32, 141.5, 142.92, 147.98, 149.55, 147.33, 149.46, 153.0, 155.72, 161.64, 167.28, 166.23, 167.94, 167.94, 170.65, 170.23, 172.45, 173.93, 168.05, 163.14, 165.12, 169.06, 167.43, 169.91, 166.79, 173.04, 168.92, 163.1, 161.21, 170.65, 180.09, 173.72, 167.92, 161.08, 169.16, 157.2, 157.32, 152.64, 155.1, 154.34, 151.45, 170.55, 167.64, 163.54, 167.41, 165.35, 173.0, 179.98, 179.32, 173.16, 168.55, 163.64, 157.43, 156.7, 158.47, 155.45, 159.44, 162.64, 163.57, 166.53, 166.95, 168.81, 166.1, 163.36, 167.97, 183.12, 175.76, 178.57, 165.0, 156.93, 157.6, 153.44, 149.32, 157.94, 154.26, 151.38, 138.88, 137.65, 139.94, 146.04, 132.79, 128.69, 128.86, 130.3, 133.9, 136.75, 136.45, 140.79, 141.73, 144.01, 148.68, 144.75, 140.85, 139.04, 148.58, 143.01, 144.27, 139.2, 136.54, 133.82, 135.68, 142.23, 127.54, 128.64, 135.71, 135.76, 131.32, 130.02, 125.77, 125.93, 126.67, 129.02, 132.37, 131.28, 134.29, 132.73, 134.07, 134.78, 134.12, 133.24, 132.21, 131.52, 128.4, 137.67, 140.52, 138.94, 140.85, 136.01, 135.94, 137.27, 137.28, 139.04, 139.34, 140.89, 137.65, 137.26, 138.25, 141.04, 141.6, 137.46, 140.09, 138.85, 139.18, 141.22, 141.39, 145.6, 149.65, 156.6, 154.36, 148.41, 149.19, 154.78, 154.97, 152.24, 147.46, 143.44, 139.65, 140.07, 139.28, 141.36, 137.96, 140.8, 141.75, 143.32, 144.96, 147.0, 143.72, 146.71, 151.12, 150.45, 154.83, 153.44, 159.29, 159.41, 145.57, 147.65, 149.12, 154.08, 152.29, 155.49, 159.31, 149.91, 149.71, 147.03, 147.53, 148.55, 151.45, 153.13, 150.62, 153.79, 153.95, 153.17, 144.56, 144.32, 146.39, 149.99, 156.53, 150.88, 152.5, 152.1, 151.48, 150.22, 153.96, 148.16, 148.82, 150.93, 151.92, 147.63, 149.49, 152.11, 148.21, 146.37, 148.19, 146.97, 145.46, 146.53, 145.87, 145.89, 141.51, 143.03, 143.44, 143.68, 145.93, 144.65, 142.5, 145.22, 145.76, 145.34, 138.86, 142.81, 146.48, 144.98, 147.14, 147.63, 151.31, 149.95, 152.85, 154.34, 153.49, 148.5, 140.37, 139.45, 141.15, 142.78, 141.99, 144.01, 143.64, 143.54, 141.27, 142.94, 143.45, 138.57, 142.49, 137.93, 140.9, 142.98, 143.05, 144.96, 148.34, 148.6, 151.68, 145.04, 143.0, 144.86, 144.94, 149.23, 148.91, 148.83, 150.63, 150.32, 147.55, 148.32, 153.59, 161.86, 156.99, 153.49, 155.38, 155.87, 159.93, 160.53, 160.53, 151.45, 150.47, 148.33, 148.7, 141.86, 142.45, 146.23, 143.57, 147.08, 146.04, 149.75, 151.6, 152.52, 151.57, 153.59, 154.96, 144.41, 141.31, 144.02, 148.1, 147.25, 144.98, 143.74, 143.65, 146.56, 143.85, 143.16, 137.16, 140.31, 145.23, 145.71, 143.78, 142.5, 139.35, 140.28, 139.17, 141.19, 145.52, 141.43, 141.94, 146.05, 146.57, 146.67, 151.78, 152.83, 152.87, 153.95, 151.8, 157.98, 154.46, 152.44, 139.94, 137.76, 141.49, 145.04, 136.54, 138.26, 139.12, 142.02, 142.63, 140.88, 143.99, 139.0, 142.23, 145.45, 143.77, 146.95, 147.6, 148.45, 150.36, 143.27, 144.18, 156.93, 149.94, 139.23, 140.74, 141.82, 141.9, 140.91, 140.84, 139.59, 139.08, 139.64, 138.16, 141.88, 143.33, 141.38, 141.74, 138.74, 135.42, 136.11, 138.21, 140.21, 139.41, 141.51, 139.32, 145.77, 138.4]};
+  const skewData = {"dates": ["2024-05-21", "2024-05-22", "2024-05-23", "2024-05-24", "2024-05-28", "2024-05-29", "2024-05-31", "2024-06-03", "2024-06-04", "2024-06-05", "2024-06-06", "2024-06-07", "2024-06-10", "2024-06-11", "2024-06-14", "2024-06-17", "2024-06-18", "2024-06-20", "2024-06-21", "2024-06-24", "2024-06-25", "2024-06-26", "2024-06-27", "2024-06-28", "2024-07-01", "2024-07-02", "2024-07-03", "2024-07-05", "2024-07-08", "2024-07-09", "2024-07-10", "2024-07-11", "2024-07-12", "2024-07-15", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-22", "2024-07-23", "2024-07-24", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-02", "2024-08-05", "2024-08-09", "2024-08-12", "2024-08-13", "2024-08-14", "2024-08-15", "2024-08-16", "2024-08-19", "2024-08-20", "2024-08-21", "2024-08-22", "2024-08-23", "2024-08-26", "2024-08-27", "2024-08-28", "2024-08-29", "2024-08-30", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-09", "2024-09-10", "2024-09-11", "2024-09-12", "2024-09-13", "2024-09-16", "2024-09-17", "2024-09-18", "2024-09-19", "2024-09-20", "2024-09-23", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-30", "2024-10-02", "2024-10-03", "2024-10-04", "2024-10-07", "2024-10-08", "2024-10-09", "2024-10-10", "2024-10-11", "2024-10-14", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-29", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-27", "2024-12-30", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-10", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-01-31", "2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31", "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-28", "2025-04-29", "2025-04-30", "2025-05-01", "2025-05-02", "2025-05-05", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-06-02", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-16", "2025-06-17", "2025-06-18", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-30", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31", "2025-08-01", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-09-02", "2025-09-03", "2025-09-04", "2025-09-05", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-15", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-02", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20"], "values": [149.52, 150.14, 153.33, 155.86, 152.23, 151.8, 148.1, 139.01, 138.18, 141.4, 140.18, 139.61, 141.56, 144.7, 156.18, 153.84, 142.9, 148.6, 151.79, 147.13, 146.64, 143.49, 143.06, 141.79, 145.82, 147.16, 148.83, 150.2, 148.53, 151.09, 156.96, 152.23, 150.86, 147.4, 151.53, 146.39, 151.12, 146.99, 141.38, 137.0, 136.84, 134.17, 131.73, 128.93, 127.31, 136.69, 139.65, 145.3, 144.52, 140.82, 143.87, 141.82, 143.56, 142.55, 141.5, 146.26, 149.67, 154.16, 153.95, 151.5, 151.83, 151.68, 153.01, 159.0, 163.6, 160.9, 156.71, 148.98, 140.33, 139.75, 139.73, 145.88, 149.99, 152.17, 157.54, 167.42, 171.72, 165.75, 165.6, 160.48, 158.67, 160.99, 154.3, 161.5, 162.78, 156.43, 155.57, 156.28, 156.93, 154.09, 159.43, 153.08, 159.69, 161.85, 165.82, 155.55, 150.97, 146.8, 146.97, 144.71, 148.91, 148.46, 150.74, 153.45, 152.07, 146.66, 148.95, 152.68, 148.11, 152.12, 150.34, 140.32, 141.5, 142.92, 147.98, 149.55, 147.33, 149.46, 153.0, 155.72, 161.64, 167.28, 166.23, 167.94, 167.94, 170.65, 170.23, 172.45, 173.93, 168.05, 163.14, 165.12, 169.06, 167.43, 169.91, 166.79, 173.04, 168.92, 163.1, 161.21, 170.65, 180.09, 173.72, 167.92, 161.08, 169.16, 157.2, 157.32, 152.64, 155.1, 154.34, 151.45, 170.55, 167.64, 163.54, 167.41, 165.35, 173.0, 179.98, 179.32, 173.16, 168.55, 163.64, 157.43, 156.7, 158.47, 155.45, 159.44, 162.64, 163.57, 166.53, 166.95, 168.81, 166.1, 163.36, 167.97, 183.12, 175.76, 178.57, 165.0, 156.93, 157.6, 153.44, 149.32, 157.94, 154.26, 151.38, 138.88, 137.65, 139.94, 146.04, 132.79, 128.69, 128.86, 130.3, 133.9, 136.75, 136.45, 140.79, 141.73, 144.01, 148.68, 144.75, 140.85, 139.04, 148.58, 143.01, 144.27, 139.2, 136.54, 133.82, 135.68, 142.23, 127.54, 128.64, 135.71, 135.76, 131.32, 130.02, 125.77, 125.93, 126.67, 129.02, 132.37, 131.28, 134.29, 132.73, 134.07, 134.78, 134.12, 133.24, 132.21, 131.52, 128.4, 137.67, 140.52, 138.94, 140.85, 136.01, 135.94, 137.27, 137.28, 139.04, 139.34, 140.89, 137.65, 137.26, 138.25, 141.04, 141.6, 137.46, 140.09, 138.85, 139.18, 141.22, 141.39, 145.6, 149.65, 156.6, 154.36, 148.41, 149.19, 154.78, 154.97, 152.24, 147.46, 143.44, 139.65, 140.07, 139.28, 141.36, 137.96, 140.8, 141.75, 143.32, 144.96, 147.0, 143.72, 146.71, 151.12, 150.45, 154.83, 153.44, 159.29, 159.41, 145.57, 147.65, 149.12, 154.08, 152.29, 155.49, 159.31, 149.91, 149.71, 147.03, 147.53, 148.55, 151.45, 153.13, 150.62, 153.79, 153.95, 153.17, 144.56, 144.32, 146.39, 149.99, 156.53, 150.88, 152.5, 152.1, 151.48, 150.22, 153.96, 148.16, 148.82, 150.93, 151.92, 147.63, 149.49, 152.11, 148.21, 146.37, 148.19, 146.97, 145.46, 146.53, 145.87, 145.89, 141.51, 143.03, 143.44, 143.68, 145.93, 144.65, 142.5, 145.22, 145.76, 145.34, 138.86, 142.81, 146.48, 144.98, 147.14, 147.63, 151.31, 149.95, 152.85, 154.34, 153.49, 148.5, 140.37, 139.45, 141.15, 142.78, 141.99, 144.01, 143.64, 143.54, 141.27, 142.94, 143.45, 138.57, 142.49, 137.93, 140.9, 142.98, 143.05, 144.96, 148.34, 148.6, 151.68, 145.04, 143.0, 144.86, 144.94, 149.23, 148.91, 148.83, 150.63, 150.32, 147.55, 148.32, 153.59, 161.86, 156.99, 153.49, 155.38, 155.87, 159.93, 160.53, 160.53, 151.45, 150.47, 148.33, 148.7, 141.86, 142.45, 146.23, 143.57, 147.08, 146.04, 149.75, 151.6, 152.52, 151.57, 153.59, 154.96, 144.41, 141.31, 144.02, 148.1, 147.25, 144.98, 143.74, 143.65, 146.56, 143.85, 143.16, 137.16, 140.31, 145.23, 145.71, 143.78, 142.5, 139.35, 140.28, 139.17, 141.19, 145.52, 141.43, 141.94, 146.05, 146.57, 146.67, 151.78, 152.83, 152.87, 153.95, 151.8, 157.98, 154.46, 152.44, 139.94, 137.76, 141.49, 145.04, 136.54, 138.26, 139.12, 142.02, 142.63, 140.88, 143.99, 139.0, 142.23, 145.45, 143.77, 146.95, 147.6, 148.45, 150.36, 143.27, 144.18, 156.93, 149.94, 139.23, 140.74, 141.82, 141.9, 140.91, 140.84, 139.59, 139.08, 139.64, 138.16, 141.88, 143.33, 141.38, 141.74, 138.74, 135.42, 136.11, 138.21, 140.21, 139.41, 141.51, 139.32, 145.77, 138.4, 135.5, 132.31]};
   const skewCanvas = document.getElementById('skewChart');
   if (skewData && skewCanvas) {
     const skewCurrent = skewData.values[skewData.values.length - 1];
