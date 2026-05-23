@@ -44,6 +44,7 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   <div class="nav-center">
     <a href="#highlights">Today</a>
+    <a href="#playbook">Playbook</a>
     <a href="#kpis">KPIs</a>
     <a href="#verdict">Verdict</a>
     <a href="#btc">BTC</a>
@@ -68,7 +69,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>MSTR Flow Trend Analysis</h1>
   <span class="badge" style="background:#d2992222;color:#d29922;border:1px solid #d29922;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 snapshots | 2026-05-22 18:35</span>
+  <span style="color:#8b949e;font-size:13px;">10 snapshots | 2026-05-23 15:41</span>
 </div>
 
 <!-- KPI Row -->
@@ -82,8 +83,8 @@ th:first-child, td:first-child { text-align:left; }
     <div class="kpi-value" style="color:#d29922;">-0.5 pts</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">ATM IV</div>
-    <div class="kpi-value">60.5%</div>
+    <div class="kpi-label">14D 50Δ IV</div>
+    <div class="kpi-value">61.8%</div>
   </div>
   <div class="kpi">
     <div class="kpi-label">RV30</div>
@@ -91,71 +92,130 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   <div class="kpi">
     <div class="kpi-label">NVRP</div>
-    <div class="kpi-value">0.83x</div>
+    <div class="kpi-value">0.85x</div>
   </div>
   <div class="kpi">
-    <div class="kpi-label">IV %ile (2yr)</div>
-    <div class="kpi-value">49</div>
+    <div class="kpi-label">Local IV %ile</div>
+    <div class="kpi-value" style="color:#d29922;font-size:18px;">n<60</div>
+    <div style="font-size:10px;color:#6e7681;margin-top:2px;">n=29 · not used</div>
   </div>
 </div>
 
 
 
 
+<div class="card" id="playbook" style="border:1px solid #f8514940;">
+  <h2>Final Playbook</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:stretch;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Bias / Regime</div>
+      <div style="font-size:18px;color:#f85149;font-weight:600;margin-bottom:6px;">Vol expansion bias</div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">NVRP 0.85x < 1.0 and net GEX is negative; do not read range walls as a short-vol signal.</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#3fb950;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Allowed</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>debit spreads / long-vol structures / small directional options</li><li>limited-risk only: spreads, ICs, long-premium structures</li></ul>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Avoid</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR naked short calls / plain covered calls; short calls only as protected or limited-risk structures</li><li>naked short vol; strangles/iron condors are watchlist only, not the main plan</li></ul>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Key Levels</div>
+    <table>
+      <tr><td style='text-align:left;color:#8b949e;'>Spot</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$159.89</td><td style='text-align:left;color:#8b949e;'>baseline</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX call wall</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$170</td><td style='text-align:left;color:#8b949e;'>resistance / squeeze trigger if broken</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX put wall</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$155</td><td style='text-align:left;color:#8b949e;'>support / downside amplification if broken</td></tr><tr><td style='text-align:left;color:#8b949e;'>Persistent call wall</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$170-$180</td><td style='text-align:left;color:#8b949e;'>structural volume resistance</td></tr><tr><td style='text-align:left;color:#8b949e;'>Persistent put wall</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$150-$155</td><td style='text-align:left;color:#8b949e;'>structural volume support</td></tr>
+    </table>
+  </div>
+</div>
+
+
 <div class="card" id="highlights">
   <h2 style="display:flex;align-items:center;gap:10px;">
-    <span>Today's Highlights</span>
-    <a href="#verdict" style="text-decoration:none;background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">STAND ASIDE</a>
+    <span>Signal Snapshot</span>
+    <a href="#verdict" style="text-decoration:none;background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">SHORT CALL LIMITED-RISK</a>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">Key changes since yesterday (5-second summary). See cards below for full charts.</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:4px 14px;">
-    <div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">💰</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Price</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">Spot $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $75.7K <span style="color:#f85149;font-size:11px;">(-2.43%)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">📊</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">IV / RV</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">ATM IV 60.5% <span style="color:#f85149;font-size:11px;">(-1.1pp)</span> &nbsp;·&nbsp; RV30 73.1% &nbsp;·&nbsp; NVRP 0.83x <span style="color:#8b949e;font-size:11px;">(flat)</span> &nbsp;·&nbsp; IV %ile 49 <span style="color:#3fb950;font-size:11px;">(+0)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">⚖️</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Skew</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">25Δ front <span style="color:#f85149;font-weight:600;">-0.5 pts</span> <span style="color:#3fb950;font-size:11px;">(+0.8pp)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">🧱</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">GEX walls</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;">Call <span style="color:#3fb950;font-weight:600;">$170</span> <span style="color:#8b949e;font-size:11px;">(was $180, -10)</span> &nbsp;·&nbsp; Put <span style="color:#f85149;font-weight:600;">$155</span> <span style="color:#8b949e;font-size:11px;">(was $160, -5)</span></div>
-    </div><div style="display:grid;grid-template-columns:24px 84px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <div style="text-align:center;font-size:14px;">📈</div>
-      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">OI movers</div>
-      <div style="font-size:13px;color:#e6edf3;line-height:1.5;"><span style="color:#3fb950;">Calls built</span> @ $170 <span style="color:#8b949e;font-size:11px;">(+42,127)</span> &nbsp;·&nbsp; <span style="color:#f85149;">Puts built</span> @ $162 <span style="color:#8b949e;font-size:11px;">(+6,581)</span></div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">Only the changes that can alter the plan.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">💰</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Price</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Spot $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $76.4K <span style="color:#3fb950;font-size:11px;">(+1.24%)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📊</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">IV / RV</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">14D IV 61.8% <span style="color:#f85149;font-size:11px;">(-1.0pp)</span> &nbsp;·&nbsp; RV30 73.1% &nbsp;·&nbsp; NVRP 0.85x <span style="color:#8b949e;font-size:11px;">(flat)</span> &nbsp;·&nbsp; local IV sample <span style="color:#d29922;font-weight:600;">n=29 insufficient</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">⚖️</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Skew</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">25Δ front <span style="color:#f85149;font-weight:600;">-0.5 pts</span> <span style="color:#3fb950;font-size:11px;">(+0.8pp)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">🧱</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">GEX walls</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Call <span style="color:#3fb950;font-weight:600;">$170</span> <span style="color:#8b949e;font-size:11px;">(was $180, -10)</span> &nbsp;·&nbsp; Put <span style="color:#f85149;font-weight:600;">$155</span> <span style="color:#8b949e;font-size:11px;">(was $160, -5)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📈</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">OI movers</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;"><span style="color:#3fb950;">Call OI up</span>  <span style="color:#8b949e;font-size:11px;">2026-05-29</span> @ $170 <span style="color:#8b949e;font-size:11px;">(+42,127)</span> &nbsp;·&nbsp; <span style="color:#f85149;">Put OI up</span>  <span style="color:#8b949e;font-size:11px;">2026-05-22</span> @ $162 <span style="color:#8b949e;font-size:11px;">(+6,581)</span></div>
     </div>
   </div>
   <div style="font-size:10px;color:#6e7681;margin-top:8px;">vs 2026-05-21</div>
 </div>
 
 
-<div class="card" id="verdict" style="border:1px solid #f8514940;">
+<div class="card" id="verdict" style="border:1px solid #d2992240;">
   <h2 style="display:flex;align-items:center;gap:10px;">
     <span>Rulebook Verdict</span>
-    <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">STAND ASIDE</span>
+    <span style="background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">SHORT CALL LIMITED-RISK</span>
   </h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:14px;line-height:1.6;">Today's gate check against the trading rulebook (E entry / S sizing / M management / V event). Each rule is independent: ✗ blocks / ⚠ defined-risk only / ✓ pass. The most restrictive status drives the aggregate verdict.</div>
-  <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">Gate result only; rule details are collapsed by default.</div>
+  <div style="padding:10px 12px;background:#d2992210;border-left:3px solid #d29922;border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:#d29922;font-weight:600;">2 rule(s) warn — no naked sells.</span> Use spreads / Iron Condors / debit structures; pause naked CSPs/CCs.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
+      <span style="color:#d29922;font-weight:700;font-size:14px;width:14px;text-align:center;">⚠</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E1</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Local 14D IV sample n=29 < 60</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
+      <span style="color:#d29922;font-weight:700;font-size:14px;width:14px;text-align:center;">⚠</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E5</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.21x (1.2-1.4)</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #3fb95044;border-radius:8px;padding:8px 10px;">
+      <span style="color:#3fb950;font-weight:700;font-size:14px;width:14px;text-align:center;">✓</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">V3</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 25%</span>
+    </div>
+  </div>
+  <details style="margin-top:10px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">Show rule details</summary>
+    <div style="margin-top:8px;background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
       <div style="font-size:18px;font-weight:600;color:#d29922;width:20px;text-align:center;">⚠</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E1</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">Premium-sell IV floor</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">IV %ile 49 (30-50) · 30 ≤ IV < 50 → defined-risk only (spreads/IC), no naked sells</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">Local 14D IV sample n=29 < 60 · Sample too small and NVRP<1; no short-vol edge, prefer limited-risk or long-vol structures</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
+      <div style="font-size:18px;font-weight:600;color:#d29922;width:20px;text-align:center;">⚠</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E5</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">MSTR short-call guardrail (mNAV)</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.22x < 1.4 · No MSTR short calls in any form (CC, naked, bear-call)</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.21x (1.2-1.4) · mNAV yellow zone; only limited-risk/protected short-call structures, no naked calls or plain CCs</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -163,13 +223,11 @@ th:first-child, td:first-child { text-align:left; }
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">V3</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">BTC volatility freeze</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 20% · Below freeze threshold</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 25% · Below freeze threshold</div>
       </div>
     </div>
-  </div>
-  <div style="margin-top:12px;padding:10px 14px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#f85149;font-weight:600;">1 rule(s) blocking.</span> MSTR short calls blocked (E5); defined-risk on other tickers still depends on E1.
-  </div>
+    </div>
+  </details>
   
 </div>
 
@@ -177,20 +235,20 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="btc">
   <h2>BTC Context (MSTR = BTC-levered proxy)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    MSTR's ~+1.98 beta to BTC means you must evaluate MSTR flow <b style="color:#e6edf3;">relative to BTC</b>. Bullish MSTR options on a flat-BTC day = premium (historically fades). BTC ripping but MSTR calm = discount (historically catches up).
+    MSTR's ~+1.93 beta to BTC means you must evaluate MSTR flow <b style="color:#e6edf3;">relative to BTC</b>. Bullish MSTR options on a flat-BTC day = premium (historically fades). BTC ripping but MSTR calm = discount (historically catches up).
   </div>
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">BTC-USD</div>
-      <div class="kpi-value">$75,652</div>
+      <div class="kpi-value">$76,424</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 24h</div>
-      <div class="kpi-value" style="color:#f85149;">▼ -2.43%</div>
+      <div class="kpi-value" style="color:#3fb950;">▲ +1.24%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 7d</div>
-      <div class="kpi-value" style="color:#f85149;">-4.32%</div>
+      <div class="kpi-value" style="color:#f85149;">-2.19%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">MSTR 24h</div>
@@ -198,16 +256,16 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div class="kpi">
       <div class="kpi-label">Correlation (10d)</div>
-      <div class="kpi-value">+0.94</div>
+      <div class="kpi-value">+0.93</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">MSTR β to BTC</div>
-      <div class="kpi-value">+1.98</div>
+      <div class="kpi-value">+1.93</div>
     </div>
   </div>
   
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>No MSTR/BTC divergence</b> — MSTR move is consistent with BTC move × beta. Options flow can be taken at face value without premium/discount overlay.</span>
+  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>MSTR trading at discount vs BTC-implied</b> — expected ~+2.4% based on β, actual -3.01% (residual -5.40%). Relative weakness; could be tax-loss selling, dilution, or idiosyncratic. Mean-reversion bias bullish if BTC holds.</span>
   </div>
 </div>
 
@@ -215,16 +273,16 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="mnav">
   <h2>mNAV (MSTR Premium to BTC NAV)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    EV-based premium MSTR trades at vs its BTC stash: <b style="color:#e6edf3;">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Cheap &lt; 1.2x · Normal 1.2–1.8x · Expensive &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.
+    EV-based premium MSTR trades at vs its BTC stash: <b style="color:#e6edf3;">(MarketCap + Debt + Pref − Cash) / BTC Reserve</b> (matches strategy.com's published mNAV). Near NAV &lt; 1.2x · Yellow zone 1.2–1.4x · Neutral 1.4–1.8x · Rich &gt; 1.8x. Historical range ~1.0–3.5x; troughs near 1.0 have marked accumulation zones, peaks &gt;2.5 marked distribution.
   </div>
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">mNAV</div>
-      <div class="kpi-value" style="color:#d29922;">1.22x</div>
+      <div class="kpi-value" style="color:#d29922;">1.21x</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Verdict</div>
-      <div class="kpi-value" style="color:#d29922;">Normal</div>
+      <div class="kpi-value" style="color:#d29922;">Yellow zone</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC Held</div>
@@ -232,7 +290,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC Reserve</div>
-      <div class="kpi-value">$63.8B</div>
+      <div class="kpi-value">$64.5B</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Enterprise Value</div>
@@ -243,37 +301,40 @@ th:first-child, td:first-child { text-align:left; }
       <div class="kpi-value">$56.2B</div>
     </div>
   </div>
-  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of 2026-05-18 · BTC $75,652 (from yfinance close) · source: strategy.com</div>
-</div>
-
-<!-- Zero-Crossing Alerts -->
-<div class="card">
-  <h2>Zero-Crossing Alerts (P/C Spread)</h2>
-  <div style="font-size:12px;color:#8b949e;margin-bottom:8px;">
-    Historical pattern: when delta-25 P/C IV spread breaks below zero, stock often near a local top within 1-3 weeks.
-  </div>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;"><span style="color:#8b949e;font-size:11px;margin-right:2px;">Current spread by bucket:</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FRONT</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+23.7</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2W</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-0.4</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">1M</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-0.7</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2M</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.3</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FAR</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.0</span></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;"><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FRONT</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +23.7</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-1.7 &rarr; <b style="color:#3fb950;">+23.8</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2W</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now -0.4</span></div><div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">no crossings in window</div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">1M</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now -0.7</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+0.8 &rarr; <b style="color:#f85149;">-0.7</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-21</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-0.2 &rarr; <b style="color:#3fb950;">+0.8</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+6.7 &rarr; <b style="color:#f85149;">-1.1</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-4.7 &rarr; <b style="color:#3fb950;">+6.7</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2M</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +0.3</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-21</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-2.3 &rarr; <b style="color:#3fb950;">+0.7</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+2.1 &rarr; <b style="color:#f85149;">-3.2</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-3.0 &rarr; <b style="color:#3fb950;">+2.1</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-12</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+4.4 &rarr; <b style="color:#f85149;">-2.3</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FAR</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +0.0</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-5.7 &rarr; <b style="color:#3fb950;">+0.0</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+2.0 &rarr; <b style="color:#f85149;">-4.3</b></span></div></div></div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of 2026-05-18 · BTC $76,424 (from yfinance close) · source: strategy.com</div>
 </div>
 
 <!-- P/C Spread Time Series (full width) -->
 <div class="card" id="spread">
-  <h2>Delta-25 Put/Call IV Spread (by expiration bucket)</h2>
+  <h2>Delta-25 Put/Call IV Skew: How to Use It</h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (speculative FOMO).
+    <b style="color:#e6edf3;">Spread = Put IV − Call IV</b> at delta-25 strikes. Positive = puts more expensive (normal hedging demand). Negative = calls more expensive (upside chase/squeeze demand).
   </div>
   <div style="font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
     <span style="color:#a8e6b8;"><span style="display:inline-block;width:14px;height:10px;background:#3fb95022;border:1px solid #3fb95055;vertical-align:middle;margin-right:4px;"></span><b>Safe zone</b> (spread &gt; 0) — puts cost more than calls, market pricing in downside risk = healthy</span>
-    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, investors chasing upside = top signal</span>
+    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>Danger zone</b> (spread &lt; 0) — calls cost more than puts, upside chase/squeeze demand elevated</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #e6edf3;vertical-align:middle;margin-right:4px;"></span>Zero line (threshold)</span>
     <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #8b949e;vertical-align:middle;margin-right:4px;"></span>Spot price (right axis)</span>
   </div>
   
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>Mixed</b> — 2/5 buckets negative (low -0.7). Call skew localized to shorter dates; longer-dated expirations still in safe zone.</span>
+  <div style="margin:10px 0 12px;border:1px solid #58a6ff44;background:#58a6ff0d;border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="color:#58a6ff;font-weight:650;font-size:14px;">Localized call skew</div>
+      <div style="color:#8b949e;font-size:12px;">2/5 buckets are negative, low -0.7 pts.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;">
+      <div style="background:#0d1117;border:1px solid #58a6ff33;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">Meaning</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">Only a local expiry zone shows chase demand; the whole curve is not extreme.</div></div>
+      <div style="background:#0d1117;border:1px solid #58a6ff33;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">How to use</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">Raise caution only for the affected expiries; keep other expiries under the main rules.</div></div>
+      <div style="background:#0d1117;border:1px solid #f8514933;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">Do not use as</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">Do not inflate a local anomaly into a whole-curve risk call.</div></div>
+    </div>
   </div>
+  <details style="margin:8px 0 12px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">Historical zero-crossing details</summary>
+    <div style="margin-top:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;"><span style="color:#8b949e;font-size:11px;margin-right:2px;">Current spread by bucket:</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FRONT</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+23.7</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2W</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-0.4</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f8514918;border:1px solid #f8514955;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">1M</span><span style="color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">-0.7</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2M</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.3</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FAR</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+0.0</span></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;"><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FRONT</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +23.7</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-1.7 &rarr; <b style="color:#3fb950;">+23.8</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2W</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now -0.4</span></div><div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">no crossings in window</div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">1M</span><span style="margin-left:auto;font-size:11px;color:#f85149;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now -0.7</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+0.8 &rarr; <b style="color:#f85149;">-0.7</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-21</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-0.2 &rarr; <b style="color:#3fb950;">+0.8</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+6.7 &rarr; <b style="color:#f85149;">-1.1</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-4.7 &rarr; <b style="color:#3fb950;">+6.7</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2M</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +0.3</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-21</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-2.3 &rarr; <b style="color:#3fb950;">+0.7</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+2.1 &rarr; <b style="color:#f85149;">-3.2</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-3.0 &rarr; <b style="color:#3fb950;">+2.1</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-12</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+4.4 &rarr; <b style="color:#f85149;">-2.3</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FAR</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">now +0.0</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-22</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-5.7 &rarr; <b style="color:#3fb950;">+0.0</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">05-19</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+2.0 &rarr; <b style="color:#f85149;">-4.3</b></span></div></div></div></div>
+  </details>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>Heavy put skew — 86th %ile</b> of 14-day history (current -0.5). Fear bid on puts; historically a lagging bottom signal.</span> <span style="color:#8b949e;font-size:11px;">· ⚠ only 14 days of history — percentile unreliable until n≥60</span>
+    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>Heavy put skew — 86th %ile</b> of 14-day history (current -0.5). Fear bid on puts; historically a lagging bottom signal.</span> <span style="color:#8b949e;font-size:11px;">· ⚠ only 14 days of history — do not use percentile in the verdict until n≥60</span>
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;" id="spreadLegend"></div>
   <div class="chart-wrap-tall"><canvas id="spreadChart"></canvas></div>
@@ -317,48 +378,119 @@ th:first-child, td:first-child { text-align:left; }
 
 <!-- IV + NVRP Trend -->
 <div class="card" id="iv">
-  <h2>ATM IV vs RV30 Trend</h2>
+  <h2>Historical 14D 50-Delta IV Trend (Variance Interpolated)</h2>
+  
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.6;">Uses listed-expiry IV from snapshots and interpolates total variance to approximate 14D 50-delta/ATM IV; until local history reaches two years, treat it as local history only.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">14D 50Δ/ATM IV</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">61.8%</div>
+      <div style="margin-top:3px;"><span style="color:#f85149;font-size:11px;">-1.0 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">RV30</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">73.1%</div>
+      <div style="margin-top:3px;"><span style="color:#3fb950;font-size:11px;">+0.8 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">NVRP</div>
+      <div style="font-size:20px;color:#f85149;font-weight:650;margin-top:4px;">0.85x</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">long-vol edge <span style="color:#8b949e;font-size:11px;">flat</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Local 14D IV %ile</div>
+      <div style="font-size:20px;color:#d29922;font-weight:650;margin-top:4px;">insufficient</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">local n=29; current 3.4% is reference only, not long-run IV percentile</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #3fb95044;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Term Structure</div>
+      <div style="font-size:20px;color:#3fb950;font-weight:650;margin-top:4px;">contango</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">Front−Far -3.3 pts</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">Local 14D IV range 61.8%–88.8%, median 73.7%</div>
   <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    <b style="color:#e6edf3;">NVRP = ATM IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.
+    <b style="color:#e6edf3;">NVRP = 14D IV / RV30.</b> The 1.3 threshold exists because sellers need ~30% cushion to cover bid-ask spread, gamma risk, and hedging error. &lt;1.0 = long-vol edge; 1.0-1.3 = marginal; &gt;1.3 = short-vol edge; &gt;1.5 = strong edge.
   </div>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>Long vol edge</b> — NVRP 0.83x below 1.0. IV (60.5%) cheaper than RV (73.1%) — options underpriced. Consider BUYING vol (straddles/calls/puts) not selling.</span> &nbsp;|&nbsp; IV %ile (2yr): <b>49</b>
+    <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>Long vol edge</b> — NVRP 0.85x below 1.0. IV (61.8%) cheaper than RV (73.1%) — options underpriced. Consider BUYING vol (straddles/calls/puts) not selling.</span> &nbsp;|&nbsp; local IV sample <b>n=29</b>, not used for verdict
   </div>
   <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
-</div>
-
-
-<div class="card" id="term">
-  <h2>IV Term Structure (ATM IV by DTE)</h2>
-  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;line-height:1.6;">
-    Slope across the IV curve. <b style="color:#3fb950;">Contango</b> (rising IV with DTE) = normal/complacent. <b style="color:#f85149;">Backwardation</b> (falling) = market pricing immediate event risk. Use Front−Far &gt;5 pts as stress threshold.
+  
+  <div style="margin-top:12px;background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;">
+      <div>
+        <div style="font-size:12px;color:#e6edf3;font-weight:650;">IV Term Structure</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:2px;">Auxiliary: helps identify front-end event premium and choose tenor.</div>
+      </div>
+      <div style="font-size:11px;color:#7ee787;font-weight:600;">✓ <b>Normal contango</b> — Front−Far -3.3 pts; healthy term structure.</div>
+    </div>
+    <div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>Front (≤7d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>60.5%</div><div><div style='height:10px;width:87%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>2W (8-14d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>60.7%</div><div><div style='height:10px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>1M (15-35d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>64.7%</div><div><div style='height:10px;width:94%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>2M (36-70d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>63.8%</div><div><div style='height:10px;width:92%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>Far (>70d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>68.8%</div><div><div style='height:10px;width:100%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div></div>
   </div>
-  <div style="margin:8px 0;padding:10px 12px;border-left:3px solid #7ee787;background:#7ee78711;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">✓</span><span style="color:#7ee787;"><b>Normal contango</b> — Front below Far (-3.3 pts). Healthy term structure; nothing imminent priced in.</span>
-  </div>
-  <div style="margin-top:10px;"><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>Front (≤7d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>60.5%</div><div><div style='height:14px;width:87%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>2W (8-14d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>60.7%</div><div><div style='height:14px;width:88%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>1M (15-35d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>64.7%</div><div><div style='height:14px;width:94%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>2M (36-70d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>63.8%</div><div><div style='height:14px;width:92%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:120px 70px 1fr;gap:10px;align-items:center;padding:3px 0;font-size:12px;'><div style='color:#e6edf3;font-weight:500;'>Far (>70d)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>68.8%</div><div><div style='height:14px;width:100%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div></div>
+
 </div>
 
 
 <div class="card" id="gex">
   <h2>Dealer Gamma Exposure (GEX) Walls</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
-    Strikes ranked by <b style="color:#e6edf3;">Σ (gamma × OI × 100)</b> across all expirations — measures where <b style="color:#e6edf3;">dealer hedging flow</b> concentrates. More accurate than volume-weighted walls for identifying actual resistance/support.
-    Net GEX: <b style="color:#f85149;">$-2.18B</b> (call $+18.09B + put $-20.27B).
+    GEX estimates where dealers are most likely to buy or sell stock while hedging option gamma. Use it as intraday support/resistance and acceleration-risk context, not a directional forecast.
+    <br>Net GEX: <b style="color:#f85149;">$-2.18B</b> (call $+18.09B + put $-20.27B).
   </div>
-  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>Dealers net short gamma</b> — moves get <b>amplified</b>. Breakouts become squeezes, breakdowns become crashes. <b>Dangerous for premium selling</b>; consider straddles/long-vol. Spot crossing a major wall triggers mechanical hedging (chase rally / panic dump).</span>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0;">
+    
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f8514918;color:#f85149;font-weight:800;font-size:15px;">G</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Net Gamma Regime</div>
+          <div style="font-size:18px;color:#f85149;font-weight:650;margin-top:2px;">Short Gamma</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;"><b>Dealers net short gamma</b> — moves tend to amplify; breakouts can squeeze and breakdowns can accelerate. Naked short-vol risk is high.</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #3fb95044;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#3fb95018;color:#3fb950;font-weight:800;font-size:15px;">↑</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Upside Call Wall</div>
+          <div style="font-size:18px;color:#3fb950;font-weight:650;margin-top:2px;">$170</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">Nearest upside wall $170, 6.3% from spot. Treat as resistance first; a clean break can force dealer chase-buying and squeeze.</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f8514918;color:#f85149;font-weight:800;font-size:15px;">↓</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Downside Put Wall</div>
+          <div style="font-size:18px;color:#f85149;font-weight:650;margin-top:2px;">$155</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">Nearest downside wall $155, 3.1% from spot. Treat as support first; a clean break can amplify downside hedging flow.</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #58a6ff44;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#58a6ff18;color:#58a6ff;font-weight:800;font-size:15px;">↔</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Trading Use</div>
+          <div style="font-size:18px;color:#58a6ff;font-weight:650;margin-top:2px;">Plan</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">Do not treat walls as a stable range; when a wall breaks, prioritize acceleration risk and defined-risk or long-vol structures.</div>
+    </div>
   </div>
   <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">GEX Ladder</div>
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
-      <span>Strike · OTM</span><span style="color:#3fb950;">▲ CALL WALLS (resistance)</span><span>GEX</span>
+      <span>Strike · OTM</span><span style="color:#3fb950;">↑ Upside resistance / breakout trigger</span><span>GEX</span>
     </div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$180</span><span style="color:#8b949e;font-size:11px;">+12.6%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:95.8%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+3.17B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$178</span><span style="color:#8b949e;font-size:11px;">+11.0%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:53.5%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+1.77B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$172</span><span style="color:#8b949e;font-size:11px;">+7.9%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:29.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+968.0M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$170</span><span style="color:#8b949e;font-size:11px;">+6.3%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:100.0%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+3.31B</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$160</span><span style="color:#8b949e;font-size:11px;">+0.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:79.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+2.62B</span></div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;background:#e6edf308;"><span style="color:#e6edf3;font-weight:600;font-size:12px;">$159.89</span><span style="color:#8b949e;font-size:10px;">Spot</span><div></div><div></div></div>
     <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$158</span><span style="color:#8b949e;font-size:11px;">−1.5%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:19.5%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-645.2M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$155</span><span style="color:#8b949e;font-size:11px;">−3.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:27.7%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-916.9M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$152</span><span style="color:#8b949e;font-size:11px;">−4.6%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:8.5%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-282.1M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$150</span><span style="color:#8b949e;font-size:11px;">−6.2%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:18.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-609.3M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$130</span><span style="color:#8b949e;font-size:11px;">−18.7%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:8.5%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-280.5M</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
-      <span>&nbsp;</span><span style="color:#f85149;">▼ PUT WALLS (support)</span><span>&nbsp;</span>
+      <span>&nbsp;</span><span style="color:#f85149;">↓ Downside support / breakdown trigger</span><span>&nbsp;</span>
     </div>
   </div>
   <details style="font-size:11px;color:#8b949e;margin-top:10px;">
@@ -393,7 +525,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="oidelta">
   <h2>OI Delta by Strike (yesterday → today, per expiry)</h2>
   <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
-    Net OI change at each strike between 2026-05-21 and 2026-05-22. <b style="color:#3fb950;">Green up</b> = call OI built (new opens, bullish positioning). <b style="color:#3fb950;">Green down</b> = call OI unwound (closes / expirations). Same logic for <b style="color:#f85149;">put</b> bars. <b>Roll detection:</b> simultaneous unwind at low strikes + build at higher strikes = positions rolled up.
+    Net OI change at each strike between 2026-05-21 and 2026-05-22. <b style="color:#3fb950;">Green up</b> = call OI increased; direction is unconfirmed without trade prints. <b style="color:#3fb950;">Green down</b> = call OI decreased. Same logic for <b style="color:#f85149;">put</b> bars. <b>Roll detection:</b> simultaneous decrease at low strikes + increase at higher strikes = possible roll-up.
   </div>
   <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
     <label style="font-size:12px;color:#8b949e;">Expiry:</label>
@@ -418,7 +550,7 @@ th:first-child, td:first-child { text-align:left; }
     
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px;">
       <span style="padding:4px 9px;background:#3fb95022;border:1px solid #3fb95055;border-radius:6px;color:#e6edf3;">
-        OTM Call (&gt;spot) <b style="color:#3fb950;">-81,556</b> <span style="color:#8b949e;">upside bets</span>
+        OTM Call (&gt;spot) <b style="color:#3fb950;">-81,556</b> <span style="color:#8b949e;">upside OI</span>
       </span>
       <span style="padding:4px 9px;background:#d2992222;border:1px solid #d2992255;border-radius:6px;color:#e6edf3;">
         ITM Call (&lt;spot) <b style="color:#d29922;">-44</b> <span style="color:#8b949e;">often covered-call writing</span>
@@ -443,14 +575,14 @@ th:first-child, td:first-child { text-align:left; }
       <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
         OI Delta = <b>net new contracts created</b> between snapshots (buyers + sellers both open). The headline total is misleading — <b>where the OI lands matters more than the total</b>.
         <br><br>
-        <b style="color:#3fb950;">OTM Call (above spot)</b> = directional upside bets. Retail FOMO or institutional call buying.
+        <b style="color:#3fb950;">OTM Call (above spot)</b> = call OI increased above spot. Direction is unconfirmed without trade prints; read alongside price and volume.
         <br><b style="color:#d29922;">ITM Call (below spot)</b> = usually <b>covered-call writers</b> locking gains on existing stock. Increases OI but is <b>not bullish</b> — it's profit-taking.
         <br><b style="color:#f85149;">OTM Put (below spot)</b> = downside bets or portfolio hedges.
         <br><b style="color:#f85149;">Deep OTM Put (&lt;-15% spot)</b> = systematic tail insurance. Only bought by institutions/macro funds. When this surges, <b>smart money is nervous</b>.
         <br><br>
         <b>Classic patterns:</b>
-        <br>• <b>Pure bullish:</b> OTM calls dominate, puts quiet → clean upside conviction
-        <br>• <b>Pure bearish:</b> OTM puts dominate, calls quiet → clean downside conviction
+        <br>• <b>Bullish candidate:</b> OTM call OI expands while puts stay quiet, especially if price/volume confirm
+        <br>• <b>Bearish/hedge candidate:</b> OTM put OI expands while calls stay quiet, especially if price/volume confirm
         <br>• <b>"Seatbelt on":</b> ITM calls + deep OTM puts both swell → institutions taking profit + hedging = late-bull warning
         <br>• <b>Rotation:</b> ITM calls closing (OI drops) + OTM calls opening (OI rises) → long positions being rolled up after a rally
       </div>
@@ -496,7 +628,7 @@ th:first-child, td:first-child { text-align:left; }
         <br><b style="color:#f85149;">Put Wall</b> — OTM put strike (3–15% below spot) with highest score. Dealers short these puts → auto-buy on dips near strike → support.
         <br><br><b>Sweet spot: 3–10% OTM</b>. Too close = magnet (gets crossed). Too far = lottery / breakout target, not active resistance.
         <br><b>Strength:</b> 85%+ persistence = <span style="color:#3fb950;">strong (structural)</span>, 65–85% = <span style="color:#d29922;">moderate</span>, 50–65% = <span style="color:#8b949e;">weak</span>.
-        <br><b>Trade rules:</b> Sell CC at call wall · Sell CSP at put wall · Don't buy lottos above call wall · Watch wall migration (up = bullish re-rating, down = top signal, thinning = resistance weakening).
+        <br><b>Trade rules:</b> Use walls as levels first. Short-vol structures require Playbook and Rulebook approval. Watch wall migration (up = bullish re-rating, down = top risk, thinning = resistance fading).
         <br><b>⚠️ Asymmetry warning:</b> Dense call ladder + thin put side = late-bull euphoria (no hedging demand, market complacent).
       </div>
     </details>
@@ -679,16 +811,16 @@ function initCharts() {
     }]
   });
 
-  // IV + NVRP Chart
-  const ivDates = ["2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22"];
+  // Historical 14D IV + underlying close chart
+  const ivDates = ["2026-04-15", "2026-04-16", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22"];
   new Chart(document.getElementById('ivChart'), {
     type: 'line',
     data: {
       labels: ivDates,
       datasets: [
-        { label: 'ATM IV', data: [76.3, 72.0, 71.9, 72.8, 68.5, 72.4, 70.2, 66.0, 61.6, 60.5], borderColor: '#3fb950', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' },
-        { label: 'RV30', data: [66.7, 68.5, 69.8, 70.1, 71.8, 73.3, 72.5, 72.1, 72.2, 73.1], borderColor: '#58a6ff', borderWidth: 2, pointRadius: 3, tension: 0, yAxisID: 'y' },
-        { label: 'NVRP', data: [1.15, 1.05, 1.03, 1.04, 0.95, 0.99, 0.97, 0.91, 0.85, 0.83], borderColor: '#d29922', borderWidth: 2, pointRadius: 3, tension: 0, borderDash: [4,4], yAxisID: 'y1' }
+        { label: '14D 50Δ IV', data: [69.3, 70.1, 84.4, 88.8, 84.4, 84.1, 85.6, 80.1, 78.6, 81.7, 78.8, 75.6, 75.6, 73.7, 80.2, 78.5, 71.1, 67.3, 68.6, 73.5, 70.1, 67.8, 66.9, 65.7, 74.1, 69.3, 68.0, 62.7, 61.8], borderColor: '#f2cc60', borderWidth: 2.5, pointRadius: 2, tension: 0.15, yAxisID: 'y' },
+        { label: 'RV30', data: [62.1, 55.4, 63.2, 63.2, 61.5, 62.3, 67.2, 68.5, 68.6, 68.7, 67.6, 69.0, 67.0, 69.2, 69.1, 69.1, 68.8, 70.1, 68.9, 66.7, 68.5, 69.8, 70.1, 71.8, 73.3, 72.5, 72.1, 72.2, 73.1], borderColor: '#58a6ff', borderWidth: 1.5, pointRadius: 2, tension: 0.15, borderDash: [4,4], yAxisID: 'y' },
+        { label: 'Underlying Close', data: [143.54, 148.94, 166.52, 166.52, 170.81, 163.97, 179.36, 172.47, 171.02, 169.2, 165.71, 158.19, 165.45, 177.17, 183.8, 186.9, 186.82, 179.84, 187.59, 195.94, 184.42, 178.03, 186.97, 177.42, 166.63, 164.63, 165.81, 164.85, 159.89], borderColor: '#8b949e', borderWidth: 1.5, pointRadius: 0, tension: 0.15, borderDash: [6,3], yAxisID: 'yPrice' }
       ]
     },
     options: {
@@ -698,39 +830,11 @@ function initCharts() {
       plugins: { legend: { position: 'top', labels: { color: '#8b949e', font: { size: 11 } } } },
       scales: {
         x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } },
-        y: { position: 'left', ticks: { color: '#8b949e' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'IV / RV (%)', color: '#8b949e' } },
-        y1: { position: 'right', ticks: { color: '#d29922' }, grid: { display: false }, title: { display: true, text: 'NVRP', color: '#d29922' } }
+        y: { position: 'left', ticks: { color: '#8b949e', callback: v => v.toFixed(0) + '%' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: '14D IV / RV30 (%)', color: '#8b949e' } },
+        yPrice: { position: 'right', ticks: { color: '#8b949e', callback: v => '$' + v }, grid: { display: false }, title: { display: true, text: 'Underlying Close ($)', color: '#8b949e' } }
       }
     },
     plugins: [{
-      // NVRP threshold reference lines (1.3 edge, 1.0 break-even)
-      beforeDatasetsDraw(chart) {
-        const y1 = chart.scales.y1;
-        if (!y1) return;
-        const ctx = chart.ctx;
-        const area = chart.chartArea;
-        ctx.save();
-        [[1.3, '#d29922', 'edge 1.3'], [1.0, '#8b949e', 'breakeven 1.0']].forEach(([v, col, lbl]) => {
-          const y = y1.getPixelForValue(v);
-          if (y < area.top || y > area.bottom) return;
-          ctx.strokeStyle = col;
-          ctx.globalAlpha = 0.35;
-          ctx.lineWidth = 1;
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(area.left, y);
-          ctx.lineTo(area.right, y);
-          ctx.stroke();
-          ctx.globalAlpha = 0.7;
-          ctx.setLineDash([]);
-          ctx.fillStyle = col;
-          ctx.font = '500 10px -apple-system,sans-serif';
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(lbl, area.right - 4, y - 8);
-        });
-        ctx.restore();
-      },
       // End-anchored labels with anti-overlap
       afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
@@ -746,7 +850,7 @@ function initCharts() {
           if (lastIdx < 0) return;
           const pt = meta.data[lastIdx];
           const val = ds.data[lastIdx];
-          const fmt = ds.label === 'NVRP' ? val.toFixed(2) : val.toFixed(1) + '%';
+          const fmt = ds.label === 'Underlying Close' ? '$' + val.toFixed(0) : val.toFixed(1) + '%';
           labels.push({ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: fmt });
         });
         labels.sort((a, b) => a.y - b.y);
