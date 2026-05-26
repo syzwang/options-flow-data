@@ -1407,6 +1407,13 @@ def generate_html(ticker, trend_data, output_path, mode='auto', lang='en'):
     report_date = m.group(1) if m else datetime.now().strftime('%Y-%m-%d')
     is_zh = (lang == 'zh')
     lang_suffix = '_zh' if lang == 'zh' else ''
+    data_date = trend_data.get('date') or report_date
+    generated_at = datetime.now().strftime('%Y-%m-%d %H:%M')
+    freshness_label = (
+        f"{trend_data['num_snapshots']} 个 snapshot | 数据至 {data_date} | 生成 {generated_at}"
+        if is_zh
+        else f"{trend_data['num_snapshots']} snapshots | data through {data_date} | generated {generated_at}"
+    )
     if is_zh:
         nav_lbl_kpi, nav_lbl_skew, nav_lbl_term, nav_lbl_walls = '概览', '偏度', '期限', '墙'
         nav_lbl_verdict = '裁定'
@@ -3614,7 +3621,7 @@ th:first-child, td:first-child {{ text-align:left; }}
 <div class="header">
   <h1>{ticker} Flow Trend Analysis</h1>
   <span class="badge" style="background:{skew_color}22;color:{skew_color};border:1px solid {skew_color};">{skew_level.replace('_',' ')}</span>
-  <span style="color:#8b949e;font-size:13px;">{num_snapshots} snapshots | {datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
+  <span style="color:#8b949e;font-size:13px;">{freshness_label}</span>
 </div>
 
 <!-- KPI Row -->

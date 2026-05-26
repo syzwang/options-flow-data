@@ -69,7 +69,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>MSTR Flow Trend Analysis</h1>
   <span class="badge" style="background:#d2992222;color:#d29922;border:1px solid #d29922;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 2026-05-23 15:41</span>
+  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 数据至 2026-05-22 | 生成 2026-05-25 23:03</span>
 </div>
 
 <!-- KPI Row -->
@@ -118,7 +118,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
       <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">禁止</div>
-      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR 裸 short call / 普通 covered call；短 Call 只做限亏或有保护结构</li><li>裸卖波动率；卖勒式/铁鹰只可观察，不作为主计划</li></ul>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR covered call / 裸 short call / 熊 call 价差</li><li>裸卖波动率；卖勒式/铁鹰只可观察，不作为主计划</li></ul>
     </div>
   </div>
   <div style="margin-top:12px;">
@@ -133,7 +133,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="highlights">
   <h2 style="display:flex;align-items:center;gap:10px;">
     <span>今日速览</span>
-    <a href="#verdict" style="text-decoration:none;background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">短 CALL 限亏</a>
+    <a href="#verdict" style="text-decoration:none;background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">禁短 CALL</a>
   </h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只保留会改变计划的核心变化。</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
@@ -142,7 +142,7 @@ th:first-child, td:first-child { text-align:left; }
         <span style="font-size:13px;">💰</span>
         <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">价格</span>
       </div>
-      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">现价 $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $76.4K <span style="color:#3fb950;font-size:11px;">(+1.26%)</span></div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">现价 $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $76.8K <span style="color:#f85149;font-size:11px;">(-0.25%)</span></div>
     </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
         <span style="font-size:13px;">📊</span>
@@ -173,14 +173,14 @@ th:first-child, td:first-child { text-align:left; }
 </div>
 
 
-<div class="card" id="verdict" style="border:1px solid #d2992240;">
+<div class="card" id="verdict" style="border:1px solid #f8514940;">
   <h2 style="display:flex;align-items:center;gap:10px;">
     <span>规则裁定</span>
-    <span style="background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">短 CALL 限亏</span>
+    <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">禁短 CALL</span>
   </h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只显示闸门结果；细则默认折叠。</div>
-  <div style="padding:10px 12px;background:#d2992210;border-left:3px solid #d29922;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#d29922;font-weight:600;">2 条规则警告 — 不开裸卖.</span> 用价差 / Iron Condor / 借方结构；裸 CSP/CC 暂停.
+  <div style="padding:10px 12px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:#f85149;font-weight:600;">1 条规则阻塞.</span> MSTR 短 Call 阻塞（E5）；其它 ticker 的限亏价差仍可视 E1 而定.
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
     <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
@@ -188,15 +188,15 @@ th:first-child, td:first-child { text-align:left; }
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">E1</span>
       <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">本地 14D IV 样本 n=29 < 60</span>
     </div>
-    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
-      <span style="color:#d29922;font-weight:700;font-size:14px;width:14px;text-align:center;">⚠</span>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:8px 10px;">
+      <span style="color:#f85149;font-weight:700;font-size:14px;width:14px;text-align:center;">✗</span>
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">E5</span>
-      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.20x (1.2-1.4)</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.20x < 1.2</span>
     </div>
     <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #3fb95044;border-radius:8px;padding:8px 10px;">
       <span style="color:#3fb950;font-weight:700;font-size:14px;width:14px;text-align:center;">✓</span>
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">V3</span>
-      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 25%</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 26%</span>
     </div>
   </div>
   <details style="margin-top:10px;font-size:11px;color:#8b949e;">
@@ -211,11 +211,11 @@ th:first-child, td:first-child { text-align:left; }
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div style="font-size:18px;font-weight:600;color:#d29922;width:20px;text-align:center;">⚠</div>
+      <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E5</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">MSTR 短 Call 守护（mNAV）</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.20x (1.2-1.4) · mNAV 黄区；只允许限亏/有保护的短 Call，不做裸卖或普通 CC</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.20x < 1.2 · mNAV 接近净值；不开任何 MSTR 短 Call（CC / 裸卖 / 熊 call 价差）</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -223,7 +223,7 @@ th:first-child, td:first-child { text-align:left; }
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">V3</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">BTC 波动率冻结</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 25% · 低于冻结阈值</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 26% · 低于冻结阈值</div>
       </div>
     </div>
     </div>
@@ -240,15 +240,15 @@ th:first-child, td:first-child { text-align:left; }
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">BTC-USD</div>
-      <div class="kpi-value">$76,438</div>
+      <div class="kpi-value">$76,792</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 24小时</div>
-      <div class="kpi-value" style="color:#3fb950;">▲ +1.26%</div>
+      <div class="kpi-value" style="color:#f85149;">▼ -0.25%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 7日</div>
-      <div class="kpi-value" style="color:#f85149;">-2.17%</div>
+      <div class="kpi-value" style="color:#f85149;">-0.21%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">MSTR 24小时</div>
@@ -265,7 +265,7 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>MSTR 相对 BTC 隐含价折价</b> — 按 β 预期约 +2.4%，实际 -3.01%（残差 -5.43%). 相对弱势；可能是 tax-loss 抛售、稀释或公司特殊因素。BTC 企稳则均值回归偏多。</span>
+    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>MSTR 相对 BTC 隐含价折价</b> — 按 β 预期约 -0.5%，实际 -3.01%（残差 -2.54%). 相对弱势；可能是 tax-loss 抛售、稀释或公司特殊因素。BTC 企稳则均值回归偏多。</span>
   </div>
 </div>
 
@@ -278,11 +278,11 @@ th:first-child, td:first-child { text-align:left; }
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">mNAV</div>
-      <div class="kpi-value" style="color:#d29922;">1.20x</div>
+      <div class="kpi-value" style="color:#3fb950;">1.20x</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">判定</div>
-      <div class="kpi-value" style="color:#d29922;">黄区</div>
+      <div class="kpi-value" style="color:#3fb950;">接近净值</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 持仓</div>
@@ -290,7 +290,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 储备价值</div>
-      <div class="kpi-value">$64.5B</div>
+      <div class="kpi-value">$64.8B</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">企业价值</div>
@@ -301,7 +301,7 @@ th:first-child, td:first-child { text-align:left; }
       <div class="kpi-value">$56.2B</div>
     </div>
   </div>
-  <div style="font-size:11px;color:#6e7681;margin-top:6px;">持仓数据日期 2026-05-18 · BTC $76,438 （yfinance 收盘价） · 数据来源：strategy.com</div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">持仓数据日期 2026-05-18 · BTC $76,792 （yfinance 收盘价） · 数据来源：strategy.com</div>
 </div>
 
 <!-- P/C Spread Time Series (full width) -->

@@ -10,6 +10,10 @@ Saves: ~/options_portfolio/flow_snapshots/YYYY-MM-DD-TICKER.json
 """
 import os, sys, json, warnings, subprocess
 from datetime import datetime
+try:
+    from zoneinfo import ZoneInfo
+except Exception:
+    ZoneInfo = None
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "yfinance", "numpy", "pandas", "scipy"])
 
 import yfinance as yf
@@ -20,6 +24,23 @@ warnings.filterwarnings('ignore')
 
 SNAPSHOT_DIR = os.environ.get('FLOW_SNAPSHOT_DIR') or os.path.expanduser("~/options_portfolio/flow_snapshots")
 os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+
+
+class MarketClosedError(Exception):
+    """Raised when the latest market bar is not for the current US trading date."""
+
+
+def market_today():
+    if ZoneInfo:
+        return datetime.now(ZoneInfo('America/New_York')).date()
+    return datetime.now().date()
+
+
+def latest_market_date(ticker):
+    h = ticker.history(period='10d', interval='1d', auto_adjust=False)
+    if h.empty:
+        return None
+    return pd.Timestamp(h.index[-1]).date()
 
 
 def bs(S, K, T, r, sig, opt):
@@ -84,6 +105,15 @@ def market_context():
 
 def snapshot(sym):
     t = yf.Ticker(sym)
+    today = market_today()
+    session_date = latest_market_date(t)
+    if session_date and session_date != today:
+        raise MarketClosedError(
+            f"latest {sym} market session is {session_date}, not {today}; "
+            "US market is likely closed or data has not updated"
+        )
+    as_of_date = session_date or today
+
     try: spot = float(t.info.get('currentPrice') or t.history(period='1d')['Close'].iloc[-1])
     except: spot = float(t.history(period='1d')['Close'].iloc[-1])
 
@@ -96,7 +126,7 @@ def snapshot(sym):
         try:
             ch = t.option_chain(exp)
             c, p = ch.calls.copy(), ch.puts.copy()
-            dte = max((pd.to_datetime(exp) - pd.Timestamp.now()).days, 0)
+            dte = max((pd.to_datetime(exp).date() - as_of_date).days, 0)
             T = max(dte, 1) / 365.0
 
             # Back-compute IV from lastPrice
@@ -212,7 +242,7 @@ def snapshot(sym):
     return {
         'ticker': sym,
         'timestamp': datetime.now().isoformat(),
-        'date': datetime.now().strftime('%Y-%m-%d'),
+        'date': as_of_date.isoformat(),
         'spot': spot,
         'rv30': cur_rv,
         'rv30_pct_2yr': rv30_pct_2yr,
@@ -225,15 +255,17 @@ def snapshot(sym):
 
 def main():
     tickers = sys.argv[1:] if len(sys.argv) > 1 else ['MSTR', 'TSLA']
-    date = datetime.now().strftime('%Y-%m-%d')
+    written = 0
 
     for sym in tickers:
         print(f"snapshot {sym}...")
         try:
             data = snapshot(sym)
+            date = data['date']
             path = os.path.join(SNAPSHOT_DIR, f"{date}-{sym}.json")
             with open(path, 'w') as f:
                 json.dump(data, f, default=str)
+            written += 1
             print(f"  -> {path}")
             print(f"  spot={data['spot']:.2f}  RV30={data['rv30']:.1f}%  RV30%ile={data.get('rv30_pct_2yr', 0):.0f}")
             if data['term']:
@@ -248,10 +280,15 @@ def main():
                 vix3m_str = f"  VIX3M={ctx['vix3m']:.1f}" if 'vix3m' in ctx else ''
                 term_str = f"  term={ctx['vix_term']}" if 'vix_term' in ctx else ''
                 print(f"  VIX={ctx['vix']:.1f}{vix3m_str}{term_str}")
+        except MarketClosedError as e:
+            print(f"  SKIP {sym}: {e}")
         except Exception as e:
             print(f"  ERR {sym}: {e}")
 
-    print(f"\nAll snapshots saved to {SNAPSHOT_DIR}")
+    if written:
+        print(f"\n{written} snapshot(s) saved to {SNAPSHOT_DIR}")
+    else:
+        print(f"\nNo fresh market snapshots saved to {SNAPSHOT_DIR}")
 
 
 if __name__ == '__main__':

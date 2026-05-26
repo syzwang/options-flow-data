@@ -69,7 +69,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="header">
   <h1>MSTR Flow Trend Analysis</h1>
   <span class="badge" style="background:#d2992222;color:#d29922;border:1px solid #d29922;">CALL SKEW</span>
-  <span style="color:#8b949e;font-size:13px;">10 snapshots | 2026-05-23 15:41</span>
+  <span style="color:#8b949e;font-size:13px;">10 snapshots | data through 2026-05-22 | generated 2026-05-25 23:03</span>
 </div>
 
 <!-- KPI Row -->
@@ -118,7 +118,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
       <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Avoid</div>
-      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR naked short calls / plain covered calls; short calls only as protected or limited-risk structures</li><li>naked short vol; strangles/iron condors are watchlist only, not the main plan</li></ul>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR covered calls / naked short calls / bear-call spreads</li><li>naked short vol; strangles/iron condors are watchlist only, not the main plan</li></ul>
     </div>
   </div>
   <div style="margin-top:12px;">
@@ -133,7 +133,7 @@ th:first-child, td:first-child { text-align:left; }
 <div class="card" id="highlights">
   <h2 style="display:flex;align-items:center;gap:10px;">
     <span>Signal Snapshot</span>
-    <a href="#verdict" style="text-decoration:none;background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">SHORT CALL LIMITED-RISK</a>
+    <a href="#verdict" style="text-decoration:none;background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">NO SHORT CALLS</a>
   </h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">Only the changes that can alter the plan.</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
@@ -142,7 +142,7 @@ th:first-child, td:first-child { text-align:left; }
         <span style="font-size:13px;">💰</span>
         <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">Price</span>
       </div>
-      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Spot $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $76.4K <span style="color:#3fb950;font-size:11px;">(+1.24%)</span></div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Spot $159.89 <span style="color:#f85149;font-size:11px;">(-3.01%)</span> &nbsp;·&nbsp; BTC $76.8K <span style="color:#f85149;font-size:11px;">(-0.26%)</span></div>
     </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
         <span style="font-size:13px;">📊</span>
@@ -173,14 +173,14 @@ th:first-child, td:first-child { text-align:left; }
 </div>
 
 
-<div class="card" id="verdict" style="border:1px solid #d2992240;">
+<div class="card" id="verdict" style="border:1px solid #f8514940;">
   <h2 style="display:flex;align-items:center;gap:10px;">
     <span>Rulebook Verdict</span>
-    <span style="background:#d2992222;color:#d29922;border:1px solid #d29922;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">SHORT CALL LIMITED-RISK</span>
+    <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">NO SHORT CALLS</span>
   </h2>
   <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">Gate result only; rule details are collapsed by default.</div>
-  <div style="padding:10px 12px;background:#d2992210;border-left:3px solid #d29922;border-radius:6px;font-size:12px;color:#e6edf3;">
-    <span style="color:#d29922;font-weight:600;">2 rule(s) warn — no naked sells.</span> Use spreads / Iron Condors / debit structures; pause naked CSPs/CCs.
+  <div style="padding:10px 12px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:#f85149;font-weight:600;">1 rule(s) blocking.</span> MSTR short calls blocked (E5); limited-risk structures on other tickers still depend on E1.
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
     <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
@@ -188,15 +188,15 @@ th:first-child, td:first-child { text-align:left; }
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">E1</span>
       <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Local 14D IV sample n=29 < 60</span>
     </div>
-    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:8px 10px;">
-      <span style="color:#d29922;font-weight:700;font-size:14px;width:14px;text-align:center;">⚠</span>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:8px 10px;">
+      <span style="color:#f85149;font-weight:700;font-size:14px;width:14px;text-align:center;">✗</span>
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">E5</span>
-      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.21x (1.2-1.4)</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.20x < 1.2</span>
     </div>
     <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #3fb95044;border-radius:8px;padding:8px 10px;">
       <span style="color:#3fb950;font-weight:700;font-size:14px;width:14px;text-align:center;">✓</span>
       <span style="color:#e6edf3;font-weight:600;font-size:12px;">V3</span>
-      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 25%</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 26%</span>
     </div>
   </div>
   <details style="margin-top:10px;font-size:11px;color:#8b949e;">
@@ -211,11 +211,11 @@ th:first-child, td:first-child { text-align:left; }
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
-      <div style="font-size:18px;font-weight:600;color:#d29922;width:20px;text-align:center;">⚠</div>
+      <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E5</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">MSTR short-call guardrail (mNAV)</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.21x (1.2-1.4) · mNAV yellow zone; only limited-risk/protected short-call structures, no naked calls or plain CCs</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.20x < 1.2 · mNAV near NAV; no MSTR short calls in any form (CC, naked, bear-call)</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -223,7 +223,7 @@ th:first-child, td:first-child { text-align:left; }
       <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">V3</div>
       <div style="flex:1;">
         <div style="font-size:13px;color:#e6edf3;">BTC volatility freeze</div>
-        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 25% · Below freeze threshold</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 26% · Below freeze threshold</div>
       </div>
     </div>
     </div>
@@ -240,15 +240,15 @@ th:first-child, td:first-child { text-align:left; }
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">BTC-USD</div>
-      <div class="kpi-value">$76,424</div>
+      <div class="kpi-value">$76,778</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 24h</div>
-      <div class="kpi-value" style="color:#3fb950;">▲ +1.24%</div>
+      <div class="kpi-value" style="color:#f85149;">▼ -0.26%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC 7d</div>
-      <div class="kpi-value" style="color:#f85149;">-2.19%</div>
+      <div class="kpi-value" style="color:#f85149;">-0.23%</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">MSTR 24h</div>
@@ -265,7 +265,7 @@ th:first-child, td:first-child { text-align:left; }
   </div>
   
   <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
-    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>MSTR trading at discount vs BTC-implied</b> — expected ~+2.4% based on β, actual -3.01% (residual -5.40%). Relative weakness; could be tax-loss selling, dilution, or idiosyncratic. Mean-reversion bias bullish if BTC holds.</span>
+    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>MSTR trading at discount vs BTC-implied</b> — expected ~-0.5% based on β, actual -3.01% (residual -2.50%). Relative weakness; could be tax-loss selling, dilution, or idiosyncratic. Mean-reversion bias bullish if BTC holds.</span>
   </div>
 </div>
 
@@ -278,11 +278,11 @@ th:first-child, td:first-child { text-align:left; }
   <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
     <div class="kpi">
       <div class="kpi-label">mNAV</div>
-      <div class="kpi-value" style="color:#d29922;">1.21x</div>
+      <div class="kpi-value" style="color:#3fb950;">1.20x</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Verdict</div>
-      <div class="kpi-value" style="color:#d29922;">Yellow zone</div>
+      <div class="kpi-value" style="color:#3fb950;">Near NAV</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC Held</div>
@@ -290,7 +290,7 @@ th:first-child, td:first-child { text-align:left; }
     </div>
     <div class="kpi">
       <div class="kpi-label">BTC Reserve</div>
-      <div class="kpi-value">$64.5B</div>
+      <div class="kpi-value">$64.8B</div>
     </div>
     <div class="kpi">
       <div class="kpi-label">Enterprise Value</div>
@@ -301,7 +301,7 @@ th:first-child, td:first-child { text-align:left; }
       <div class="kpi-value">$56.2B</div>
     </div>
   </div>
-  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of 2026-05-18 · BTC $76,424 (from yfinance close) · source: strategy.com</div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">Holdings as of 2026-05-18 · BTC $76,778 (from yfinance close) · source: strategy.com</div>
 </div>
 
 <!-- P/C Spread Time Series (full width) -->
