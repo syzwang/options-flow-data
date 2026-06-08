@@ -1,10 +1,10 @@
 {
-  "btc_holdings": 843706,
-  "as_of_date": "2026-06-01",
-  "basic_shares_outstanding": 352527000,
+  "btc_holdings": 845256,
+  "as_of_date": "2026-06-08",
+  "basic_shares_outstanding": 354289783,
   "debt": 6754000000,
-  "pref": 15482360900,
-  "cash": 900000000,
+  "pref": 15471355900,
+  "cash": 1000000000,
   "source": "https://www.strategy.com/",
-  "fetched_at": "2026-06-05T22:42:55+00:00"
+  "fetched_at": "2026-06-08T22:57:28+00:00"
 }
