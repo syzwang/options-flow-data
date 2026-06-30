@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>MSTR Flow Trend</title>
+<style>
+body { background:#000; color:#e6edf3; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Inter",system-ui,sans-serif; font-feature-settings:"tnum" 1,"cv11" 1; margin:0; padding:20px; }
+.header { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+.header h1 { margin:0; font-size:24px; font-weight:500; letter-spacing:-0.01em; }
+.badge { padding:4px 12px; border-radius:12px; font-size:13px; font-weight:500; }
+.card { background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:20px; margin-bottom:16px; box-shadow:0 1px 0 rgba(255,255,255,0.04) inset; }
+.card h2 { margin:0 0 12px; font-size:16px; font-weight:500; color:#8b949e; letter-spacing:-0.005em; }
+.grid { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; gap:16px; }
+.grid > .card { display:grid; grid-row:span 2; grid-template-rows:subgrid; gap:0; }
+.kpi-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:16px; }
+.kpi { background:#1c1c1e; border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 16px; text-align:center; }
+.kpi-label { font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:0.5px; }
+.kpi-value { font-size:22px; font-weight:500; margin-top:4px; font-variant-numeric:tabular-nums; }
+table { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
+th { color:#8b949e; font-weight:500; text-align:right; padding:6px 10px; border-bottom:1px solid #30363d; }
+td { padding:6px 10px; text-align:right; border-bottom:1px solid rgba(255,255,255,0.04); }
+tbody tr:nth-child(even) td { background:rgba(255,255,255,0.015); }
+th:first-child, td:first-child { text-align:left; }
+.chart-wrap { position:relative; height:280px; }
+.chart-wrap-tall { position:relative; height:420px; }
+.card-head { min-height:270px; }
+.tbl-wrap { max-height:400px; overflow-y:auto; }
+.sync-tbl td { height:30px; box-sizing:border-box; }
+.sync-tbl tr td[colspan="3"] { height:auto; }
+.zero-line { color:#f85149; font-size:11px; }
+.topnav { position:sticky; top:0; z-index:100; background:rgba(0,0,0,0.78); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); display:flex; gap:14px; padding:10px 20px; margin:-20px -20px 16px; border-bottom:1px solid rgba(255,255,255,0.06); font-size:13px; align-items:center; }
+.topnav a { color:#8b949e; text-decoration:none; padding:4px 10px; border-radius:6px; transition:background 0.12s,color 0.12s; }
+.topnav a:hover { color:#e6edf3; background:rgba(255,255,255,0.06); }
+.topnav a.active { color:#e6edf3; background:rgba(88,166,255,0.18); }
+.nav-center { display:flex; gap:2px; flex:1; flex-wrap:wrap; justify-content:center; }
+.nav-left, .nav-right { display:flex; gap:4px; align-items:center; }
+.nav-divider { color:#30363d; }
+.card { scroll-margin-top:64px; }
+.kpi-row { scroll-margin-top:64px; }
+</style>
+</head><body>
+
+<nav class="topnav">
+  <div class="nav-left">
+    <a href="trend_MSTR_2026-06-30_zh.html" class="active">MSTR</a>
+    <a href="trend_TSLA_2026-06-30_zh.html" class="">TSLA</a>
+  </div>
+  <div class="nav-center">
+    <a href="#highlights">要点</a>
+    <a href="#playbook">计划</a>
+    <a href="#kpis">概览</a>
+    <a href="#verdict">裁定</a>
+    <a href="#btc">BTC</a>
+    <a href="#mnav">mNAV</a>
+    <a href="#spread">偏度</a>
+    <a href="#skew">SKEW</a>
+    <a href="#iv">IV</a>
+    <a href="#term">期限</a>
+    <a href="#gex">GEX</a>
+    <a href="#oidist">OI Dist</a>
+    <a href="#oidelta">OI Δ</a>
+    <a href="#oi">OI</a>
+    <a href="#walls">墙</a>
+    <a href="#em">EM</a>
+  </div>
+  <div class="nav-right">
+    <a href="trend_MSTR_2026-06-30.html" class="">EN</a>
+    <a href="trend_MSTR_2026-06-30_zh.html" class="active">中文</a>
+  </div>
+</nav>
+
+<div class="header">
+  <h1>MSTR Flow Trend Analysis</h1>
+  <span class="badge" style="background:#f0883e22;color:#f0883e;border:1px solid #f0883e;">NORMAL</span>
+  <span style="color:#8b949e;font-size:13px;">10 个 snapshot | 数据至 2026-06-30 | 生成 2026-06-30 18:50</span>
+</div>
+
+<!-- KPI Row -->
+<div class="kpi-row" id="kpis">
+  <div class="kpi">
+    <div class="kpi-label">现价</div>
+    <div class="kpi-value">$86.93</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">前周 P/C 偏度</div>
+    <div class="kpi-value" style="color:#f0883e;">+7.2 pts</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">14D 50Δ IV</div>
+    <div class="kpi-value">96.3%</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">RV30</div>
+    <div class="kpi-value">84.2%</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">NVRP</div>
+    <div class="kpi-value">1.14x</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">本地 IV 分位</div>
+    <div class="kpi-value" style="color:#d29922;font-size:18px;">样本不足</div>
+    <div style="font-size:10px;color:#6e7681;margin-top:2px;">n=53 · 不用于裁定</div>
+  </div>
+</div>
+
+
+
+
+<div class="card" id="playbook" style="border:1px solid #d2992240;">
+  <h2>最终交易计划</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:stretch;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">方向/环境</div>
+      <div style="font-size:18px;color:#d29922;font-weight:600;margin-bottom:6px;">中性偏谨慎</div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">mNAV 1.05x 接近净值；MSTR 上行 squeeze 风险不值得卖。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#3fb950;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">允许</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>通过规则后按仓位系统开仓</li></ul>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:12px;font-size:12px;line-height:1.6;">
+      <div style="font-size:11px;color:#f85149;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">禁止</div>
+      <ul style="margin:0;padding-left:18px;color:#e6edf3;"><li>MSTR covered call / 裸 short call / 熊 call 价差</li></ul>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">关键价位</div>
+    <table>
+      <tr><td style='text-align:left;color:#8b949e;'>现价</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$86.93</td><td style='text-align:left;color:#8b949e;'>基准价格</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX Call 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$91</td><td style='text-align:left;color:#8b949e;'>上方阻力/突破后挤压触发点</td></tr><tr><td style='text-align:left;color:#8b949e;'>GEX Put 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$80</td><td style='text-align:left;color:#8b949e;'>下方支撑/跌破后放大风险</td></tr><tr><td style='text-align:left;color:#8b949e;'>持续 Call 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>n/a</td><td style='text-align:left;color:#8b949e;'>结构性成交阻力</td></tr><tr><td style='text-align:left;color:#8b949e;'>持续 Put 墙</td><td style='text-align:left;color:#e6edf3;font-weight:600;'>$80</td><td style='text-align:left;color:#8b949e;'>结构性成交支撑</td></tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="card" id="highlights">
+  <h2 style="display:flex;align-items:center;gap:10px;">
+    <span>今日速览</span>
+    <a href="#verdict" style="text-decoration:none;background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">禁短 CALL</a>
+  </h2>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只保留会改变计划的核心变化。</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">💰</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">价格</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">现价 $86.93 <span style="color:#f85149;font-size:11px;">(-6.20%)</span> &nbsp;·&nbsp; BTC $58.5K <span style="color:#f85149;font-size:11px;">(-2.69%)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📊</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">IV / RV</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">14D IV 96.3% <span style="color:#3fb950;font-size:11px;">(+0.4pp)</span> &nbsp;·&nbsp; RV30 84.2% &nbsp;·&nbsp; NVRP 1.14x <span style="color:#8b949e;font-size:11px;">(持平)</span> &nbsp;·&nbsp; 本地 IV 样本 <span style="color:#d29922;font-weight:600;">n=53 不足</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">⚖️</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">偏度</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">25Δ front <span style="color:#3fb950;font-weight:600;">+7.2 pts</span> <span style="color:#3fb950;font-size:11px;">(+6.2pp)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">🧱</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">GEX 墙</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;">Call <span style="color:#3fb950;font-weight:600;">$91</span> <span style="color:#8b949e;font-size:11px;">(was $94, -3)</span> &nbsp;·&nbsp; Put <span style="color:#f85149;font-weight:600;">$80</span> <span style="color:#8b949e;font-size:11px;">(was $90, -10)</span></div>
+    </div><div style="background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:10px 12px;min-height:72px;">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+        <span style="font-size:13px;">📈</span>
+        <span style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">OI 异动</span>
+      </div>
+      <div style="font-size:12px;color:#e6edf3;line-height:1.45;"><span style="color:#3fb950;">Call OI 增加</span>  <span style="color:#8b949e;font-size:11px;">2026-07-02</span> @ $95 <span style="color:#8b949e;font-size:11px;">(+2,060)</span> &nbsp;·&nbsp; <span style="color:#3fb950;">Put OI 减少</span>  <span style="color:#8b949e;font-size:11px;">2026-07-02</span> @ $75 <span style="color:#8b949e;font-size:11px;">(-4,576)</span></div>
+    </div>
+  </div>
+  <div style="font-size:10px;color:#6e7681;margin-top:8px;">vs 2026-06-29</div>
+</div>
+
+
+<div class="card" id="verdict" style="border:1px solid #f8514940;">
+  <h2 style="display:flex;align-items:center;gap:10px;">
+    <span>规则裁定</span>
+    <span style="background:#f8514922;color:#f85149;border:1px solid #f85149;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;letter-spacing:0.3px;">禁短 CALL</span>
+  </h2>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.5;">只显示闸门结果；细则默认折叠。</div>
+  <div style="padding:10px 12px;background:#f8514910;border-left:3px solid #f85149;border-radius:6px;font-size:12px;color:#e6edf3;">
+    <span style="color:#f85149;font-weight:600;">1 条规则阻塞.</span> MSTR 短 Call 阻塞（E5）；其它 ticker 的限亏价差仍可视 E1 而定.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:10px;">
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #8b949e44;border-radius:8px;padding:8px 10px;">
+      <span style="color:#8b949e;font-weight:700;font-size:14px;width:14px;text-align:center;">·</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E1</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">本地 14D IV 样本 n=53 < 60</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:8px 10px;">
+      <span style="color:#f85149;font-weight:700;font-size:14px;width:14px;text-align:center;">✗</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">E5</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">mNAV 1.05x < 1.2</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px;background:#0d1117;border:1px solid #3fb95044;border-radius:8px;padding:8px 10px;">
+      <span style="color:#3fb950;font-weight:700;font-size:14px;width:14px;text-align:center;">✓</span>
+      <span style="color:#e6edf3;font-weight:600;font-size:12px;">V3</span>
+      <span style="color:#8b949e;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">BTC RV7 30%</span>
+    </div>
+  </div>
+  <details style="margin-top:10px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">展开规则细节</summary>
+    <div style="margin-top:8px;background:#0d1117;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:18px;font-weight:600;color:#8b949e;width:20px;text-align:center;">·</div>
+      <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E1</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:#e6edf3;">IV 底线（卖权门槛）</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">本地 14D IV 样本 n=53 < 60 · 本地 IV 样本不足；不要把当前分位当长期 IV percentile，改看 14D IV、RV30、NVRP 与期限结构</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:18px;font-weight:600;color:#f85149;width:20px;text-align:center;">✗</div>
+      <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">E5</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:#e6edf3;">MSTR 短 Call 守护（mNAV）</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">mNAV 1.05x < 1.2 · mNAV 接近净值；不开任何 MSTR 短 Call（CC / 裸卖 / 熊 call 价差）</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div style="font-size:18px;font-weight:600;color:#3fb950;width:20px;text-align:center;">✓</div>
+      <div style="font-size:13px;font-weight:600;color:#e6edf3;width:36px;font-variant-numeric:tabular-nums;">V3</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:#e6edf3;">BTC 波动率冻结</div>
+        <div style="font-size:11px;color:#8b949e;margin-top:2px;">BTC RV7 30% · 低于冻结阈值</div>
+      </div>
+    </div>
+    </div>
+  </details>
+  
+</div>
+
+
+<div class="card" id="btc">
+  <h2>BTC 背景（MSTR = BTC 杠杆代理）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
+    MSTR 约 +2.17 的 BTC beta 意味着 MSTR 流向必须<b style="color:#e6edf3;">相对 BTC</b>看。BTC 平而 MSTR 看涨期权火 = 溢价（历史上会回落）；BTC 飙而 MSTR 平 = 折价（历史上会追上）。
+  </div>
+  <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+    <div class="kpi">
+      <div class="kpi-label">BTC-USD</div>
+      <div class="kpi-value">$58,518</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC 24小时</div>
+      <div class="kpi-value" style="color:#f85149;">▼ -2.69%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC 7日</div>
+      <div class="kpi-value" style="color:#f85149;">-6.62%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">MSTR 24小时</div>
+      <div class="kpi-value" style="color:#f85149;">▼ -6.20%</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">相关性 (10d)</div>
+      <div class="kpi-value">+0.53</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">MSTR 对 BTC β</div>
+      <div class="kpi-value">+2.17</div>
+    </div>
+  </div>
+  
+  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>MSTR/BTC 无背离</b> — MSTR 走势与 BTC × β 一致。期权流向可直接采信，无需溢价/折价修正。</span>
+  </div>
+</div>
+
+
+<div class="card" id="mnav">
+  <h2>mNAV（MSTR 相对 BTC 净值溢价）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    基于企业价值的 MSTR 相对 BTC 储备溢价：<b style="color:#e6edf3;">(市值 + 债务 + 优先股 − 现金) / BTC 储备价值</b>（与 strategy.com 公布的 mNAV 口径一致）。接近净值 &lt; 1.2x · 黄区 1.2–1.4x · 中性 1.4–1.8x · 偏贵 &gt; 1.8x。历史区间约 1.0–3.5x；接近 1.0 的低点常对应吸筹区，&gt;2.5 的高点常对应派发区。
+  </div>
+  <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+    <div class="kpi">
+      <div class="kpi-label">mNAV</div>
+      <div class="kpi-value" style="color:#3fb950;">1.05x</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">判定</div>
+      <div class="kpi-value" style="color:#3fb950;">接近净值</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC 持仓</div>
+      <div class="kpi-value">847,363</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">BTC 储备价值</div>
+      <div class="kpi-value">$49.6B</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">企业价值</div>
+      <div class="kpi-value">$52.0B</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">市值</div>
+      <div class="kpi-value">$32.3B</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#6e7681;margin-top:6px;">持仓数据日期 2026-06-29 · BTC $58,518 （yfinance 收盘价） · 数据来源：strategy.com</div>
+</div>
+
+<!-- P/C Spread Time Series (full width) -->
+<div class="card" id="spread">
+  <h2>Delta-25 Put/Call IV 偏度：怎么用</h2>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
+    <b style="color:#e6edf3;">偏度 = Put IV − Call IV</b>（delta-25 行权价）。正 = put 贵（正常对冲需求）；负 = call 贵（上行追涨/挤压需求）。
+  </div>
+  <div style="font-size:11px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+    <span style="color:#a8e6b8;"><span style="display:inline-block;width:14px;height:10px;background:#3fb95022;border:1px solid #3fb95055;vertical-align:middle;margin-right:4px;"></span><b>安全区</b>（偏度 > 0）— put 贵于 call，市场定价下行风险 = 健康</span>
+    <span style="color:#f85149;"><span style="display:inline-block;width:14px;height:10px;background:#f8514922;border:1px solid #f8514955;vertical-align:middle;margin-right:4px;"></span><b>危险区</b>（偏度 < 0）— call 贵于 put，上行追涨/挤压需求升高</span>
+    <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #e6edf3;vertical-align:middle;margin-right:4px;"></span>零轴（临界线）</span>
+    <span><span style="display:inline-block;width:16px;border-top:1.5px dashed #8b949e;vertical-align:middle;margin-right:4px;"></span>现价（右轴）</span>
+  </div>
+  
+  <div style="margin:10px 0 12px;border:1px solid #3fb95044;background:#3fb9500d;border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="color:#3fb950;font-weight:650;font-size:14px;">Put 偏度正常</div>
+      <div style="color:#8b949e;font-size:12px;">5/5 个到期桶为正，均值 +9.3 点。</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;">
+      <div style="background:#0d1117;border:1px solid #3fb95033;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">含义</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">put IV 高于 call IV，属于常见保护性需求。</div></div>
+      <div style="background:#0d1117;border:1px solid #58a6ff33;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">怎么用</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">偏度本身不阻止卖波动率；仍需看 NVRP、GEX 和事件风险。</div></div>
+      <div style="background:#0d1117;border:1px solid #f8514933;border-radius:8px;padding:10px 12px;min-height:82px;"><div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">不要这样用</div><div style="font-size:12px;color:#e6edf3;line-height:1.5;">不要只因偏度正常就忽略价格/GEX 风险。</div></div>
+    </div>
+  </div>
+  <details style="margin:8px 0 12px;font-size:11px;color:#8b949e;">
+    <summary style="cursor:pointer;color:#58a6ff;">历史零轴穿越明细</summary>
+    <div style="margin-top:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 14px;"><span style="color:#8b949e;font-size:11px;margin-right:2px;">各到期桶当前 spread：</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FRONT</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+5.6</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2W</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+7.2</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">1M</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+13.1</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">2M</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+10.2</span></span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#3fb95018;border:1px solid #3fb95055;font-size:12px;"><span style="color:#8b949e;font-weight:500;letter-spacing:0.3px;">FAR</span><span style="color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;">+10.3</span></span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;"><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FRONT</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +5.6</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">06-30</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-3.4 &rarr; <b style="color:#3fb950;">+5.6</b></span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #f85149;background:#f851490d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#f85149;flex:none;">&#9888;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">06-26</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">+16.2 &rarr; <b style="color:#f85149;">-29.8</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2W</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +7.2</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">06-17</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-1.6 &rarr; <b style="color:#3fb950;">+0.8</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">1M</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +13.1</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">06-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-6.2 &rarr; <b style="color:#3fb950;">+5.1</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">2M</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +10.2</span></div><div style="display:flex;align-items:center;gap:8px;padding:5px 9px;border-left:3px solid #3fb950;background:#3fb9500d;border-radius:4px;margin:3px 0;font-size:12px;"><span style="color:#3fb950;flex:none;">&#10003;</span><span style="color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;flex:none;">06-18</span><span style="color:#e6edf3;font-family:ui-monospace,SFMono-Regular,monospace;margin-left:auto;">-5.7 &rarr; <b style="color:#3fb950;">+4.3</b></span></div></div><div style="background:#0f1117;border:1px solid #21262d;border-radius:8px;padding:10px 12px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:#e6edf3;font-size:12px;font-weight:600;letter-spacing:0.5px;">FAR</span><span style="margin-left:auto;font-size:11px;color:#3fb950;font-family:ui-monospace,SFMono-Regular,monospace;font-weight:600;">现 +10.3</span></div><div style="color:#6e7681;font-size:11px;padding:6px 0 2px;font-style:italic;">本窗口无穿越</div></div></div></div>
+  </details>
+  
+  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>偏度在正常区间</b> — 67分位数（12天历史，当前 +5.6 vs 中位数 +5.1）。无极端仓位信号。</span> <span style="color:#8b949e;font-size:11px;">· ⚠ 仅 12 天历史 — n≥60 前不要把分位数纳入裁定</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;" id="spreadLegend"></div>
+  <div class="chart-wrap-tall"><canvas id="spreadChart"></canvas></div>
+</div>
+
+
+<div class="card" id="skew">
+  <h2>宏观偏度背景（CBOE ^SKEW，2 年）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    标普 500 市场层面的尾部对冲需求。 <b style="color:#e6edf3;">并非针对个股 MSTR</b> —作为宏观情绪背景使用。SKEW 衡量 OTM put 相对 ATM SPX 期权的相对价格。 <b style="color:#3fb950;">&lt;120 松懈</b> · <b style="color:#d29922;">120–140 正常</b> · <b style="color:#f0883e;">140–160 对冲加重</b> · <b style="color:#f85149;">&gt;160 压力</b>. 统计上：高 SKEW 常对应机构在上涨中加对冲；极低 SKEW 往往出现在松懈的顶部。
+    <br><span style="color:#6e7681;">个股 2 年 P/C 偏度需要累计约 500 个日度快照，目前正在向前积累。</span>
+  </div>
+  <div class="kpi-row" style="grid-template-columns:repeat(auto-fit, minmax(140px,1fr));">
+    <div class="kpi">
+      <div class="kpi-label">当前 SKEW</div>
+      <div class="kpi-value" style="color:#f0883e;">149.6</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">判定</div>
+      <div class="kpi-value" style="color:#f0883e;">对冲加重</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2 年分位</div>
+      <div class="kpi-value">62</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2 年均值</div>
+      <div class="kpi-value">148.2</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">2 年区间</div>
+      <div class="kpi-value" style="font-size:14px;">125.8 – 183.1</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">历史天数</div>
+      <div class="kpi-value">495</div>
+    </div>
+  </div>
+  <div class="chart-wrap"><canvas id="skewChart"></canvas></div>
+</div>
+
+<!-- IV + NVRP Trend -->
+<div class="card" id="iv">
+  <h2>Historical 14D 50Δ IV Trend（方差插值）</h2>
+  
+  <div style="font-size:11px;color:#8b949e;margin-bottom:10px;line-height:1.6;">使用快照里的到期 IV 做总方差插值，近似 14D 50Δ/ATM IV；本地样本不足两年时，只作为本地历史。</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">14D 50Δ/ATM IV</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">96.3%</div>
+      <div style="margin-top:3px;"><span style="color:#3fb950;font-size:11px;">+0.4 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">RV30</div>
+      <div style="font-size:20px;color:#e6edf3;font-weight:650;margin-top:4px;">84.2%</div>
+      <div style="margin-top:3px;"><span style="color:#3fb950;font-size:11px;">+0.4 pp</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">NVRP</div>
+      <div style="font-size:20px;color:#d29922;font-weight:650;margin-top:4px;">1.14x</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">卖波动率边际 <span style="color:#8b949e;font-size:11px;">持平</span></div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">本地 14D IV 分位</div>
+      <div style="font-size:20px;color:#d29922;font-weight:650;margin-top:4px;">样本不足</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">本地 n=53；当前 98.1% 只作参考，不当长期 IV 分位</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:8px;padding:10px;">
+      <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">期限结构</div>
+      <div style="font-size:20px;color:#f85149;font-weight:650;margin-top:4px;">近月升水</div>
+      <div style="font-size:11px;color:#8b949e;margin-top:3px;">Front−Far +16.7 点</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">本地 14D IV 区间 61.8%–105.9%，中位 78.5%</div>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
+    <b style="color:#e6edf3;">NVRP = 14D IV / RV30</b>。1.3 门槛：卖方需 ~30% 缓冲来覆盖买卖价差、gamma 风险和对冲误差。<1.0 = 做多波动率占优；1.0-1.3 = 边际；>1.3 = 做空波动率占优；>1.5 = 强优势。
+  </div>
+  
+  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #d29922;background:#d2992211;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">⚠️</span><span style="color:#d29922;"><b>优势边际 / 无优势</b> — NVRP 1.14x 在 1.0-1.3 区间。IV (96.3%) 仅略高于实际波动率 (84.2%），溢价可能不足以覆盖买卖价差 + gamma 风险。避免激进做空波动率。</span> &nbsp;|&nbsp; 本地 IV 样本 <b>n=53</b>，暂不用于裁定
+  </div>
+  <div class="chart-wrap"><canvas id="ivChart"></canvas></div>
+  
+  <div style="margin-top:12px;background:#0d1117;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;">
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px;">
+      <div>
+        <div style="font-size:12px;color:#e6edf3;font-weight:650;">IV 期限结构</div>
+        <div style="font-size:10px;color:#8b949e;margin-top:2px;">辅助：用于判断短端是否因事件变贵，以及选择期限。</div>
+      </div>
+      <div style="font-size:11px;color:#f85149;font-weight:600;">🔥 <b>短端压力</b> — Front 比 Far 高 +16.7 点；短期期权贵，市场在定价事件/跳空风险。</div>
+    </div>
+    <div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>前周 (≤7天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>115.8%</div><div><div style='height:10px;width:100%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>2周 (8-14天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>97.1%</div><div><div style='height:10px;width:83%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>1月 (15-35天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>97.1%</div><div><div style='height:10px;width:83%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div><div style='display:grid;grid-template-columns:86px 52px 1fr;gap:8px;align-items:center;padding:2px 0;font-size:11px;'><div style='color:#e6edf3;font-weight:500;'>2月 (36-70天)</div><div style='font-family:ui-monospace,SFMono-Regular,monospace;color:#e6edf3;text-align:right;'>99.1%</div><div><div style='height:10px;width:85%;background:linear-gradient(90deg,#58a6ff,#a371f7);border-radius:2px;min-width:4px;'></div></div></div></div>
+  </div>
+
+</div>
+
+
+<div class="card" id="gex">
+  <h2>做市商 Gamma 墙（GEX）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:6px;line-height:1.6;">
+    GEX 衡量做市商为了对冲期权 Gamma，最可能在哪些行权价附近买卖股票。它是盘中支撑/阻力与加速风险的参考，不是方向预测。
+    <br>净 GEX: <b style="color:#d29922;">$+485.5M</b>（call $+6.77B + put $-6.29B).
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:12px 0;">
+    
+    <div style="background:#0d1117;border:1px solid #d2992244;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#d2992218;color:#d29922;font-weight:800;font-size:15px;">G</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">净 Gamma 环境</div>
+          <div style="font-size:18px;color:#d29922;font-weight:650;margin-top:2px;">混合 Gamma</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;"><b>混合 Gamma 环境</b> — call 与 put 大致平衡；墙偏软，更多作为价位参考。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #3fb95044;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#3fb95018;color:#3fb950;font-weight:800;font-size:15px;">↑</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">上方 Call 墙</div>
+          <div style="font-size:18px;color:#3fb950;font-weight:650;margin-top:2px;">$91</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">上方 $91，距现价 4.7%。先当阻力；有效突破后，做市商对冲可能追买，形成 squeeze。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #f8514944;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f8514918;color:#f85149;font-weight:800;font-size:15px;">↓</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">下方 Put 墙</div>
+          <div style="font-size:18px;color:#f85149;font-weight:650;margin-top:2px;">$80</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">下方 $80，距现价 8.0%。先当支撑；有效跌破后，对冲流可能放大下跌。</div>
+    </div>
+    <div style="background:#0d1117;border:1px solid #58a6ff44;border-radius:10px;padding:12px;min-height:112px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#58a6ff18;color:#58a6ff;font-weight:800;font-size:15px;">↔</span>
+        <div>
+          <div style="font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;">交易用法</div>
+          <div style="font-size:18px;color:#58a6ff;font-weight:650;margin-top:2px;">计划</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#c9d1d9;line-height:1.5;">墙只作为挂单/止损/止盈参考；方向仍看偏度、14D IV vs RV、BTC/mNAV。</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <div style="font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">GEX 价位梯</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-bottom:4px;padding:0 2px;">
+      <span>行权价 · OTM</span><span style="color:#3fb950;">↑ 上方阻力 / 突破触发</span><span>GEX</span>
+    </div>
+    <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$94</span><span style="color:#8b949e;font-size:11px;">+8.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:44.0%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+377.7M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$91</span><span style="color:#8b949e;font-size:11px;">+4.7%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:76.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+654.8M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$90</span><span style="color:#8b949e;font-size:11px;">+3.5%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:58.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+500.2M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$89</span><span style="color:#8b949e;font-size:11px;">+2.4%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:58.2%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+499.8M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$87</span><span style="color:#8b949e;font-size:11px;">+0.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#3fb95033;border-left:2px solid #3fb950;height:100%;width:39.6%;"></div></div><span style="color:#3fb950;text-align:right;font-weight:500;">$+340.0M</span></div>
+    <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;margin:6px 0;padding:4px 0;border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;background:#e6edf308;"><span style="color:#e6edf3;font-weight:600;font-size:12px;">$86.93</span><span style="color:#8b949e;font-size:10px;">现价</span><div></div><div></div></div>
+    <div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$86</span><span style="color:#8b949e;font-size:11px;">−1.1%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:14.7%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-126.7M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$85</span><span style="color:#8b949e;font-size:11px;">−2.2%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:92.0%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-790.7M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$80</span><span style="color:#8b949e;font-size:11px;">−8.0%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:100.0%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-859.2M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$75</span><span style="color:#8b949e;font-size:11px;">−13.7%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:40.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-346.8M</span></div><div style="display:grid;grid-template-columns:68px 56px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;"><span style="color:#e6edf3;font-weight:500;">$70</span><span style="color:#8b949e;font-size:11px;">−19.5%</span><div style="background:#21262d;height:10px;border-radius:3px;overflow:hidden;"><div style="background:#f8514933;border-left:2px solid #f85149;height:100%;width:40.4%;"></div></div><span style="color:#f85149;text-align:right;font-weight:500;">$-347.0M</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:0.5px;color:#8b949e;margin-top:4px;padding:0 2px;">
+      <span>&nbsp;</span><span style="color:#f85149;">↓ 下方支撑 / 跌破触发</span><span>&nbsp;</span>
+    </div>
+  </div>
+  <details style="font-size:11px;color:#8b949e;margin-top:10px;">
+    <summary style="cursor:pointer;color:#58a6ff;">GEX 墙 vs 成交量墙（点击）</summary>
+    <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
+      <b style="color:#e6edf3;">成交量墙</b>（下方持续放量行权价）显示散户/机构<b>流向集中点</b> — 后视镜信号。
+      <br><b style="color:#e6edf3;">GEX 墙</b>（本卡）显示<b>做市商对冲压力</b>最大处 — 前瞻性，驱动真实盘中价格行为。
+      <br><br>成交量墙不一定是 GEX 墙（例如远期 OI gamma 低）。<b>盘中真正起支撑/阻力作用的是 GEX 墙</b>，因为做市商必须交易股票来对冲。两者一致 = 墙稳固；不一致 = 信 GEX。
+    </div>
+  </details>
+</div>
+
+
+<div class="card" id="oidist">
+  <h2>持仓分布（按到期日）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    单一到期日的逐行权价 call/put 持仓。 <b style="color:#3fd058;">绿色</b>=call，<b style="color:#f85149;">红色</b>=put。 <b style="color:#e6edf3;">最大痛点</b>（黄）= 多数期权到期作废的行权价，历史上做市商常 pin 此价位。 <b style="color:#e6edf3;">现价</b>（青）= 当前股价。 <b>现价上方真空带</b>= 期权做市商在此区间无明显抵抗，股价容易漂移至下一组 call 堆积处。
+  </div>
+  <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:12px;color:#8b949e;">到期日：</label>
+    <select id="oiDistExpiry" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;">
+      <option value="2026-07-02">2026-07-02 (2d)</option><option value="2026-07-10" selected>2026-07-10 (10d)</option><option value="2026-07-17">2026-07-17 (17d)</option><option value="2026-07-24">2026-07-24 (24d)</option><option value="2026-07-31">2026-07-31 (31d)</option><option value="2026-08-07">2026-08-07 (38d)</option><option value="2026-08-21">2026-08-21 (52d)</option><option value="2026-09-18">2026-09-18 (80d)</option>
+    </select>
+    <span id="oiDistMeta" style="font-size:11px;color:#8b949e;"></span>
+  </div>
+  <div class="chart-wrap-tall">
+    <canvas id="oiDistChart"></canvas>
+  </div>
+</div>
+
+
+<div class="card" id="oidelta">
+  <h2>行权价 OI 变化（昨日→今日，按到期日）</h2>
+  <div style="font-size:12px;color:#8b949e;margin-bottom:10px;line-height:1.6;">
+    各行权价持仓净变化，区间： 2026-06-29 至 2026-06-30. <b style="color:#3fb950;">绿色向上</b>= call OI 增加；没有逐笔成交无法确认方向。 <b style="color:#3fb950;">绿色向下</b>= call OI 减少。<b style="color:#f85149;">put</b> 红色条同理。 <b>Roll 检测：</b>低行权价减仓 + 高行权价增仓 = 可能向上展期。
+  </div>
+  <div style="margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <label style="font-size:12px;color:#8b949e;">到期日：</label>
+    <select id="oiDeltaExpiry" style="background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;padding:5px 10px;font-size:12px;font-family:inherit;">
+      <option value="2026-07-02">2026-07-02 (2d)</option><option value="2026-07-10" selected>2026-07-10 (10d)</option><option value="2026-07-17">2026-07-17 (17d)</option><option value="2026-07-24">2026-07-24 (24d)</option><option value="2026-07-31">2026-07-31 (31d)</option><option value="2026-08-07">2026-08-07 (38d)</option><option value="2026-08-21">2026-08-21 (52d)</option><option value="2026-09-18">2026-09-18 (80d)</option>
+    </select>
+    <span id="oiDeltaMeta" style="font-size:11px;color:#8b949e;"></span>
+  </div>
+  <div class="chart-wrap-tall">
+    <canvas id="oiDeltaChart"></canvas>
+  </div>
+</div>
+
+<div class="grid">
+  <!-- OI Delta -->
+  <div class="card" id="oi">
+    <div class="card-head">
+    <h2>持仓变动（OI Delta） — 2026-06-29 → 2026-06-30</h2>
+    <div style="font-size:12px;color:#e6edf3;margin-bottom:6px;">
+      OI 净变动：Call +4,384 | Put +4,744 | 现价 $86.93
+    </div>
+    
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px;">
+      <span style="padding:4px 9px;background:#3fb95022;border:1px solid #3fb95055;border-radius:6px;color:#e6edf3;">
+        OTM Call (>现价) <b style="color:#3fb950;">+3,470</b> <span style="color:#8b949e;">上行 OI</span>
+      </span>
+      <span style="padding:4px 9px;background:#d2992222;border:1px solid #d2992255;border-radius:6px;color:#e6edf3;">
+        ITM Call (<现价) <b style="color:#d29922;">+204</b> <span style="color:#8b949e;">常为 covered-call 写卖</span>
+      </span>
+      <span style="padding:4px 9px;background:#f8514922;border:1px solid #f8514955;border-radius:6px;color:#e6edf3;">
+        OTM Put (<现价) <b style="color:#f85149;">+2,565</b> <span style="color:#8b949e;">下行 / 对冲</span>
+      </span>
+      <span style="padding:4px 9px;background:#21262d;border:1px solid #30363d;border-radius:6px;color:#e6edf3;">
+        深度 OTM Put (<-15%) <b style="color:#f85149;">+1,638</b> <span style="color:#8b949e;">尾部保险</span>
+      </span>
+    </div>
+    
+    <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #f85149;background:#f8514911;border-radius:4px;font-size:12px;line-height:1.5;">
+      <span style="margin-right:6px;">🔥</span><span style="color:#f85149;"><b>重仓尾部对冲买入</b> — 41% 的 put OI 增长在深度 OTM（<-15% 现价，行权价 +1,638）。系统性保险需求 = 真实下行恐慌。</span>
+    </div>
+    
+  <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #58a6ff;background:#58a6ff11;border-radius:4px;font-size:12px;line-height:1.5;">
+    <span style="margin-right:6px;">ℹ️</span><span style="color:#58a6ff;"><b>Call 建仓均衡</b>（短 +12,189 / 中 +8,301.0 / 长 +4,587）。DTE 无明显偏向。</span>
+  </div>
+    <details style="font-size:11px;color:#8b949e;margin:6px 0 10px;">
+      <summary style="cursor:pointer;color:#58a6ff;">如何按深度读 OI Delta（点击展开）</summary>
+      <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
+        OI Delta = 两次 snapshot 之间<b>净新建合约</b>（买卖双方都开仓）。表面总数有误导性 — <b>OI 落在哪里比总量更重要</b>。
+        <br><br>
+        <b style="color:#3fb950;">OTM Call（现价之上）</b> = 现价上方 call OI 增加。没有逐笔成交无法确认方向；需结合价格和成交量解读。
+        <br><b style="color:#d29922;">ITM Call（现价之下）</b> = 通常是 <b>covered-call 写卖方</b>对已持股锁利。OI 增加但<b>并非看涨</b> — 是获利了结。
+        <br><b style="color:#f85149;">OTM Put（现价之下）</b> = 下行押注或组合对冲。
+        <br><b style="color:#f85149;">Deep OTM Put (&lt;-15% spot)</b> = systematic 尾部保险. Only bought by institutions/macro funds. When this surges, <b>smart money is nervous</b>.
+        <br><br>
+        <b>经典模式：</b>
+        <br>• <b>看涨候选：</b>OTM call OI 扩张且 puts 安静，尤其需要价格/成交量确认
+        <br>• <b>看空/对冲候选：</b>OTM put OI 扩张且 calls 安静，尤其需要价格/成交量确认
+        <br>• <b>「系安全带」：</b>ITM calls + 深度 OTM puts 同时膨胀 → 机构获利 + 对冲 = 晚期牛市警告
+        <br>• <b>轮动：</b>ITM calls 平仓（OI 下降）+ OTM calls 开仓（OI 上升）→ 多头仓位在涨后向上 roll
+      </div>
+    </details>
+    </div>
+    <div class="tbl-wrap">
+    <table class="sync-tbl">
+      <tr><th style="text-align:right;">Put OI 变动</th><th style="text-align:center;">行权价 · OTM</th><th style="text-align:left;">Call OI 变动</th></tr>
+      <tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-564</span><div style='height:10px;width:9px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$105</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+20.8%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:19px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-1,122</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-21</span><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$104</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+19.6%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:19px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-1,133</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-1</span><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$103</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+18.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:10px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+576</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-3</span><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$102</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+17.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:6px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+390</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+1</span><div style='height:10px;width:2px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$101</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+16.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:8px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+464</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+215</span><div style='height:10px;width:3px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$100</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+15.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:9px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+545</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+32</span><div style='height:10px;width:2px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$99</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+13.9%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:9px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+560</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-25</span><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$97</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+11.6%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:24px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+1,422</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-1,985</span><div style='height:10px;width:34px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$95</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+9.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:36px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+2,060</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+35</span><div style='height:10px;width:2px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$94</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+8.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:7px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+423</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+102</span><div style='height:10px;width:2px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$93</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+7.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:17px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-978</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+150</span><div style='height:10px;width:2px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$92</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+5.8%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:7px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+417</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+747</span><div style='height:10px;width:13px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$91</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+4.7%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-41</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+1,870</span><div style='height:10px;width:32px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$90</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+3.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:6px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-370</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+497</span><div style='height:10px;width:8px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$89</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+2.4%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:3px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+187</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-554</span><div style='height:10px;width:9px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$88</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+1.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:13px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-748</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+1,201</span><div style='height:10px;width:20px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$87</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+0.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-97</span></div></td></tr><tr><td colspan='3' style='border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;background:#e6edf308;text-align:center;padding:4px 0;color:#e6edf3;font-weight:600;font-size:11px;'>现价 $86.93</td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+720</span><div style='height:10px;width:12px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$86</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−1.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:7px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+409</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+2,382</span><div style='height:10px;width:41px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$85</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−2.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:5px;background:#3fb950;border-radius:2px;'></div><span style='color:#3fb950;font-weight:500;'>+342</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+1,110</span><div style='height:10px;width:19px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$83</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−4.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:3px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-195</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#3fb950;font-weight:500;'>+1,849</span><div style='height:10px;width:32px;background:#3fb950;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$80</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−8.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-121</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-558</span><div style='height:10px;width:9px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$78</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−10.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-2</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-4,576</span><div style='height:10px;width:80px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$75</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−13.7%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-126</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#f85149;font-weight:500;'>-1,177</span><div style='height:10px;width:20px;background:#f85149;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$70</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−19.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:2px;background:#f85149;border-radius:2px;'></div><span style='color:#f85149;font-weight:500;'>-103</span></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- Volume Persistence -->
+  <div class="card" id="walls">
+    <div class="card-head">
+    <h2>持续放量行权价 — Call/Put Wall 识别</h2>
+    <div style="font-size:12px;color:#e6edf3;line-height:1.6;margin-bottom:6px;">
+      在<b>多日</b>保持高成交的行权价 = 结构性仓位（做市商守在这里），非一次性流。
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;"><span style="padding:4px 10px;border-radius:6px;background:#21262d;color:#8b949e;font-size:12px;">Call Wall: n/a</span> <span style="padding:4px 10px;border-radius:6px;background:#f8514922;border:1px solid #f8514966;color:#f85149;font-size:12px;font-weight:500;">Put Wall: <b>$80</b> <span style="color:#e6edf3;font-weight:400;">(70/80d · 3,541/d · −8.0%)</span> <span style="color:#3fb950;">· strong</span></span></div>
+    </div>
+    
+    
+    <div style="margin:10px 0;padding:10px 12px;border-left:3px solid #3fb950;background:#3fb95011;border-radius:4px;font-size:12px;line-height:1.5;">
+      <span style="margin-right:6px;">✓</span><span style="color:#a8e6b8;"><b>Put 重 / Call 轻</b> — put 结构重但无 call 阻力。常见于洗盘之后 — 市场企稳则上行通道打开。</span>
+    </div>
+    <details style="font-size:11px;color:#8b949e;margin-bottom:10px;">
+      <summary style="cursor:pointer;color:#58a6ff;">墙如何识别（点击展开）</summary>
+      <div style="margin-top:8px;line-height:1.7;padding:8px 10px;background:#0f1117;border-radius:6px;">
+        <b style="color:#3fb950;">Call Wall</b> — OTM call strike (3–15% above spot) with highest <code>persistence × avg daily volume</code>.
+        Dealers are short these calls → <b>short gamma</b> → hedging buy-pressure exhausts near this strike → price stalls (ceiling / resistance).
+        <br><b style="color:#f85149;">Put 墙</b> — OTM put 行权价（现价下方 3–15%），得分最高。做市商 short 这些 put → 接近此位自动买入 → 支撑。
+        <br><br><b>最佳区间：3–10% OTM</b>。太近 = 磁吸（会被穿过）；太远 = 彩票 / 突破目标，非真实阻力。
+        <br><b>强度：</b>持续性 85%+ = <span style="color:#3fb950;">强（结构性）</span>，65–85% = <span style="color:#d29922;">中等</span>，50–65% = <span style="color:#8b949e;">弱</span>.
+        <br><b>交易规则：</b>先把墙作为价位。卖波动率结构需要最终计划和规则裁定同时允许。观察墙的迁移（向上 = 看涨重定价，向下 = 顶部风险，变稀 = 阻力减弱）。
+        <br><b>⚠️ 不对称警告：</b>密集 call 阶梯 + 稀薄 put 端 = 晚期牛市狂热（无对冲需求，市场自满）。
+      </div>
+    </details>
+    </div>
+    <div class="tbl-wrap">
+    <table class="sync-tbl">
+      <tr><th style="text-align:right;color:#f85149;">PUT 日均 · 活跃</th><th style="text-align:center;">行权价 · OTM</th><th style="text-align:left;color:#3fb950;">CALL 日均 · 活跃</th></tr>
+      <tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>1,361/d <span style='color:#8b949e;'>· 49/78</span></span><div style='height:10px;width:20px;background:#f85149;opacity:0.76;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$105</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+20.8%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$104</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+19.6%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$103</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+18.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$102</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+17.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$101</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+16.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,485/d <span style='color:#8b949e;'>· 68/80</span></span><div style='height:10px;width:37px;background:#f85149;opacity:0.90;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$100</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+15.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:40px;background:#3fb950;opacity:0.76;border-radius:2px;'></div><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,684/d <span style='color:#8b949e;'>· 51/80</span></span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$99</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+13.9%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$97</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+11.6%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>1,871/d <span style='color:#8b949e;'>· 65/80</span></span><div style='height:10px;width:28px;background:#f85149;opacity:0.88;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$95</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+9.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:32px;background:#3fb950;opacity:0.64;border-radius:2px;'></div><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,160/d <span style='color:#8b949e;'>· 33/74</span></span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$94</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+8.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$93</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+7.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$92</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+5.8%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$91</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+4.7%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,890/d <span style='color:#8b949e;'>· 72/80</span></span><div style='height:10px;width:43px;background:#f85149;opacity:0.94;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$90</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+3.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;gap:6px;'><div style='height:10px;width:39px;background:#3fb950;opacity:0.64;border-radius:2px;'></div><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,630/d <span style='color:#8b949e;'>· 36/80</span></span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$89</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+2.4%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$88</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+1.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$87</span> <span style='color:#3fb950;font-size:10px;opacity:0.8;'>+0.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td colspan='3' style='border-top:1.5px dashed #e6edf3;border-bottom:1.5px dashed #e6edf3;background:#e6edf308;text-align:center;padding:4px 0;color:#e6edf3;font-weight:600;font-size:11px;'>现价 $86.93</td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$86</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−1.1%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>3,243/d <span style='color:#8b949e;'>· 68/80</span></span><div style='height:10px;width:49px;background:#f85149;opacity:0.90;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$85</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−2.2%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$83</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−4.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>3,541/d <span style='color:#8b949e;'>· 70/80</span></span><div style='height:10px;width:53px;background:#f85149;opacity:0.92;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$80</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−8.0%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;padding-right:4px;'><span style='color:#30363d;'>—</span></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$78</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−10.3%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,307/d <span style='color:#8b949e;'>· 65/80</span></span><div style='height:10px;width:35px;background:#f85149;opacity:0.88;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$75</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−13.7%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr><tr><td style='width:45%;'><div style='display:flex;justify-content:flex-end;align-items:center;gap:6px;'><span style='color:#e6edf3;font-size:11px;white-space:nowrap;'>2,245/d <span style='color:#8b949e;'>· 65/80</span></span><div style='height:10px;width:34px;background:#f85149;opacity:0.88;border-radius:2px;'></div></div></td><td style='text-align:center;width:10%;white-space:nowrap;'><span style='color:#e6edf3;font-weight:500;'>$70</span> <span style='color:#f85149;font-size:10px;opacity:0.8;'>−19.5%</span></td><td style='width:45%;'><div style='display:flex;justify-content:flex-start;align-items:center;padding-left:4px;'><span style='color:#30363d;'>—</span></div></td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- EM Accuracy -->
+<div class="card" id="em">
+  <h2>Expected Move 准确性（回测）</h2>
+  <div style="font-size:11px;color:#8b949e;margin-bottom:8px;">
+    前月 Expected Move 是否框住次日价格？EM 按 √(日历天数) 缩放以处理周末跳空。<b>Actual/EM</b> 比率：1.0 = 完美；<1 = EM 高估；>1 = EM 低估。
+  </div>
+  
+  <div style="display:flex;gap:20px;margin-bottom:8px;padding:12px 14px;background:#0d1117;border-radius:6px;border:1px solid #21262d;flex-wrap:wrap;">
+    <div><span style="color:#8b949e;font-size:11px;">命中率</span><br><span style="font-size:20px;color:#f85149;font-weight:600;">44%</span> <span style="color:#8b949e;font-size:11px;">(4/9) <span title="1σ EM should contain ~68%">vs 预期 68%</span></span></div>
+    <div><span style="color:#8b949e;font-size:11px;">平均 |波动|</span><br><span style="font-size:20px;font-weight:600;">6.4%</span></div>
+    <div><span style="color:#8b949e;font-size:11px;">偏差（中位数）</span><br><span style="font-size:20px;color:#3fb950;font-weight:600;">1.18x</span> <span style="color:#8b949e;font-size:11px;">已校准</span><span style="margin-left:6px;padding:2px 6px;border-radius:4px;background:#f8514922;color:#f85149;font-size:10px;">⚠ 2 异常值（>2× EM）</span></div>
+    <div><span style="color:#8b949e;font-size:11px;">最大偏离</span><br><span style="font-size:20px;font-weight:600;color:#f85149;">4.63x</span></div>
+    <div><span style="color:#8b949e;font-size:11px;">偏离方向</span><br><span style="font-size:14px;font-weight:500;">↑1 · ↓4</span></div>
+  </div>
+  
+  <table>
+    <tr><th style="text-align:left;">日期</th><th style="text-align:left;">移动</th><th style="text-align:left;">区间</th><th style="text-align:left;">落在 EM 内？</th></tr>
+    <tr><td>2026-06-29</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$92.68</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$86.93</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-6.7%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:3.3%;width:93.3%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:50.0%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:8.7%;top:3px;width:4px;height:14px;background:#3fb950;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±7.0%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#8b949e;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>0.89x</div></div></div></td><td><span style='color:#3fb950;font-weight:500;'>✓ 是</span></td></tr><tr><td>2026-06-26 <span style='font-size:10px;color:#d29922;'>→2026-06-29 (3d)</span></td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$82.31</span> <span style='color:#8b949e;'>→</span> <span style='color:#3fb950;font-weight:500;'>$92.68</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;right:5px;font-size:10px;color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>+15.3%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:2.8%;width:46.9%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:26.3%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:97.2%;top:3px;width:4px;height:14px;background:#f85149;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±4.2%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#f85149;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>3.02x</div></div></div></td><td><span style='color:#f85149;font-weight:500;'>✗ 否</span> <span style="padding:1px 5px;border-radius:3px;background:#f8514933;color:#f85149;font-size:9px;font-weight:600;">异常</span></td></tr><tr><td>2026-06-25</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$85.33</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$82.31</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-4.1%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:4.5%;width:91.0%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:50.0%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:18.1%;top:3px;width:4px;height:14px;background:#3fb950;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±5.0%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#8b949e;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>0.70x</div></div></div></td><td><span style='color:#3fb950;font-weight:500;'>✓ 是</span></td></tr><tr><td>2026-06-24</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$94.13</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$85.33</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-9.9%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:24.9%;width:72.0%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:60.9%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:3.1%;top:3px;width:4px;height:14px;background:#f85149;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±5.8%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#f85149;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>1.61x</div></div></div></td><td><span style='color:#f85149;font-weight:500;'>✗ 否</span></td></tr><tr><td>2026-06-23</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$103.84</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$94.13</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-9.0%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:25.5%;width:71.4%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:61.2%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:3.1%;top:3px;width:4px;height:14px;background:#f85149;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±5.8%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#f85149;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>1.63x</div></div></div></td><td><span style='color:#f85149;font-weight:500;'>✗ 否</span></td></tr><tr><td>2026-06-22</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$109.46</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$103.84</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-4.7%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:3.6%;width:92.7%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:50.0%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:12.6%;top:3px;width:4px;height:14px;background:#3fb950;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±6.4%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#8b949e;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>0.81x</div></div></div></td><td><span style='color:#3fb950;font-weight:500;'>✓ 是</span></td></tr><tr><td>2026-06-18 <span style='font-size:10px;color:#d29922;'>→2026-06-22 (4d)</span></td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$112.53</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$109.46</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-2.4%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:61.2%;width:27.2%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:74.8%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:11.6%;top:3px;width:4px;height:14px;background:#f85149;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±0.6%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#f85149;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>4.63x</div></div></div></td><td><span style='color:#f85149;font-weight:500;'>✗ 否</span> <span style="padding:1px 5px;border-radius:3px;background:#f8514933;color:#f85149;font-size:9px;font-weight:600;">异常</span></td></tr><tr><td>2026-06-17</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$116.56</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$112.53</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#3fb950;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-3.0%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:6.2%;width:87.6%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:50.0%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:7.1%;top:3px;width:4px;height:14px;background:#3fb950;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±3.5%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#8b949e;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>0.98x</div></div></div></td><td><span style='color:#3fb950;font-weight:500;'>✓ 是</span></td></tr><tr><td>2026-06-16</td><td><div style='font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px;line-height:1.4;'><span style='color:#8b949e;'>$122.81</span> <span style='color:#8b949e;'>→</span> <span style='color:#f85149;font-weight:500;'>$116.56</span></div></td><td style='min-width:220px;'><div><div style='position:relative;height:12px;'><div style='position:absolute;left:5px;font-size:10px;color:#f85149;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;white-space:nowrap;line-height:12px;'>-4.1%</div></div><div style='position:relative;height:20px;background:#161b22;border-radius:3px;overflow:hidden;'><div style='position:absolute;left:12.2%;width:83.0%;top:0;bottom:0;background:#3fb95022;border-left:1.5px solid #3fb95088;border-right:1.5px solid #3fb95088;'></div><div style='position:absolute;left:53.7%;top:1px;bottom:1px;width:1px;background:repeating-linear-gradient(to bottom,#8b949e 0 2px,transparent 2px 4px);'></div><div style='position:absolute;left:4.8%;top:3px;width:4px;height:14px;background:#f85149;border-radius:2px;transform:translateX(-50%);box-shadow:0 0 0 1.5px #0d1117;'></div><div style='position:absolute;left:5px;top:3px;font-size:10px;color:#8b949e;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>±4.3%</div><div style='position:absolute;right:5px;top:3px;font-size:10px;color:#f85149;font-weight:500;font-family:ui-monospace,SFMono-Regular,monospace;pointer-events:none;'>1.18x</div></div></div></td><td><span style='color:#f85149;font-weight:500;'>✗ 否</span></td></tr>
+  </table>
+</div>
+
+<div style="color:#8b949e;font-size:11px;text-align:center;margin-top:20px;padding:10px;">
+  期权流向趋势分析 — 仅供教育/研究。不构成投资建议。
+  <br>数据来自 yfinance。OI 可能滞后。基于成交量的信号更可靠。
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" onload="initCharts()"></script>
+<script>
+function initCharts() {
+  // P/C Spread Chart (enhanced)
+  const spreadDates = ["2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30"];
+  const spotData = [122.81, 116.56, 112.53, 109.46, 103.84, 94.13, 85.33, 82.31, 92.68, 86.93];
+  const spreadDatasets = [{"label": "FRONT", "data": [0.99, 7.54, 0.43, 5.14, 4.74, 4.86, 16.21, -29.81, -3.36, 5.56], "borderColor": "#3fb950", "borderWidth": 2, "pointRadius": 3, "tension": 0, "spanGaps": true}, {"label": "2W", "data": [-1.57, 0.77, 2.7, 5.98, 3.49, 6.37, "null", 7.59, 1.04, 7.2], "borderColor": "#f85149", "borderWidth": 2, "pointRadius": 3, "tension": 0, "spanGaps": true}, {"label": "1M", "data": [-9.59, -6.16, 5.06, 6.36, 1.11, 11.39, 9.63, 8.78, 6.93, 13.11], "borderColor": "#d29922", "borderWidth": 2, "pointRadius": 3, "tension": 0, "spanGaps": true}, {"label": "2M", "data": [-4.65, -5.71, 4.29, 6.07, 0.03, 8.85, 10.32, 8.83, 2.76, 10.17], "borderColor": "#58a6ff", "borderWidth": 2, "pointRadius": 3, "tension": 0, "spanGaps": true}, {"label": "FAR", "data": ["null", "null", "null", 8.14, 1.54, 8.17, 10.37, 9.22, 4.6, 10.35], "borderColor": "#a371f7", "borderWidth": 2, "pointRadius": 3, "tension": 0, "spanGaps": true}];
+
+  // Add spot price as gray dashed line on right axis
+  spreadDatasets.push({
+    label: 'Spot',
+    data: spotData,
+    borderColor: '#8b949e',
+    borderWidth: 1.5,
+    borderDash: [6, 3],
+    pointRadius: 0,
+    tension: 0.3,
+    spanGaps: true,
+    yAxisID: 'ySpot',
+    order: 10
+  });
+
+  // Build custom legend with latest values
+  const latestVals = {"FRONT": 5.56, "2W": 7.2, "1M": 13.11, "2M": 10.17, "FAR": 10.35};
+  const legendEl = document.getElementById('spreadLegend');
+  spreadDatasets.forEach(ds => {
+    if (ds.label === 'Spot') return;
+    const val = latestVals[ds.label];
+    const valStr = val !== undefined ? ` ${val > 0 ? '+' : ''}${val.toFixed(1)}` : '';
+    const dot = document.createElement('span');
+    dot.style.cssText = 'display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#e6edf3;';
+    dot.innerHTML = `<span style="width:10px;height:10px;border-radius:50%;background:${ds.borderColor};display:inline-block;"></span>${ds.label}<span style="color:${val < 0 ? '#f85149' : '#3fb950'};font-weight:500;">${valStr}</span>`;
+    legendEl.appendChild(dot);
+  });
+
+  const spreadChart = new Chart(document.getElementById('spreadChart'), {
+    type: 'line',
+    data: { labels: spreadDates, datasets: spreadDatasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { right: 44 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#161b22',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          titleColor: '#e6edf3',
+          bodyColor: '#e6edf3',
+          padding: 10,
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.dataset.label === 'Spot') return 'Spot: $' + ctx.parsed.y.toFixed(2);
+              const v = ctx.parsed.y;
+              return ctx.dataset.label + ': ' + (v > 0 ? '+' : '') + v.toFixed(1) + ' pts';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 11 }, maxRotation: 0 }, grid: { display: false } },
+        y: {
+          position: 'left',
+          ticks: { color: '#8b949e', font: { size: 11 }, callback: v => (v > 0 ? '+' : '') + v },
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          title: { display: true, text: 'P/C IV Spread (pts)', color: '#8b949e', font: { size: 12 } }
+        },
+        ySpot: {
+          position: 'right',
+          ticks: { color: '#8b949e', font: { size: 10 }, callback: v => '$' + v },
+          grid: { display: false },
+          title: { display: true, text: 'Spot Price', color: '#8b949e', font: { size: 11 } }
+        }
+      }
+    },
+    plugins: [{
+      // Zone shading: red below zero, green above
+      beforeDraw(chart) {
+        const yScale = chart.scales.y;
+        const ctx = chart.ctx;
+        const area = chart.chartArea;
+        const yZero = yScale.getPixelForValue(0);
+        if (yZero < area.top || yZero > area.bottom) return;
+        ctx.save();
+        // Green zone above zero
+        ctx.fillStyle = 'rgba(63, 185, 80, 0.12)';
+        ctx.fillRect(area.left, area.top, area.right - area.left, yZero - area.top);
+        // Red zone below zero
+        ctx.fillStyle = 'rgba(248, 81, 73, 0.18)';
+        ctx.fillRect(area.left, yZero, area.right - area.left, area.bottom - yZero);
+        // Zero line
+        ctx.strokeStyle = '#e6edf3';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(area.left, yZero);
+        ctx.lineTo(area.right, yZero);
+        ctx.stroke();
+        ctx.fillStyle = '#e6edf3';
+        ctx.font = '500 11px -apple-system,sans-serif';
+        ctx.fillText('ZERO — call skew below this line', area.left + 6, yZero - 6);
+        ctx.restore();
+      },
+      // Data labels: end-anchored, with anti-overlap (sort by y, push labels apart)
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const area = chart.chartArea;
+        const labels = [];
+        chart.data.datasets.forEach((ds, i) => {
+          if (ds.label === 'Spot') return;
+          const meta = chart.getDatasetMeta(i);
+          let lastIdx = -1;
+          for (let k = ds.data.length - 1; k >= 0; k--) {
+            const v = ds.data[k];
+            if (v !== null && v !== 'null' && v !== undefined) { lastIdx = k; break; }
+          }
+          if (lastIdx < 0) return;
+          const pt = meta.data[lastIdx];
+          const val = ds.data[lastIdx];
+          labels.push({ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: (val > 0 ? '+' : '') + parseFloat(val).toFixed(1) });
+        });
+        // Anti-collision: sort by y, enforce min spacing
+        labels.sort((a, b) => a.y - b.y);
+        const minGap = 14;
+        for (let i = 1; i < labels.length; i++) {
+          if (labels[i].y - labels[i-1].y < minGap) labels[i].y = labels[i-1].y + minGap;
+        }
+        // Clamp to chart area
+        for (const l of labels) l.y = Math.max(area.top + 6, Math.min(area.bottom - 6, l.y));
+        ctx.save();
+        ctx.font = '600 11px -apple-system,sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        for (const l of labels) {
+          ctx.fillStyle = l.color;
+          ctx.fillText(l.text, l.x, l.y);
+        }
+        ctx.restore();
+      }
+    }]
+  });
+
+  // Historical 14D IV + underlying close chart
+  const ivDates = ["2026-04-15", "2026-04-16", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30"];
+  new Chart(document.getElementById('ivChart'), {
+    type: 'line',
+    data: {
+      labels: ivDates,
+      datasets: [
+        { label: '14D 50Δ IV', data: [69.3, 70.1, 84.4, 88.8, 84.4, 84.1, 85.6, 80.1, 78.6, 81.7, 78.8, 75.6, 75.6, 73.7, 80.2, 78.5, 71.1, 67.3, 68.6, 73.5, 70.1, 67.8, 66.9, 65.7, 74.1, 69.3, 68.0, 62.7, 61.8, 64.9, 63.4, 64.7, 66.6, 71.0, 81.8, 88.3, 80.0, 93.2, 79.9, 85.4, 82.4, 84.1, 73.2, 73.7, 71.0, 80.0, 78.6, 78.9, 80.6, 94.2, 105.9, 0, 95.8, 96.3], borderColor: '#f2cc60', borderWidth: 2.5, pointRadius: 2, tension: 0.15, yAxisID: 'y' },
+        { label: 'RV30', data: [62.1, 55.4, 63.2, 63.2, 61.5, 62.3, 67.2, 68.5, 68.6, 68.7, 67.6, 69.0, 67.0, 69.2, 69.1, 69.1, 68.8, 70.1, 68.9, 66.7, 68.5, 69.8, 70.1, 71.8, 73.3, 72.5, 72.1, 72.2, 73.1, 72.8, 73.3, 72.5, 73.1, 66.6, 70.8, 72.5, 66.6, 68.3, 71.0, 73.9, 73.9, 74.7, 73.9, 72.8, 73.0, 73.3, 73.4, 73.2, 71.8, 72.4, 74.5, 74.5, 83.8, 84.2], borderColor: '#58a6ff', borderWidth: 1.5, pointRadius: 2, tension: 0.15, borderDash: [4,4], yAxisID: 'y' },
+        { label: 'Underlying Close', data: [143.54, 148.94, 166.52, 166.52, 170.81, 163.97, 179.36, 172.47, 171.02, 169.2, 165.71, 158.19, 165.45, 177.17, 183.8, 186.9, 186.82, 179.84, 187.59, 195.94, 184.42, 178.03, 186.97, 177.42, 166.63, 164.63, 165.81, 164.85, 159.89, 159.93, 154.2, 151.64, 159.09, 149.78, 136.08, 126.55, 129.37, 120.44, 127.2, 117.02, 115.35, 120.15, 123.97, 131.14, 122.81, 116.56, 112.53, 109.46, 103.84, 94.13, 85.33, 82.31, 92.68, 86.93], borderColor: '#8b949e', borderWidth: 1.5, pointRadius: 0, tension: 0.15, borderDash: [6,3], yAxisID: 'yPrice' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { right: 44 } },
+      plugins: { legend: { position: 'top', labels: { color: '#8b949e', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { display: false } },
+        y: { position: 'left', ticks: { color: '#8b949e', callback: v => v.toFixed(0) + '%' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: '14D IV / RV30 (%)', color: '#8b949e' } },
+        yPrice: { position: 'right', ticks: { color: '#8b949e', callback: v => '$' + v }, grid: { display: false }, title: { display: true, text: 'Underlying Close ($)', color: '#8b949e' } }
+      }
+    },
+    plugins: [{
+      // End-anchored labels with anti-overlap
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const area = chart.chartArea;
+        const labels = [];
+        chart.data.datasets.forEach((ds, i) => {
+          const meta = chart.getDatasetMeta(i);
+          let lastIdx = -1;
+          for (let k = ds.data.length - 1; k >= 0; k--) {
+            const v = ds.data[k];
+            if (v !== null && v !== undefined) { lastIdx = k; break; }
+          }
+          if (lastIdx < 0) return;
+          const pt = meta.data[lastIdx];
+          const val = ds.data[lastIdx];
+          const fmt = ds.label === 'Underlying Close' ? '$' + val.toFixed(0) : val.toFixed(1) + '%';
+          labels.push({ x: pt.x + 4, y: pt.y, color: ds.borderColor, text: fmt });
+        });
+        labels.sort((a, b) => a.y - b.y);
+        const minGap = 14;
+        for (let i = 1; i < labels.length; i++) {
+          if (labels[i].y - labels[i-1].y < minGap) labels[i].y = labels[i-1].y + minGap;
+        }
+        for (const l of labels) l.y = Math.max(area.top + 6, Math.min(area.bottom - 6, l.y));
+        ctx.save();
+        ctx.font = '600 11px -apple-system,sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        for (const l of labels) {
+          ctx.fillStyle = l.color;
+          ctx.fillText(l.text, l.x, l.y);
+        }
+        ctx.restore();
+      }
+    }]
+  });
+
+  // --- OI Distribution histogram ---
+  const oiAll = {"2026-07-02": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 152.5, 155.0, 157.5, 160.0, 162.5, 165.0, 167.5, 170.0, 172.5, 175.0, 177.5, 180.0, 182.5, 185.0, 187.5, 190.0, 192.5, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0], "call_oi": [9, 19, 13, 1, 617, 0, 201, 0, 0, 39, 61, 4543, 71, 98, 205, 25, 19, 28, 57, 315, 36, 65, 32, 18, 254, 38, 67, 237, 327, 4088, 13892, 8388, 8228, 12357, 11076, 17866, 7644, 8326, 13057, 10263, 6827, 2151, 4511, 4361, 10926, 6806, 1625, 4026, 4160, 3659, 1420, 6377, 6223, 3663, 10562, 3342, 2786, 445, 227, 3840, 3400, 4599, 649, 354, 4568, 354, 754, 615, 347, 1899, 388, 273, 266, 195, 2272, 511, 401, 322, 460, 1313, 220, 246, 153, 182, 1221, 260, 199, 426, 229, 791, 273, 313, 189, 272, 1997, 454, 329, 220, 8277, 219, 320, 105, 971, 114, 1526, 109, 627, 91, 337, 329, 371, 58, 207, 6775, 2151, 480, 543, 362, 544, 127, 102, 275, 133, 145, 104, 284, 212, 520, 246, 993, 544, 1758, 406, 90, 249, 28, 55, 5, 142, 14], "put_oi": [4510, 1221, 2306, 9919, 11377, 6386, 4008, 559, 74, 5403, 139, 81, 426, 363, 10721, 92, 980, 703, 1014, 9981, 738, 1157, 623, 1218, 18826, 4177, 1566, 1779, 1725, 12183, 2929, 3137, 3104, 1548, 11414, 927, 892, 911, 2907, 2477, 482, 440, 1053, 306, 6308, 417, 132, 1213, 461, 3835, 484, 267, 986, 1301, 1085, 480, 139, 103, 128, 1862, 173, 69, 313, 94, 1088, 134, 47, 32, 207, 682, 26, 32, 257, 3, 341, 5, 1, 4, 4, 2, 0, 0, 1, 5, 13, 4, 0, 0, 0, 4, 3, 0, 1, 0, 5, 0, 0, 0, 0, 0, 85, 0, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "max_pain": 89.0, "spot": 86.93, "dte": 2}, "2026-07-10": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 61.0, 62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 95.0, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 152.5, 155.0, 157.5, 160.0, 162.5, 165.0, 167.5, 170.0, 172.5, 175.0, 177.5, 180.0, 182.5, 185.0, 187.5, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0], "call_oi": [5, 1, 7, 9, 0, 707, 301, 0, 0, 1, 2, 35, 18, 0, 0, 0, 67, 5, 37, 194, 692, 697, 17, 31, 46, 9, 65, 6, 47, 77, 854, 568, 309, 121, 196, 179, 816, 355, 157, 69, 283, 139, 90, 472, 1103, 430, 21, 155, 21, 360, 54, 175, 3270, 262, 455, 147, 124, 719, 394, 248, 523, 307, 2014, 141, 244, 290, 197, 1084, 183, 155, 143, 201, 4159, 396, 153, 170, 343, 606, 239, 294, 143, 213, 1956, 200, 119, 128, 159, 778, 155, 101, 266, 152, 775, 59, 38, 156, 109, 359, 34, 119, 37, 112, 865, 124, 523, 115, 488, 65, 651, 29, 327, 38, 821, 29, 432, 105, 185, 279, 524, 94, 328, 39, 882, 66, 102, 40, 23, 264, 131, 416, 485, 54, 157, 201, 500, 100, 603, 400, 1743, 421], "put_oi": [549, 3264, 380, 1028, 5720, 3157, 5974, 53, 97, 126, 39, 4777, 79, 527, 104, 99, 5444, 111, 415, 345, 146, 5068, 85, 182, 89, 36, 7334, 148, 441, 248, 115, 6091, 221, 160, 114, 57, 3451, 107, 0, 63, 57, 36, 12, 23, 724, 372, 0, 0, 6, 304, 37, 204, 3458, 426, 61, 304, 242, 413, 87, 194, 95, 245, 233, 91, 56, 18, 228, 560, 47, 24, 27, 43, 864, 167, 88, 35, 75, 657, 50, 26, 22, 255, 394, 6, 39, 11, 82, 396, 8, 21, 29, 116, 240, 15, 6, 57, 54, 190, 7, 3, 17, 6, 90, 0, 77, 0, 1, 0, 51, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0], "max_pain": 100.0, "spot": 86.93, "dte": 10}, "2026-07-17": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 61.0, 62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 95.0, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0], "call_oi": [66, 42, 5, 0, 4, 9, 680, 3, 0, 8, 151, 411, 1, 1, 0, 1, 67, 1, 1, 0, 6, 99, 90, 2, 0, 1, 255, 258, 430, 36, 0, 350, 8, 19, 104, 143, 338, 223, 90, 108, 232, 1292, 145, 226, 136, 62, 119, 247, 94, 1359, 201, 48, 69, 19, 284, 28, 171, 2365, 224, 231, 288, 54, 1103, 301, 128, 203, 137, 7503, 165, 673, 159, 399, 3078, 294, 154, 340, 160, 5712, 116, 306, 1191, 199, 3283, 91, 40, 3140, 2381, 4193, 5032, 4955, 1698, 4237, 2469, 3185, 8141, 39269, 2415, 2734, 3156, 11670, 1353, 3575, 730, 3271, 2440, 1688, 712, 1042, 970, 9454, 317, 1886, 1192, 514, 836, 1263, 523, 676, 2401, 3908, 1453, 1693, 129, 116, 177, 307, 105, 1047, 2253], "put_oi": [3787, 10098, 1715, 4400, 1010, 4343, 2686, 1385, 2874, 7016, 7603, 9013, 17, 7, 30, 247, 7882, 815, 555, 13, 44, 18805, 837, 74, 171, 415, 10747, 105, 132, 896, 357, 12956, 174, 189, 103, 212, 8869, 138, 283, 68, 68, 6719, 114, 43, 10, 12, 29, 0, 88, 5224, 6, 3, 218, 0, 2, 0, 5, 7089, 24, 52, 82, 93, 3785, 53, 87, 187, 30, 5036, 32, 12, 30, 38, 2805, 324, 59, 34, 9, 7487, 6, 86, 26, 17, 1408, 8, 11, 4073, 1666, 1497, 820, 1698, 1763, 550, 499, 187, 160, 65, 171, 150, 15, 4, 0, 2, 0, 1, 0, 0, 0, 0, 0, 10, 1, 10, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13], "max_pain": 115.0, "spot": 86.93, "dte": 17}, "2026-07-24": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 150.0, 152.5, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0], "call_oi": [7, 685, 61, 0, 0, 346, 93, 5, 35, 17, 168, 1, 23, 14, 27, 133, 226, 110, 186, 21, 556, 17, 28, 51, 44, 203, 53, 14, 25, 48, 702, 9, 53, 31, 107, 206, 95, 176, 143, 42, 357, 86, 148, 112, 37, 546, 51, 84, 65, 182, 472, 60, 70, 189, 42, 546, 199, 174, 24, 48, 393, 54, 47, 59, 79, 282, 52, 58, 61, 14, 200, 39, 16, 73, 140, 309, 631, 61, 262, 250, 215, 305, 150, 176, 143, 325, 194, 519, 56, 14, 2, 261, 16, 111, 191, 274, 36, 26, 2, 13], "put_oi": [96, 61, 206, 1264, 1913, 2299, 1777, 1229, 911, 775, 717, 122, 157, 96, 559, 358, 31, 45, 16, 20, 512, 17, 41, 14, 2, 910, 11, 6, 0, 1, 1641, 19, 15, 5, 107, 952, 47, 11, 41, 34, 656, 40, 25, 42, 38, 790, 28, 70, 98, 49, 865, 29, 282, 125, 82, 785, 23, 69, 361, 596, 663, 75, 9, 8, 11, 107, 21, 14, 86, 24, 242, 62, 26, 108, 15, 210, 269, 17, 170, 239, 156, 102, 118, 63, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "max_pain": 117.0, "spot": 86.93, "dte": 24}, "2026-07-31": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0], "call_oi": [0, 0, 56, 0, 104, 143, 56, 2, 10, 55, 17, 0, 2, 10, 0, 115, 25, 30, 80, 137, 295, 69, 83, 95, 17, 570, 65, 27, 18, 11, 812, 89, 4, 6, 21, 550, 62, 61, 146, 229, 378, 68, 33, 25, 24, 120, 167, 81, 91, 35, 750, 16, 158, 35, 155, 783, 59, 110, 22, 58, 877, 118, 12, 5, 55, 1266, 27, 46, 353, 227, 738, 253, 277, 242, 436, 213, 710, 164, 88, 38, 407, 71, 2, 6, 33, 35, 173, 35], "put_oi": [60, 67, 113, 413, 531, 480, 677, 503, 378, 684, 745, 19, 42, 792, 19, 498, 103, 54, 160, 31, 890, 4, 130, 53, 0, 952, 1, 0, 0, 0, 889, 1, 0, 0, 42, 748, 54, 1023, 25, 45, 1016, 37, 96, 14, 12, 1136, 18, 9, 8, 8, 640, 8, 59, 8, 17, 373, 13, 53, 5, 24, 368, 45, 5, 8, 11, 440, 0, 69, 258, 307, 278, 217, 286, 203, 158, 43, 28, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "max_pain": 115.0, "spot": 86.93, "dte": 31}, "2026-08-07": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 102.0, 103.0, 104.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0], "call_oi": [0, 0, 0, 0, 0, 0, 20, 0, 1, 0, 4, 92, 0, 21, 4, 12, 11, 68, 34, 100, 10, 51, 0, 112, 129, 60, 31, 0, 8, 160, 4, 4, 3, 132, 85, 18, 40, 134, 416, 209, 331, 127, 101, 0, 0, 204, 75, 402, 18], "put_oi": [75, 61, 58, 1, 78, 3, 45, 93, 141, 91, 138, 60, 41, 73, 10, 183, 29, 8, 11, 0, 186, 37, 2, 0, 179, 0, 0, 10, 92, 55, 0, 0, 0, 0, 26, 200, 54, 51, 45, 0, 50, 12, 10, 7, 4, 1, 0, 0, 0], "max_pain": 95.0, "spot": 86.93, "dte": 38}, "2026-08-21": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0, 350.0, 355.0, 360.0, 365.0, 370.0, 375.0, 380.0, 385.0, 390.0, 395.0, 400.0, 405.0, 410.0, 415.0, 420.0, 425.0, 430.0, 435.0, 440.0, 445.0, 450.0, 455.0, 460.0, 465.0, 470.0, 475.0, 480.0, 485.0, 490.0, 495.0, 500.0, 505.0, 510.0, 515.0, 520.0, 525.0, 530.0, 535.0, 540.0], "call_oi": [91, 8, 0, 1, 1, 0, 0, 5, 3, 94, 45, 109, 48, 121, 214, 343, 522, 598, 1115, 2170, 3347, 4133, 1406, 2614, 52120, 1707, 1236, 2956, 1138, 6947, 3263, 5349, 1020, 1704, 1791, 2914, 889, 1323, 836, 5289, 770, 872, 632, 1298, 1934, 854, 365, 509, 348, 2887, 624, 337, 176, 2222, 4132, 298, 94, 218, 69, 2869, 192, 207, 390, 208, 65, 236, 113, 455, 282, 864, 95, 105, 75, 167, 243, 136, 46, 310, 41, 831, 63, 128, 31, 233, 17, 113, 52, 114, 168, 4176, 103, 19, 47, 60, 58, 117, 39, 41, 210, 1148, 71, 23, 36, 80, 60, 217, 79, 2431], "put_oi": [12172, 1549, 3525, 5353, 668, 2321, 467, 4925, 700, 16702, 2179, 6954, 3277, 7816, 2733, 3412, 1405, 6210, 1286, 3587, 1847, 5973, 3070, 2758, 1945, 7457, 1506, 1763, 1883, 2253, 1756, 2007, 1391, 742, 1510, 1013, 1054, 679, 222, 1196, 44, 210, 50, 9, 1, 1, 0, 9, 13, 22, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 1, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "max_pain": 125.0, "spot": 86.93, "dte": 52}, "2026-09-18": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 260.0, 270.0, 280.0, 290.0, 300.0, 310.0, 320.0, 330.0, 340.0, 350.0, 360.0, 370.0, 380.0, 390.0, 400.0, 410.0, 420.0, 430.0, 440.0, 450.0, 460.0, 470.0, 480.0, 490.0, 500.0, 510.0, 520.0, 530.0, 540.0, 550.0, 560.0, 570.0, 580.0, 590.0, 600.0, 610.0, 620.0, 630.0, 640.0, 650.0, 660.0, 670.0, 680.0, 690.0, 700.0, 710.0, 720.0, 730.0, 740.0, 750.0, 760.0, 770.0, 780.0, 790.0, 800.0, 810.0, 820.0, 830.0, 840.0, 850.0, 860.0, 870.0, 880.0, 890.0, 900.0, 910.0], "call_oi": [167, 3, 0, 0, 0, 3, 0, 21, 2, 10, 5, 55, 27, 78, 55, 79, 242, 2640, 853, 1346, 310, 400, 465, 1427, 667, 1426, 879, 2045, 2149, 4725, 851, 1292, 974, 4224, 2545, 1745, 1190, 1485, 1028, 6934, 378, 910, 775, 1147, 408, 2743, 388, 1633, 380, 2952, 3398, 997, 1941, 1067, 5069, 1152, 1170, 1555, 311, 4192, 323, 580, 356, 229, 2367, 119, 3118, 133, 2364, 600, 102, 189, 328, 198, 3214, 306, 287, 301, 206, 355, 137, 79, 230, 311, 1630, 486, 93, 134, 191, 318, 104, 164, 68, 66, 406, 87, 62, 94, 98, 426, 108, 164, 273, 160, 1114, 182, 135, 88, 0, 285, 109, 255, 188, 153, 781, 4826], "put_oi": [12011, 2915, 978, 4249, 549, 1402, 496, 3621, 1663, 10051, 2520, 1948, 2983, 4820, 2104, 6741, 3099, 2072, 1457, 8672, 2848, 1613, 2278, 1936, 1179, 1426, 940, 4250, 2707, 4573, 1704, 1868, 1930, 1545, 1291, 1339, 665, 953, 290, 727, 103, 508, 60, 242, 75, 259, 1, 199, 0, 11, 1, 41, 104, 43, 75, 50, 8, 2, 0, 0, 3, 0, 0, 0, 0, 0, 10, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0], "max_pain": 150.0, "spot": 86.93, "dte": 80}};
+  const oiSel = document.getElementById('oiDistExpiry');
+  const oiCanvas = document.getElementById('oiDistChart');
+  if (oiSel && oiCanvas && Object.keys(oiAll).length) {
+    let oiChart;
+    function pixelAtStrike(scale, val, strikes) {
+      let lo = -1, hi = -1;
+      for (let i = 0; i < strikes.length; i++) {
+        if (strikes[i] <= val) lo = i;
+        if (strikes[i] >= val && hi < 0) { hi = i; }
+      }
+      if (lo < 0) return scale.getPixelForValue(strikes[0].toString());
+      if (hi < 0 || hi === lo) return scale.getPixelForValue(strikes[lo].toString());
+      const px_lo = scale.getPixelForValue(strikes[lo].toString());
+      const px_hi = scale.getPixelForValue(strikes[hi].toString());
+      const t = (val - strikes[lo]) / (strikes[hi] - strikes[lo]);
+      return px_lo + t * (px_hi - px_lo);
+    }
+    function renderOi() {
+      const exp = oiSel.value;
+      const d = oiAll[exp];
+      if (!d) return;
+      const labels = d.strikes.map(s => s.toString());
+      const meta = document.getElementById('oiDistMeta');
+      const totalCall = d.call_oi.reduce((a, b) => a + b, 0);
+      const totalPut = d.put_oi.reduce((a, b) => a + b, 0);
+      const pcr = totalCall ? (totalPut / totalCall) : 0;
+      meta.textContent = `Max Pain $${d.max_pain.toFixed(2)} · Spot $${d.spot.toFixed(2)} · Calls ${totalCall.toLocaleString()} · Puts ${totalPut.toLocaleString()} · PCR ${pcr.toFixed(2)}`;
+      if (oiChart) { oiChart.destroy(); }
+      oiChart = new Chart(oiCanvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Calls', data: d.call_oi, backgroundColor: '#3fb950cc', borderColor: '#3fb950', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 },
+            { label: 'Puts',  data: d.put_oi,  backgroundColor: '#f85149cc', borderColor: '#f85149', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          layout: { padding: { top: 24 } },
+          plugins: {
+            legend: { display: true, labels: { color: '#e6edf3', font: { size: 11 }, boxWidth: 12 } },
+            tooltip: {
+              backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+              titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+              callbacks: {
+                title: items => '$' + items[0].label,
+                label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString(),
+              },
+            },
+          },
+          scales: {
+            x: {
+              stacked: false,
+              ticks: { color: '#8b949e', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 18, callback: function(v) { return '$' + this.getLabelForValue(v); } },
+              grid: { display: false },
+            },
+            y: {
+              ticks: { color: '#8b949e', font: { size: 11 }, callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'k' : v },
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              title: { display: true, text: 'Open Interest', color: '#8b949e', font: { size: 11 } },
+            },
+          },
+        },
+        plugins: [{
+          id: 'oi-markers',
+          afterDatasetsDraw(chart) {
+            const ctx = chart.ctx;
+            const xs = chart.scales.x;
+            const area = chart.chartArea;
+            ctx.save();
+            const markers = [
+              { value: d.spot,     color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) },
+              { value: d.max_pain, color: '#facc15', label: 'Max Pain $' + d.max_pain.toFixed(2) },
+            ];
+            for (const m of markers) {
+              const px = pixelAtStrike(xs, m.value, d.strikes);
+              if (px < area.left || px > area.right) continue;
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 1.5;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(px, area.top);
+              ctx.lineTo(px, area.bottom);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.fillStyle = m.color;
+              ctx.font = '600 10px -apple-system,sans-serif';
+              ctx.textBaseline = 'top';
+              const w = ctx.measureText(m.label).width;
+              const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
+              ctx.fillText(m.label, tx, area.top - 18);
+            }
+            ctx.restore();
+          },
+        }],
+      });
+    }
+    oiSel.addEventListener('change', renderOi);
+    renderOi();
+  }
+
+  // --- OI Delta histogram (yesterday → today) ---
+  const oiDeltaAll = {"2026-07-02": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 152.5, 155.0, 157.5, 160.0, 162.5, 165.0, 167.5, 170.0, 172.5, 175.0, 177.5, 180.0, 182.5, 185.0, 187.5, 190.0, 192.5, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0], "call_delta": [0, 0, 0, 0, 1, 0, 0, 0, 0, -60, -57, 21, -242, -156, -103, -28, -43, -8, 0, -126, -1, 5, -2, 11, -121, 0, -35, -195, -86, 342, 409, -97, -748, 187, -370, -41, 417, -978, 423, 2060, 174, 1422, 357, 560, 545, 464, 390, 576, -1133, -1122, -20, -27, 28, -26, 1140, -29, -535, 52, 6, 713, 37, 10, 125, 6, -403, 108, 6, 18, 0, -303, 21, 1, -18, 45, -7, 258, 0, 8, 0, 43, -1, -6, 11, -32, 72, 6, 1, -2, 74, 19, 12, 1, 35, 35, 41, 0, 0, -5, 180, 1, -1, 0, 169, -1, -77, 0, -4, 0, 0, 0, 0, 0, 0, -10, 0, -3, 0, 0, -3, 0, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0], "put_delta": [2, 25, 137, 388, -213, 2426, 389, 7, 34, -326, 37, 15, -107, 2, -1177, 38, -170, 122, 20, -4576, 69, -61, -558, 328, 1849, 310, 134, 1110, 148, 2382, 720, 1201, -554, 497, 1870, 747, 150, 102, 35, -1985, -11, -25, -17, 32, 215, 1, -3, -1, -21, -564, -2, -2, 0, -3, -10, -2, -11, -2, -2, -216, -2, -2, -19, -26, -40, 0, -2, -2, -18, -20, 0, 0, -1, 0, -38, 0, 0, 0, 0, 0, 0, 0, -6, 0, 0, -2, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 2, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-07-10": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 61.0, 62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 95.0, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 146.0, 147.0, 148.0, 149.0, 150.0, 152.5, 155.0, 157.5, 160.0, 162.5, 165.0, 167.5, 170.0, 172.5, 175.0, 177.5, 180.0, 182.5, 185.0, 187.5, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0], "call_delta": [3, 0, -1, 0, 0, 2, 0, 0, 0, 0, 0, 31, 18, 0, 0, 0, 7, 5, 36, 177, 636, 664, 16, 25, 45, 0, -2, 2, -17, 1, -8, -337, -21, -1, 9, 27, 208, 230, 29, 44, 80, 118, 84, 118, 641, 174, 10, 126, 9, -6, 4, 122, 1055, 77, 276, 67, 28, 211, 155, 43, 223, 31, 1220, 9, 50, 112, 76, 240, 8, 25, -4, -3, 128, 13, 44, 10, 3, 97, 1, -10, 0, 1, 51, 2, 0, 12, 0, 23, 1, 0, 132, 85, -8, 1, 0, 18, 0, -51, 0, 0, 0, 0, -2, -1, 114, 0, 2, 0, -1, 0, 0, 0, 2, 0, 0, -1, -1, -1, -2, 0, -9, 0, 60, -56, -60, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "put_delta": [29, 3011, 135, 268, 2695, 704, 2621, 3, 37, 6, 27, 409, -2, 202, 9, 12, -115, 13, 264, 223, 10, 389, 19, 22, 44, 9, 1192, 84, 362, 94, 34, 963, 98, 31, 87, 54, 509, 11, 0, 49, 51, 33, 10, 10, 4, 29, 0, 0, 0, 1, 1, 201, 1834, -6, -1, -3, -1, 0, -2, 0, 0, 0, -2, 0, 20, 1, 0, -2, -2, 1, -5, 25, 0, 0, -1, -5, 11, 11, 0, -4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, -2, -1, -16, -2, -2, 0, 0, 0, -1, 0, -13, 0, 0, -6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 10, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-07-17": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 61.0, 62.0, 63.0, 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 70.0, 71.0, 72.0, 73.0, 74.0, 75.0, 76.0, 77.0, 78.0, 79.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 91.5, 92.0, 92.5, 93.0, 93.5, 94.0, 95.0, 96.0, 96.5, 97.0, 97.5, 98.0, 98.5, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0], "call_delta": [1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 5, -7, 0, 0, 0, 0, 24, 258, 419, 36, 0, -70, -2, -4, -22, -3, -77, 0, 8, 43, 22, -25, 100, 123, 23, 31, 116, 243, 40, -243, 13, 11, 4, 14, 258, 21, -3, -314, 2, 38, 254, 1, 280, 106, 4, 122, 0, 130, 7, 496, 10, -50, 14, 9, 16, 14, 42, 191, 1, 59, 1144, 28, 144, 28, -5, -170, -29, -77, 10, 57, -43, 159, -4, -27, -121, 291, 8, -38, -4, -11, -2, -164, 1, -5, 0, -5, -2, -76, 1, -2, 0, 1, 0, 13, 1, 0, 1, 0, 1, 2, 0, 2, -1, 0, 0, 0, 0, 0, -3], "put_delta": [11, -5, -11, -4, 4, 2454, 2, 15, 795, 635, 650, -590, 0, -2, 13, 126, 225, 0, 14, 2, 0, 3207, -2, 10, 114, -4, 223, -2, 72, -5, 345, 1245, -18, 47, 46, 54, 941, 19, -218, 16, 46, -3814, 11, 3, 2, 8, 29, 0, -32, -62, 0, 1, 211, 0, 0, 0, 4, -788, 1, -9, 9, 0, -52, 3, 1, 1, 0, -137, 0, 0, 12, 0, -7, 0, -1, 0, 2, -50, 3, 0, 5, 0, -50, 0, 0, -415, -75, -15, -5, -103, -1, 0, -1, 0, -9, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 17, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-07-24": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 138.0, 139.0, 140.0, 141.0, 142.0, 143.0, 144.0, 145.0, 150.0, 152.5, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0], "call_delta": [0, 0, 0, 0, 0, 0, 1, 0, 0, 1, -29, 0, 11, -2, 3, 19, 9, -7, 12, 1, 18, 14, 6, 27, 12, 8, 20, 6, 4, 17, 25, 4, 6, 13, 48, 56, -6, 3, -4, -1, 78, 4, -8, 15, -8, 99, -13, -3, 2, 12, -82, 0, 2, 1, 7, 39, 16, -1, 4, 0, 36, 6, 18, 3, 7, -2, 8, 28, 0, 1, 12, 0, 0, 24, 2, -5, 0, 2, 1, 17, 28, 0, 0, -2, 38, 2, -25, -11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "put_delta": [5, 4, 37, 756, 776, 744, 523, -2, 79, 113, -221, 0, 5, 27, 491, 62, 2, 16, 10, 9, 68, 10, 34, 8, 0, 121, 0, 2, 0, 0, 38, 0, 11, 3, 1, -1, -1, 0, 0, 0, 0, 0, 3, 3, 1, -2, 0, 0, -1, -1, -14, 0, 1, 0, 0, -1, 0, -3, 0, 0, -18, 0, 0, -1, 1, 0, 1, 0, 1, -5, -15, -3, 4, 0, -1, 5, 0, -1, 0, -13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 24, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-07-31": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 92.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 137.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0], "call_delta": [0, 0, 0, 0, 2, 20, 19, 0, 2, 44, 1, 0, 1, 1, 0, 8, 12, -2, 7, 3, 19, 13, 16, 66, 2, 211, 61, 10, 15, 9, 266, 0, 3, 4, 1, 396, 3, -4, 1, -1, 4, 4, 7, 2, -2, 21, 1, -43, 18, 19, 228, 6, -1, -1, -48, 54, 42, 4, -24, 0, 111, 8, 5, 0, 1, 106, 1, 33, 63, 26, 112, -6, -13, 3, -26, 24, -38, 0, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0], "put_delta": [18, -18, -70, 267, 241, 372, 140, 54, -44, 233, -328, 12, 9, 148, 7, 92, 10, 12, 2, 25, 286, 3, 64, 48, 0, 164, 0, 0, 0, 0, 47, 0, 0, 0, 0, 3, 0, 0, 1, 11, -2, 0, 0, 1, 0, 33, 0, 0, 0, 0, 1, 0, 2, 0, 7, 35, 0, 3, 0, 0, 33, 0, 0, 2, 0, 27, 0, 0, 3, 1, 2, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 31, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-08-07": {"strikes": [30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 81.0, 82.0, 83.0, 84.0, 85.0, 86.0, 87.0, 88.0, 89.0, 90.0, 91.0, 93.0, 94.0, 95.0, 96.0, 97.0, 98.0, 99.0, 100.0, 102.0, 103.0, 104.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0], "call_delta": [0, 0, 0, 0, 0, 0, 9, 0, 0, 0, -2, 0, 0, -1, 3, -2, 9, 60, 31, 99, 2, 46, 0, 100, 124, 59, 31, 0, 5, 7, 3, 2, 2, 49, 83, 8, 37, 22, 406, 163, 196, 115, 100, 0, 0, 4, 10, 2, 9], "put_delta": [64, 11, -66, -103, 17, 3, 10, 80, 127, 54, 103, -5, 0, 20, 7, 123, 8, 0, 9, 0, 151, 36, 1, 0, 152, 0, 0, 9, 3, 44, 0, 0, 0, 0, 25, 22, 53, 50, 39, 0, 48, 1, 7, 5, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 38, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-08-21": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 255.0, 260.0, 265.0, 270.0, 275.0, 280.0, 285.0, 290.0, 295.0, 300.0, 305.0, 310.0, 315.0, 320.0, 325.0, 330.0, 335.0, 340.0, 345.0, 350.0, 355.0, 360.0, 365.0, 370.0, 375.0, 380.0, 385.0, 390.0, 395.0, 400.0, 405.0, 410.0, 415.0, 420.0, 425.0, 430.0, 435.0, 440.0, 445.0, 450.0, 455.0, 460.0, 465.0, 470.0, 475.0, 480.0, 485.0, 490.0, 495.0, 500.0, 505.0, 510.0, 515.0, 520.0, 525.0, 530.0, 535.0, 540.0], "call_delta": [0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 9, 2, 1, 46, 10, 175, 16, 68, -214, 18, 238, 430, -408, 79, -14, -134, -65, 1063, 23, 491, 39, -14, 3, -36, -76, 39, 3, 342, 2, 8, 31, -4, -5, -1, 0, -8, 0, 2, 0, 6, 0, 2, -1, -16, -1, 2, 0, 88, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, -5, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 0, 0, 0, 0, 0, 0, 0, 0], "put_delta": [140, -1, -3, 1, 5, -303, 30, -464, 132, 34, 18, 92, 635, -132, 176, 536, 199, -787, -17, -102, -37, -19, 33, -7, 12, -196, -261, 27, 12, 7, 0, -148, -237, -224, -147, -96, 0, -2, -10, 0, 0, -10, 0, 0, 0, 0, 0, 0, -3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 52, "prev_date": "2026-06-29", "date": "2026-06-30"}, "2026-09-18": {"strikes": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0, 140.0, 145.0, 150.0, 155.0, 160.0, 165.0, 170.0, 175.0, 180.0, 185.0, 190.0, 195.0, 200.0, 205.0, 210.0, 215.0, 220.0, 225.0, 230.0, 235.0, 240.0, 245.0, 250.0, 260.0, 270.0, 280.0, 290.0, 300.0, 310.0, 320.0, 330.0, 340.0, 350.0, 360.0, 370.0, 380.0, 390.0, 400.0, 410.0, 420.0, 430.0, 440.0, 450.0, 460.0, 470.0, 480.0, 490.0, 500.0, 510.0, 520.0, 530.0, 540.0, 550.0, 560.0, 570.0, 580.0, 590.0, 600.0, 610.0, 620.0, 630.0, 640.0, 650.0, 660.0, 670.0, 680.0, 690.0, 700.0, 710.0, 720.0, 730.0, 740.0, 750.0, 760.0, 770.0, 780.0, 790.0, 800.0, 810.0, 820.0, 830.0, 840.0, 850.0, 860.0, 870.0, 880.0, 890.0, 900.0, 910.0], "call_delta": [0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 1, 1, -9, 32, 408, -49, 56, 79, 52, 32, 129, 80, 12, 27, 9, 2, 86, 69, 178, 16, -15, -22, 4, 20, 22, 7, 776, 1, 41, 0, -7, 1, 8, 1, 0, -1, 25, 7, 2, 0, 1, 6, 23, 2, 2, 0, 3, 2, 0, 0, 1, 1, 0, 38, 0, -18, -7, 0, 0, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 10, 0, 0, 1, 2, 0, 0], "put_delta": [30, 38, 14, 0, -15, -96, 78, 189, 17, 446, -12, 35, 219, -151, -38, 345, 111, 31, 110, -22, 1, 8, -1, 12, -4, 0, -4, -2, 1, 0, 0, -1, -3, -1, -10, -134, -127, -146, 0, -72, 0, -32, 0, 0, -1, -10, 0, -13, 0, 0, 0, -93, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -4, 0, 0, 0, 0, 0], "spot": 86.93, "dte": 80, "prev_date": "2026-06-29", "date": "2026-06-30"}};
+  const odSel = document.getElementById('oiDeltaExpiry');
+  const odCanvas = document.getElementById('oiDeltaChart');
+  if (odSel && odCanvas && Object.keys(oiDeltaAll).length) {
+    let odChart;
+    function odPixelAtStrike(scale, val, strikes) {
+      let lo = -1, hi = -1;
+      for (let i = 0; i < strikes.length; i++) {
+        if (strikes[i] <= val) lo = i;
+        if (strikes[i] >= val && hi < 0) { hi = i; }
+      }
+      if (lo < 0) return scale.getPixelForValue(strikes[0].toString());
+      if (hi < 0 || hi === lo) return scale.getPixelForValue(strikes[lo].toString());
+      const px_lo = scale.getPixelForValue(strikes[lo].toString());
+      const px_hi = scale.getPixelForValue(strikes[hi].toString());
+      const t = (val - strikes[lo]) / (strikes[hi] - strikes[lo]);
+      return px_lo + t * (px_hi - px_lo);
+    }
+    function renderOd() {
+      const exp = odSel.value;
+      const d = oiDeltaAll[exp];
+      if (!d) return;
+      const labels = d.strikes.map(s => s.toString());
+      const meta = document.getElementById('oiDeltaMeta');
+      const sumCall = d.call_delta.reduce((a, b) => a + b, 0);
+      const sumPut = d.put_delta.reduce((a, b) => a + b, 0);
+      meta.textContent = `${d.prev_date} → ${d.date} · Net Call Δ ${sumCall >= 0 ? '+' : ''}${sumCall.toLocaleString()} · Net Put Δ ${sumPut >= 0 ? '+' : ''}${sumPut.toLocaleString()} · Spot $${d.spot.toFixed(2)}`;
+      if (odChart) { odChart.destroy(); }
+      odChart = new Chart(odCanvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Call Δ', data: d.call_delta, backgroundColor: ctx => (ctx.raw >= 0 ? '#3fb950cc' : '#3fb95055'), borderColor: '#3fb950', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 },
+            { label: 'Put Δ',  data: d.put_delta,  backgroundColor: ctx => (ctx.raw >= 0 ? '#f85149cc' : '#f8514955'), borderColor: '#f85149', borderWidth: 0, barPercentage: 0.95, categoryPercentage: 0.85 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: true, labels: { color: '#e6edf3', font: { size: 11 }, boxWidth: 12 } },
+            tooltip: {
+              backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+              titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+              callbacks: {
+                title: items => '$' + items[0].label,
+                label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y >= 0 ? '+' : '') + ctx.parsed.y.toLocaleString(),
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: { color: '#8b949e', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 18, callback: function(v) { return '$' + this.getLabelForValue(v); } },
+              grid: { display: false },
+            },
+            y: {
+              ticks: { color: '#8b949e', font: { size: 11 }, callback: v => (v >= 0 ? '+' : '') + (Math.abs(v) >= 1000 ? (v/1000).toFixed(0) + 'k' : v) },
+              grid: { color: ctx => ctx.tick.value === 0 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.04)' },
+              title: { display: true, text: 'OI Δ (built ↑ / unwound ↓)', color: '#8b949e', font: { size: 11 } },
+            },
+          },
+        },
+        plugins: [{
+          id: 'od-spot',
+          afterDatasetsDraw(chart) {
+            const ctx = chart.ctx;
+            const xs = chart.scales.x;
+            const area = chart.chartArea;
+            ctx.save();
+            const markers = [{ value: d.spot, color: '#22d3ee', label: 'Spot $' + d.spot.toFixed(2) }];
+            for (const m of markers) {
+              const px = odPixelAtStrike(xs, m.value, d.strikes);
+              if (px < area.left || px > area.right) continue;
+              ctx.strokeStyle = m.color;
+              ctx.lineWidth = 1.5;
+              ctx.setLineDash([4, 4]);
+              ctx.beginPath();
+              ctx.moveTo(px, area.top);
+              ctx.lineTo(px, area.bottom);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.fillStyle = m.color;
+              ctx.font = '600 10px -apple-system,sans-serif';
+              ctx.textBaseline = 'top';
+              const w = ctx.measureText(m.label).width;
+              const tx = Math.max(area.left + 4, Math.min(area.right - w - 4, px + 4));
+              ctx.fillText(m.label, tx, area.top + 4);
+            }
+            ctx.restore();
+          },
+        }],
+      });
+    }
+    odSel.addEventListener('change', renderOd);
+    renderOd();
+  }
+
+  // --- Macro SKEW (^SKEW 2y) line chart ---
+  const skewData = {"dates": ["2024-07-01", "2024-07-02", "2024-07-03", "2024-07-05", "2024-07-08", "2024-07-09", "2024-07-10", "2024-07-11", "2024-07-12", "2024-07-15", "2024-07-16", "2024-07-17", "2024-07-18", "2024-07-19", "2024-07-22", "2024-07-23", "2024-07-24", "2024-07-25", "2024-07-26", "2024-07-29", "2024-07-30", "2024-07-31", "2024-08-02", "2024-08-05", "2024-08-09", "2024-08-12", "2024-08-13", "2024-08-14", "2024-08-15", "2024-08-16", "2024-08-19", "2024-08-20", "2024-08-21", "2024-08-22", "2024-08-23", "2024-08-26", "2024-08-27", "2024-08-28", "2024-08-29", "2024-08-30", "2024-09-03", "2024-09-04", "2024-09-05", "2024-09-06", "2024-09-09", "2024-09-10", "2024-09-11", "2024-09-12", "2024-09-13", "2024-09-16", "2024-09-17", "2024-09-18", "2024-09-19", "2024-09-20", "2024-09-23", "2024-09-25", "2024-09-26", "2024-09-27", "2024-09-30", "2024-10-02", "2024-10-03", "2024-10-04", "2024-10-07", "2024-10-08", "2024-10-09", "2024-10-10", "2024-10-11", "2024-10-14", "2024-10-15", "2024-10-16", "2024-10-17", "2024-10-18", "2024-10-21", "2024-10-22", "2024-10-23", "2024-10-24", "2024-10-25", "2024-10-28", "2024-10-29", "2024-10-30", "2024-10-31", "2024-11-01", "2024-11-04", "2024-11-05", "2024-11-06", "2024-11-07", "2024-11-08", "2024-11-11", "2024-11-12", "2024-11-13", "2024-11-14", "2024-11-15", "2024-11-18", "2024-11-19", "2024-11-20", "2024-11-21", "2024-11-22", "2024-11-25", "2024-11-26", "2024-11-27", "2024-11-29", "2024-12-02", "2024-12-03", "2024-12-04", "2024-12-05", "2024-12-06", "2024-12-09", "2024-12-10", "2024-12-11", "2024-12-12", "2024-12-13", "2024-12-16", "2024-12-17", "2024-12-18", "2024-12-19", "2024-12-20", "2024-12-23", "2024-12-24", "2024-12-26", "2024-12-27", "2024-12-30", "2024-12-31", "2025-01-02", "2025-01-03", "2025-01-06", "2025-01-07", "2025-01-08", "2025-01-10", "2025-01-13", "2025-01-14", "2025-01-15", "2025-01-16", "2025-01-17", "2025-01-21", "2025-01-22", "2025-01-23", "2025-01-24", "2025-01-27", "2025-01-28", "2025-01-29", "2025-01-30", "2025-01-31", "2025-02-03", "2025-02-04", "2025-02-05", "2025-02-06", "2025-02-07", "2025-02-10", "2025-02-11", "2025-02-12", "2025-02-13", "2025-02-14", "2025-02-18", "2025-02-19", "2025-02-20", "2025-02-21", "2025-02-24", "2025-02-25", "2025-02-26", "2025-02-27", "2025-02-28", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06", "2025-03-07", "2025-03-10", "2025-03-11", "2025-03-12", "2025-03-13", "2025-03-14", "2025-03-17", "2025-03-18", "2025-03-19", "2025-03-20", "2025-03-21", "2025-03-24", "2025-03-25", "2025-03-26", "2025-03-27", "2025-03-28", "2025-03-31", "2025-04-01", "2025-04-02", "2025-04-03", "2025-04-04", "2025-04-07", "2025-04-08", "2025-04-09", "2025-04-10", "2025-04-11", "2025-04-14", "2025-04-15", "2025-04-16", "2025-04-17", "2025-04-21", "2025-04-22", "2025-04-23", "2025-04-24", "2025-04-25", "2025-04-28", "2025-04-29", "2025-04-30", "2025-05-01", "2025-05-02", "2025-05-05", "2025-05-06", "2025-05-07", "2025-05-08", "2025-05-09", "2025-05-12", "2025-05-13", "2025-05-14", "2025-05-15", "2025-05-16", "2025-05-19", "2025-05-20", "2025-05-21", "2025-05-22", "2025-05-23", "2025-05-27", "2025-05-28", "2025-05-29", "2025-05-30", "2025-06-02", "2025-06-03", "2025-06-04", "2025-06-05", "2025-06-06", "2025-06-09", "2025-06-10", "2025-06-11", "2025-06-12", "2025-06-13", "2025-06-16", "2025-06-17", "2025-06-18", "2025-06-20", "2025-06-23", "2025-06-24", "2025-06-25", "2025-06-26", "2025-06-27", "2025-06-30", "2025-07-01", "2025-07-02", "2025-07-03", "2025-07-07", "2025-07-08", "2025-07-09", "2025-07-10", "2025-07-11", "2025-07-14", "2025-07-15", "2025-07-16", "2025-07-17", "2025-07-18", "2025-07-21", "2025-07-22", "2025-07-23", "2025-07-24", "2025-07-25", "2025-07-28", "2025-07-29", "2025-07-30", "2025-07-31", "2025-08-01", "2025-08-04", "2025-08-05", "2025-08-06", "2025-08-07", "2025-08-08", "2025-08-11", "2025-08-12", "2025-08-13", "2025-08-14", "2025-08-15", "2025-08-18", "2025-08-19", "2025-08-20", "2025-08-21", "2025-08-22", "2025-08-25", "2025-08-26", "2025-08-27", "2025-08-28", "2025-08-29", "2025-09-02", "2025-09-03", "2025-09-04", "2025-09-05", "2025-09-08", "2025-09-09", "2025-09-10", "2025-09-11", "2025-09-12", "2025-09-15", "2025-09-16", "2025-09-17", "2025-09-18", "2025-09-19", "2025-09-22", "2025-09-23", "2025-09-24", "2025-09-25", "2025-09-26", "2025-09-29", "2025-09-30", "2025-10-01", "2025-10-02", "2025-10-03", "2025-10-06", "2025-10-07", "2025-10-08", "2025-10-09", "2025-10-10", "2025-10-13", "2025-10-14", "2025-10-15", "2025-10-16", "2025-10-17", "2025-10-20", "2025-10-21", "2025-10-22", "2025-10-23", "2025-10-24", "2025-10-27", "2025-10-28", "2025-10-29", "2025-10-30", "2025-10-31", "2025-11-03", "2025-11-04", "2025-11-05", "2025-11-06", "2025-11-07", "2025-11-10", "2025-11-11", "2025-11-12", "2025-11-13", "2025-11-14", "2025-11-17", "2025-11-18", "2025-11-19", "2025-11-20", "2025-11-21", "2025-11-24", "2025-11-25", "2025-11-26", "2025-11-28", "2025-12-01", "2025-12-02", "2025-12-03", "2025-12-04", "2025-12-05", "2025-12-08", "2025-12-09", "2025-12-10", "2025-12-11", "2025-12-12", "2025-12-15", "2025-12-16", "2025-12-17", "2025-12-18", "2025-12-19", "2025-12-22", "2025-12-23", "2025-12-24", "2025-12-26", "2025-12-29", "2025-12-30", "2025-12-31", "2026-01-02", "2026-01-05", "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-12", "2026-01-13", "2026-01-14", "2026-01-15", "2026-01-16", "2026-01-20", "2026-01-21", "2026-01-22", "2026-01-23", "2026-01-26", "2026-01-27", "2026-01-28", "2026-01-29", "2026-01-30", "2026-02-02", "2026-02-03", "2026-02-04", "2026-02-05", "2026-02-06", "2026-02-09", "2026-02-10", "2026-02-11", "2026-02-12", "2026-02-13", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-23", "2026-02-24", "2026-02-25", "2026-02-26", "2026-02-27", "2026-03-02", "2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-16", "2026-03-17", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-20", "2026-04-21", "2026-04-22", "2026-04-23", "2026-04-24", "2026-04-27", "2026-04-28", "2026-04-29", "2026-04-30", "2026-05-01", "2026-05-04", "2026-05-05", "2026-05-06", "2026-05-07", "2026-05-08", "2026-05-11", "2026-05-12", "2026-05-13", "2026-05-14", "2026-05-15", "2026-05-18", "2026-05-19", "2026-05-20", "2026-05-21", "2026-05-22", "2026-05-26", "2026-05-27", "2026-05-28", "2026-05-29", "2026-06-01", "2026-06-02", "2026-06-03", "2026-06-04", "2026-06-05", "2026-06-08", "2026-06-09", "2026-06-10", "2026-06-11", "2026-06-12", "2026-06-15", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-22", "2026-06-23", "2026-06-24", "2026-06-25", "2026-06-26", "2026-06-29", "2026-06-30"], "values": [145.82, 147.16, 148.83, 150.2, 148.53, 151.09, 156.96, 152.23, 150.86, 147.4, 151.53, 146.39, 151.12, 146.99, 141.38, 137.0, 136.84, 134.17, 131.73, 128.93, 127.31, 136.69, 139.65, 145.3, 144.52, 140.82, 143.87, 141.82, 143.56, 142.55, 141.5, 146.26, 149.67, 154.16, 153.95, 151.5, 151.83, 151.68, 153.01, 159.0, 163.6, 160.9, 156.71, 148.98, 140.33, 139.75, 139.73, 145.88, 149.99, 152.17, 157.54, 167.42, 171.72, 165.75, 165.6, 160.48, 158.67, 160.99, 154.3, 161.5, 162.78, 156.43, 155.57, 156.28, 156.93, 154.09, 159.43, 153.08, 159.69, 161.85, 165.82, 155.55, 150.97, 146.8, 146.97, 144.71, 148.91, 148.46, 150.74, 153.45, 152.07, 146.66, 148.95, 152.68, 148.11, 152.12, 150.34, 140.32, 141.5, 142.92, 147.98, 149.55, 147.33, 149.46, 153.0, 155.72, 161.64, 167.28, 166.23, 167.94, 167.94, 170.65, 170.23, 172.45, 173.93, 168.05, 163.14, 165.12, 169.06, 167.43, 169.91, 166.79, 173.04, 168.92, 163.1, 161.21, 170.65, 180.09, 173.72, 167.92, 161.08, 169.16, 157.2, 157.32, 152.64, 155.1, 154.34, 151.45, 170.55, 167.64, 163.54, 167.41, 165.35, 173.0, 179.98, 179.32, 173.16, 168.55, 163.64, 157.43, 156.7, 158.47, 155.45, 159.44, 162.64, 163.57, 166.53, 166.95, 168.81, 166.1, 163.36, 167.97, 183.12, 175.76, 178.57, 165.0, 156.93, 157.6, 153.44, 149.32, 157.94, 154.26, 151.38, 138.88, 137.65, 139.94, 146.04, 132.79, 128.69, 128.86, 130.3, 133.9, 136.75, 136.45, 140.79, 141.73, 144.01, 148.68, 144.75, 140.85, 139.04, 148.58, 143.01, 144.27, 139.2, 136.54, 133.82, 135.68, 142.23, 127.54, 128.64, 135.71, 135.76, 131.32, 130.02, 125.77, 125.93, 126.67, 129.02, 132.37, 131.28, 134.29, 132.73, 134.07, 134.78, 134.12, 133.24, 132.21, 131.52, 128.4, 137.67, 140.52, 138.94, 140.85, 136.01, 135.94, 137.27, 137.28, 139.04, 139.34, 140.89, 137.65, 137.26, 138.25, 141.04, 141.6, 137.46, 140.09, 138.85, 139.18, 141.22, 141.39, 145.6, 149.65, 156.6, 154.36, 148.41, 149.19, 154.78, 154.97, 152.24, 147.46, 143.44, 139.65, 140.07, 139.28, 141.36, 137.96, 140.8, 141.75, 143.32, 144.96, 147.0, 143.72, 146.71, 151.12, 150.45, 154.83, 153.44, 159.29, 159.41, 145.57, 147.65, 149.12, 154.08, 152.29, 155.49, 159.31, 149.91, 149.71, 147.03, 147.53, 148.55, 151.45, 153.13, 150.62, 153.79, 153.95, 153.17, 144.56, 144.32, 146.39, 149.99, 156.53, 150.88, 152.5, 152.1, 151.48, 150.22, 153.96, 148.16, 148.82, 150.93, 151.92, 147.63, 149.49, 152.11, 148.21, 146.37, 148.19, 146.97, 145.46, 146.53, 145.87, 145.89, 141.51, 143.03, 143.44, 143.68, 145.93, 144.65, 142.5, 145.22, 145.76, 145.34, 138.86, 142.81, 146.48, 144.98, 147.14, 147.63, 151.31, 149.95, 152.85, 154.34, 153.49, 148.5, 140.37, 139.45, 141.15, 142.78, 141.99, 144.01, 143.64, 143.54, 141.27, 142.94, 143.45, 138.57, 142.49, 137.93, 140.9, 142.98, 143.05, 144.96, 148.34, 148.6, 151.68, 145.04, 143.0, 144.86, 144.94, 149.23, 148.91, 148.83, 150.63, 150.32, 147.55, 148.32, 153.59, 161.86, 156.99, 153.49, 155.38, 155.87, 159.93, 160.53, 160.53, 151.45, 150.47, 148.33, 148.7, 141.86, 142.45, 146.23, 143.57, 147.08, 146.04, 149.75, 151.6, 152.52, 151.57, 153.59, 154.96, 144.41, 141.31, 144.02, 148.1, 147.25, 144.98, 143.74, 143.65, 146.56, 143.85, 143.16, 137.16, 140.31, 145.23, 145.71, 143.78, 142.5, 139.35, 140.28, 139.17, 141.19, 145.52, 141.43, 141.94, 146.05, 146.57, 146.67, 151.78, 152.83, 152.87, 153.95, 151.8, 157.98, 154.46, 152.44, 139.94, 137.76, 141.49, 145.04, 136.54, 138.26, 139.12, 142.02, 142.63, 140.88, 143.99, 139.0, 142.23, 145.45, 143.77, 146.95, 147.6, 148.45, 150.36, 143.27, 144.18, 156.93, 149.94, 139.23, 140.74, 141.82, 141.9, 140.91, 140.84, 139.59, 139.08, 139.64, 138.16, 141.88, 143.33, 141.38, 141.74, 138.74, 135.42, 136.11, 138.21, 140.21, 139.41, 141.51, 139.32, 145.77, 138.4, 135.5, 132.31, 136.96, 137.39, 139.04, 138.57, 139.52, 144.18, 142.46, 143.24, 136.86, 142.15, 152.25, 145.0, 141.97, 143.08, 142.98, 142.6, 144.32, 142.66, 142.62, 146.72, 141.85, 143.14, 145.3, 139.89, 139.4, 144.46, 149.6]};
+  const skewCanvas = document.getElementById('skewChart');
+  if (skewData && skewCanvas) {
+    const skewCurrent = skewData.values[skewData.values.length - 1];
+    let skewLineColor = '#3fb950';
+    if (skewCurrent >= 160) skewLineColor = '#f85149';
+    else if (skewCurrent >= 140) skewLineColor = '#f0883e';
+    else if (skewCurrent >= 120) skewLineColor = '#d29922';
+    new Chart(skewCanvas, {
+      type: 'line',
+      data: {
+        labels: skewData.dates,
+        datasets: [{
+          label: '^SKEW',
+          data: skewData.values,
+          borderColor: skewLineColor,
+          backgroundColor: skewLineColor + '20',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: true,
+          tension: 0.15,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
+            titleColor: '#e6edf3', bodyColor: '#e6edf3', padding: 10,
+            callbacks: { label: ctx => '^SKEW: ' + ctx.parsed.y.toFixed(2) },
+          },
+        },
+        scales: {
+          x: { ticks: { color: '#8b949e', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { display: false } },
+          y: {
+            ticks: { color: '#8b949e', font: { size: 11 } },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+          },
+        },
+      },
+      plugins: [{
+        id: 'skew-bands',
+        beforeDatasetsDraw(chart) {
+          const ys = chart.scales.y;
+          const area = chart.chartArea;
+          const ctx = chart.ctx;
+          const bands = [
+            { from: ys.min, to: 120, color: 'rgba(63,185,80,0.06)' },
+            { from: 120, to: 140, color: 'rgba(210,153,34,0.06)' },
+            { from: 140, to: 160, color: 'rgba(240,136,62,0.08)' },
+            { from: 160, to: ys.max, color: 'rgba(248,81,73,0.10)' },
+          ];
+          ctx.save();
+          for (const b of bands) {
+            const y1 = ys.getPixelForValue(Math.max(b.from, ys.min));
+            const y2 = ys.getPixelForValue(Math.min(b.to, ys.max));
+            const top = Math.min(y1, y2), bot = Math.max(y1, y2);
+            if (bot < area.top || top > area.bottom) continue;
+            ctx.fillStyle = b.color;
+            ctx.fillRect(area.left, Math.max(top, area.top), area.right - area.left, Math.min(bot, area.bottom) - Math.max(top, area.top));
+          }
+          // Threshold lines at 120, 140, 160
+          ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          for (const t of [120, 140, 160]) {
+            if (t < ys.min || t > ys.max) continue;
+            const y = ys.getPixelForValue(t);
+            ctx.beginPath();
+            ctx.moveTo(area.left, y);
+            ctx.lineTo(area.right, y);
+            ctx.stroke();
+            ctx.fillStyle = '#6e7681';
+            ctx.font = '500 10px -apple-system,sans-serif';
+            ctx.fillText(t.toString(), area.left + 4, y - 3);
+          }
+          ctx.setLineDash([]);
+          ctx.restore();
+        },
+      }],
+    });
+  }
+}
+if (window.Chart) initCharts();
+</script>
+</body></html>
